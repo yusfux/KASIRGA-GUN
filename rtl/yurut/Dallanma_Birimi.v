@@ -38,14 +38,12 @@ module Dallanma_Birimi(
     input clk_i,
     input rst_i,
     input blok_aktif_i,
-    input [31:0] dallanma_ps_i,
     input [2:0] dal_buy_turu_i,
     input dallanma_ongorusu_i,
     input esit_mi_i,
     input buyuk_mu_i,
     output guncelle_gecerli_o,
     output guncelle_atladi_o,
-    output [31:0] guncelle_ps_o,
     output dallanma_hata_o
     );
     
@@ -55,7 +53,6 @@ module Dallanma_Birimi(
     
     assign guncelle_gecerli_o = guncelle_gecerli_o_r;
     assign guncelle_atladi_o = guncelle_atladi_o_r;
-    assign guncelle_ps_o = dallanma_ps_i;
     assign dallanma_hata_o = blok_aktif_i ? !(dallanma_ongorusu_i && guncelle_atladi_o_r) : 1'b0;
     
     localparam  BEQ = 3'b000;
@@ -70,13 +67,11 @@ module Dallanma_Birimi(
     guncelle_atladi_o_r = 1'b0;
     guncelle_gecerli_o_r = 1'b0; 
     
-    if(rst_i) begin
+     if(rst_i) begin
         guncelle_gecerli_o_r = 1'b0;
         guncelle_atladi_o_r = 1'b0;
     end
-    
     else begin
-     
         if(blok_aktif_i) begin
         guncelle_gecerli_o_r = 1'b1;
         
@@ -130,8 +125,7 @@ module Dallanma_Birimi(
                 end
                 
             endcase
-     end
-    
+    end
     end
     
     end

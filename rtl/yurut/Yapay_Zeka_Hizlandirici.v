@@ -31,7 +31,7 @@ module Yapay_Zeka_Hizlandirici(
     // Sartnamede belirtildigi sekliyle bu sinyaller cozden gelmeli
     input conv_yap_yaz_en_i, // conv_run
     
-    output reg [31:0] convolution_sonuc =0,
+    output reg [31:0] convolution_sonuc_o =0,
     output reg conv_hazir_o =0
 
     );
@@ -75,7 +75,7 @@ module Yapay_Zeka_Hizlandirici(
     if(rst_i) begin
         conv_sonuc <= 0;        
         conv_idx <= 0;          
-        convolution_sonuc <= 0; 
+        convolution_sonuc_o <= 0; 
         filtre_matris_idx <= 0; 
         filtre_matris_dolu <= 0;
         veri_matris_idx <= 0;
@@ -96,7 +96,7 @@ module Yapay_Zeka_Hizlandirici(
             end
             conv_sonuc <= 0;
             conv_idx <= 0;
-            convolution_sonuc <= 0;
+            convolution_sonuc_o <= 0;
             filtre_matris_idx <= 0;
             filtre_matris_dolu <= 0;
             conv_hazir_o <= 0;
@@ -108,7 +108,7 @@ module Yapay_Zeka_Hizlandirici(
             end
             conv_sonuc <= 0;
             conv_idx <= 0;
-            convolution_sonuc <= 0;
+            convolution_sonuc_o <= 0;
             veri_matris_idx <= 0;
             veri_matris_dolu <= 0;
             conv_hazir_o <= 0;
@@ -119,11 +119,11 @@ module Yapay_Zeka_Hizlandirici(
             conv_idx <= conv_idx_next;
             
             if(conv_yap_yaz_en_i) begin
-                convolution_sonuc <= conv_sonuc_next; // bu next olmayabilir *
+                convolution_sonuc_o <= conv_sonuc_next; // bu next olmayabilir *
                 conv_hazir_o <= 1'b1;
             end
             else begin
-                convolution_sonuc <= 0;
+                convolution_sonuc_o <= 0;
                 conv_hazir_o <= 1'b0;
             end
             
