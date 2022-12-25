@@ -1,5 +1,10 @@
 `timescale 1ns / 1ps
 
+/*
+    or.
+    bir cevrim 2 filtre yukle, hemen ustune conv yap gelirse, 1 cevrim fazladan beklenmesi gerekiyor
+    bu durum cozulmeli
+*/
 
 module Yapay_Zeka_Hizlandirici(
 
@@ -25,15 +30,11 @@ module Yapay_Zeka_Hizlandirici(
     
     // Sartnamede belirtildigi sekliyle bu sinyaller cozden gelmeli
     input conv_yap_yaz_en_i, // conv_run
-    input conv_rd_i,
     
     output reg [31:0] convolution_sonuc =0,
-    output conv_rd_o,
     output reg conv_hazir_o =0
 
     );
-    
-    assign conv_rd_o = conv_rd_i; // unutulmamasi icin ekledim
     
     reg [31:0] veri_matris_r [15:0];
     reg [31:0] filtre_matris_r [15:0];
