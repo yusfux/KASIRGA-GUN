@@ -22,7 +22,7 @@ module Kriptografi_Birimi(
     input [31:0] yazmac_rs2_i,
     input [2:0]islem_kodu_i,
     output [31:0] sonuc_o,
-    output kriptografi_hazir_o // ayarlanilmali
+    output reg kriptografi_hazir_o=0 // ayarlanilmali
     );
     
     localparam hmdst = 3'b000; 
