@@ -64,7 +64,44 @@
 //-----------------------------------C instructions -----------------------------------
 //-------------------------------------------------------------------------------------
 
-`define HAHA 
+//funct3 + op_code
+`define C_ADDI4SPN 000_00 
+`define C_LW       001_00
+`define C_SW       110_00
+`define C_JAL      001_01
+`define C_J        101_01
+`define C_BEQZ     110_01
+`define C_BNEZ     111_01
+`define C_SWSP     110_10
+
+`define C_ADDI     000_01   //rd != 0
+`define C_NOP      000_01   //rd = 0
+
+`define C_LI       010_01   //rd != 0
+
+`define C_ADDI16SP 011_01   //rd = 2
+`define C_LUI      011_01   //rd != 0 && rd != 2
+
+`define C_SLLI     000_10   //rd != 0
+
+`define C_LWSP     010_10   //rd != 0
+
+`define C_SRLI     100_01   //inst[11:10] = 00
+`define C_SRAI     100_01   //inst[11:10] = 01
+`define C_ANDI     100_01   //inst[11:10] = 10
+
+`define C_SUB      100_01   //inst[12:10] = 011 && inst[6:5] = 00
+`define C_XOR      100_01   //inst[12:10] = 011 && inst[6:5] = 01
+`define C_OR       100_01   //inst[12:10] = 011 && inst[6:5] = 10
+`define C_AND      100_01   //inst[12:10] = 011 && inst[6:5] = 11
+
+
+`define C_JR       100_10   //inst[12] = 0 && rd != 0 && rs2 = 0
+`define C_MV       100_10   //inst[12] = 0 && rd != 0 && rs2 != 0
+`define C_JALR     100_10   //inst[12] = 1 && rd != 0 && rs2 = 0
+`define C_ADD      100_10   //isnt[12] = 1 && rd != 0 && rs2 != 0
+
+
 
 //-------------------------------------------------------------------------------------
 //-----------------------------------X instructions -----------------------------------
