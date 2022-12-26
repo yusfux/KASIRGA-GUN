@@ -52,15 +52,11 @@ module yurut(
 
     // yapay_zeka_hizlandirici icin cozden gelenler
     input                    yapay_zeka_aktif_i,
-    //input       [31:0]       filtre_rs1_i,
     input                    filtre_rs1_en_i,
-    //input       [31:0]       filtre_rs2_i,
     input                    filtre_rs2_en_i,
-    input                    filtre_sil_i,
 
-    //input       [31:0]       veri_rs1_i,
+    input                    filtre_sil_i,
     input                    veri_rs1_en_i,
-    //input       [31:0]       veri_rs2_i,
     input                    veri_rs2_en_i,
     input                    veri_sil_i,
 
@@ -73,9 +69,11 @@ module yurut(
     // denetim birimine
     output                  dallanma_hata_o,                          
     output                  conv_hazir_o,
-    
+    output                  kriptografi_hazir_o,
+    output                  AMB_hazir_o,
+        
     // yurut-getir       
-    output                   guncelle_gecerli_o, // bu 3 u ongorucuye
+    output                   guncelle_gecerli_o, // bu 2 si ongorucuye
     output                   guncelle_atladi_o, 
     
     output      [31:0]      atlanilmis_adres_o, // bu ps ye, jump buyruðundan sonra gidilecek adres              
@@ -93,21 +91,19 @@ module yurut(
 
 
 
-reg [31:0] bellek_veri_o_r = 0;
-assign bellek_veri_o = bellek_veri_o_r;
-reg [31:0] bellek_adresi_o_r =0;
-assign bellek_adresi_o = bellek_adresi_o_r;
+reg     [31:0]      bellek_veri_r       =    0;
 
+reg     [31:0]      bellek_adresi_r     =    0;
 
-reg     [4:0]       hedef_yazmaci_r ;
+reg     [4:0]       hedef_yazmaci_r     =    0;
 
-reg                 bellekten_oku_r ;
+reg                 bellekten_oku_r     =    0;
 
-reg                 bellege_yaz_r   ;
+reg                 bellege_yaz_r       =    0;
 
-reg                 yazmaca_yaz_r   ;
+reg                 yazmaca_yaz_r       =    0;
 
-reg      [2:0]      load_save_buyrugu_r;
+reg      [2:0]      load_save_buyrugu_r =    0;
 
 
 
@@ -116,6 +112,7 @@ wire    [31:0]      AMB_sonuc;      // AMB den çýkan sonuç, adres veya yazamaca 
 wire                esit_mi;        // ky1 ky2 ye eþit mi
 wire                buyuk_mu;       // ky1 ky2 den büyük mü 
 wire    [31:0]      atlanilmis_adres;
+wire                AMB_hazir;
  
 AMB amb(
     // inputlar
@@ -127,18 +124,12 @@ AMB amb(
     .adres_i(adres_i),
     .islem_kodu_i(islem_kodu_i),
     // outputlar
+    .AMB_hazir_o(AMB_hazir),
     .sonuc_o(AMB_sonuc),
     .adres_o(atlanilmis_adres),
     .esit_mi_o(esit_mi),
     .buyuk_mu_o(buyuk_mu)
 );
-    
-// Dallanma biriminden cikanlar
-wire                guncelle_gecerli;
-wire                guncelle_atladi;
-wire                guncelle_ps;
-wire                dallanma_hata;
-
 
 Dallanma_Birimi dallanma_birimi(
     // inputlar
@@ -199,53 +190,58 @@ Kriptografi_Birimi kriptografi(
 
 );
 
-assign load_save_buyrugu_o=  load_save_buyrugu_r;
-assign hedef_yazmaci_o    =  hedef_yazmaci_r;
-assign bellekten_oku_o    =  bellekten_oku_r;
-assign bellege_yaz_o      =  bellege_yaz_r;
-assign yazmaca_yaz_o      =  yazmaca_yaz_r;
-assign atlanilmis_adres_o =  atlanilmis_adres;
-assign conv_hazir_o       =  conv_hazir;
-
+// burada yapilan islem bellege gidecek olan adresi secmek cunku 3 farklý modulden de adres cikiyor ayni sekilde yaizlacak olana veri de belirlenir
 always @* begin
    
    if(conv_hazir) begin
-       bellek_veri_o_r = convolution_sonuc;
-       bellek_adresi_o_r = hedef_yazmac_degeri_i;
+       bellek_veri_r = convolution_sonuc;
+       bellek_adresi_r = hedef_yazmac_degeri_i;
    end
    else if (kriptografi_hazir) begin
-       bellek_veri_o_r = kriptografi_sonuc;
-       bellek_adresi_o_r = hedef_yazmac_degeri_i; // bidaha bakilmali
+       bellek_veri_r = kriptografi_sonuc;
+       bellek_adresi_r = hedef_yazmac_degeri_i; // bidaha bakilmali
    end
-   else begin
-       bellek_veri_o_r = yazmac_degeri2_i;
-       bellek_adresi_o_r = AMB_sonuc;
+   else if(AMB_hazir)begin
+       bellek_veri_r = yazmac_degeri2_i;
+       bellek_adresi_r = AMB_sonuc;
    end
 
   
 end
-                                                                                                                
+                                                                                                             
 always @(posedge clk_i) begin                               
                                                             
     if(rst_i == 1'b1) begin
     
-    hedef_yazmaci_r     <= 0;
-    bellege_yaz_r       <= 0;
-    yazmaca_yaz_r       <= 0;
-    bellekten_oku_r     <= 0;
-    load_save_buyrugu_r <= 0;  
+    hedef_yazmaci_r      <=   0;
+    bellege_yaz_r        <=   0;
+    yazmaca_yaz_r        <=   0;
+    bellekten_oku_r      <=   0;
+    load_save_buyrugu_r  <=   0;  
       
     end
     else begin
     
     // COZDEN GELENLER
-    hedef_yazmaci_r     <= hedef_yazmaci_i;    
-    bellege_yaz_r       <= bellege_yaz_i;
-    yazmaca_yaz_r       <= yazmaca_yaz_i;
-    bellekten_oku_r     <= bellekten_oku_i;
-    load_save_buyrugu_r <= load_save_buyrugu_i;
+    hedef_yazmaci_r     <=   hedef_yazmaci_i;    
+    bellege_yaz_r       <=   bellege_yaz_i;
+    yazmaca_yaz_r       <=   yazmaca_yaz_i;
+    bellekten_oku_r     <=   bellekten_oku_i;
+    load_save_buyrugu_r <=   load_save_buyrugu_i;
    
     end
 end
+
+assign load_save_buyrugu_o  =  load_save_buyrugu_r;
+assign hedef_yazmaci_o      =  hedef_yazmaci_r;
+assign bellekten_oku_o      =  bellekten_oku_r;
+assign bellege_yaz_o        =  bellege_yaz_r;
+assign yazmaca_yaz_o        =  yazmaca_yaz_r;
+assign atlanilmis_adres_o   =  atlanilmis_adres;
+assign conv_hazir_o         =  conv_hazir;
+assign kriptografi_hazir_o  =  kriptografi_hazir;
+assign bellek_veri_o        = bellek_veri_r;
+assign bellek_adresi_o      = bellek_adresi_r;
+assign AMB_hazir_o          = AMB_hazir;
 
 endmodule
