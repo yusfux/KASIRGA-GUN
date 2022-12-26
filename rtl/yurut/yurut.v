@@ -35,6 +35,7 @@ module yurut(
     input                   clk_i,
     input                   rst_i,
     // coz-yurut
+    input                   amb_aktif_i,
     input       [31:0]      yazmac_degeri1_i,
     input       [31:0]      yazmac_degeri2_i,
     input       [31:0]      hedef_yazmac_degeri_i,
@@ -118,6 +119,7 @@ AMB amb(
     // inputlar
     .rst_i(rst_i),
     .clk_i(clk_i),
+    .AMB_aktif_i(amb_aktif_i),
     .anlik_i(anlik_i),
     .yazmac_degeri1_i(yazmac_degeri1_i),
     .yazmac_degeri2_i(yazmac_degeri2_i),  
@@ -134,7 +136,6 @@ AMB amb(
 Dallanma_Birimi dallanma_birimi(
     // inputlar
     .rst_i(rst_i),
-    .clk_i(clk_i),
     .blok_aktif_i(dallanma_mi_i),
     .dal_buy_turu_i(dallanma_buy_turu_i), 
     .dallanma_ongorusu_i(dallanma_ongorusu_i),

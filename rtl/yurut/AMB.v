@@ -33,8 +33,8 @@ reg     [31:0]  adres_r_next      =    0    ;
 reg             AMB_hazir_r       =    0    ;
 reg             AMB_hazir_r_next  =    0    ;    
 
-assign esit_mi_o   =  (yazmac_degeri1_i == yazmac_degeri2_i);
-assign buyuk_mu_o  =  (yazmac_degeri1_i > yazmac_degeri2_i);
+assign esit_mi_o   =  AMB_aktif_i ? (yazmac_degeri1_i == yazmac_degeri2_i) : 0;
+assign buyuk_mu_o  =  AMB_aktif_i ?(yazmac_degeri1_i > yazmac_degeri2_i) : 0;
      
 always @(*) begin
    
