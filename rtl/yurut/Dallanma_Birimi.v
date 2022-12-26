@@ -35,7 +35,6 @@
 
 
 module Dallanma_Birimi(
-    input clk_i,
     input rst_i,
     input blok_aktif_i,
     input [2:0] dal_buy_turu_i,
