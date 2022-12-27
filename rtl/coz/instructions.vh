@@ -3,61 +3,63 @@
 //-----------------------------------I & M instructions--------------------------------
 //-------------------------------------------------------------------------------------
 
-//only op_code | U TYPE
+
+//only op_code
 `define LUI    0110111
 `define AUIPC  0010111
 `define JAL    1101111
+`define JALR   1100111  //funct3 == 3'b0
 
-//funct3 + op_code | S & I TYPE
-`define JALR   000_1100111
+`define BRANCH 1100011
+`define BEQ    000
+`define BNE    001
+`define BLT    100
+`define BGE    101
+`define BLTU   110
+`define BGEU   111
 
-`define BEQ    000_1100011
-`define BNE    001_1100011
-`define BLT    100_1100011
-`define BGE    101_1100011
-`define BLTU   110_1100011
-`define BGEU   111_1100011
+`define LOAD   0000011
+`define LB     000
+`define LH     001
+`define LW     010
+`define LBU    100
+`define LHU    101
 
-`define LB     000_0000011
-`define LH     001_0000011
-`define LW     010_0000011
-`define LBU    100_0000011
-`define LHU    101_0000011
+`define STORE  0100011
+`define SB     000
+`define SH     001
+`define SW     010
 
-`define SB     000_0100011
-`define SH     001_0100011
-`define SW     010_0100011
+`define OP_IMM 0010011
+`define ADDI   000
+`define SLTI   010
+`define SLTIU  011
+`define XORI   100
+`define ORI    110
+`define ANDI   111
+`define SLLI   0000000_001
+`define SRLI   0000000_101
+`define SRAI   0100000_101
 
-`define ADDI   000_0010011
-`define SLTI   010_0010011
-`define SLTIU  011_0010011
-`define XORI   100_0010011
-`define ORI    110_0010011
-`define ANDI   111_0010011
-
-//funct7 + funct3 + op_code | R TYPE
-`define SLLI   0000000_001_0010011
-`define SRLI   0000000_101_0010011
-`define SRAI   0100000_101_0010011
-
-`define ADD    0000000_000_0110011
-`define SUB    0100000_000_0110011
-`define SLL    0000000_001_0110011
-`define SLT    0000000_010_0110011
-`define SLTU   0000000_011_0110011
-`define XOR    0000000_100_0110011
-`define SRL    0000000_101_0110011
-`define SRA    0100000_101_0110011
-`define OR     0000000_110_0110011
-`define AND    0000000_111_0110011
-`define MUL    0000001_000_0110011
-`define MULH   0000001_001_0110011
-`define MULHSU 0000001_010_0110011
-`define MULHU  0000001_011_0110011
-`define DIV    0000001_100_0110011
-`define DIVU   0000001_101_0110011
-`define REM    0000001_110_0110011
-`define REMU   0000001_111_0110011
+`define OP     0110011
+`define ADD    0000000_000
+`define SUB    0100000_000
+`define SLL    0000000_001
+`define SLT    0000000_010
+`define SLTU   0000000_011
+`define XOR    0000000_100
+`define SRL    0000000_101
+`define SRA    0100000_101
+`define OR     0000000_110
+`define AND    0000000_111
+`define MUL    0000001_000
+`define MULH   0000001_001
+`define MULHSU 0000001_010
+`define MULHU  0000001_011
+`define DIV    0000001_100
+`define DIVU   0000001_101
+`define REM    0000001_110
+`define REMU   0000001_111
 
 
 //-------------------------------------------------------------------------------------
@@ -89,7 +91,6 @@
 `define C_SRLI     100_01   //inst[11:10] = 00
 `define C_SRAI     100_01   //inst[11:10] = 01
 `define C_ANDI     100_01   //inst[11:10] = 10
-
 `define C_SUB      100_01   //inst[12:10] = 011 && inst[6:5] = 00
 `define C_XOR      100_01   //inst[12:10] = 011 && inst[6:5] = 01
 `define C_OR       100_01   //inst[12:10] = 011 && inst[6:5] = 10
@@ -107,23 +108,20 @@
 //-----------------------------------X instructions -----------------------------------
 //-------------------------------------------------------------------------------------
 
-//funct7 + fucnt3 + op_code
-`define HMDST      0000101_001_0110011
-`define PKG        0000100_100_0110011
-`define SLADD      0010000_010_0110011
+//op_code = OP
+`define HMDST      0000101_001
+`define PKG        0000100_100
+`define SLADD      0010000_010
 
-//funct7 + rs2 + funct3 + op_code
-`define RVRS       011010111000_101_0010011
-`define CNTZ       0110000_00001_001_0010011
-`define CNTP       0110000_00010_001_0010011
+//funct7 + rs2 + funct3
+//op_code = OP_IMM
+`define RVRS       0110101_11000_101
+`define CNTZ       0110000_00001_001
+`define CNTP       0110000_00010_001
 
-//funct7[0:5] + funct3 + rd + op_code
-`define CONV_LD_W  000000_010_00000_0001011
-`define CONV_LD_X  000000_000_00000_0001011
-
-//funct7 + rs2 + rs1 + funct3 + rd + op_code
-`define CONV_CLR_W 0000000_00000_00000_011_00000_0001011
-`define CONV_CLR_X 0000000_00000_00000_011_00000_0001011
-
-//funct7 + rs2 + rs1 + funct3 + op_code
-`define CONV_RUN   0000000_00000_00000_100_0001011
+`define AI 0001011
+`define CONV_LD_X  000000_000 //funct7[6] == 1 ise rs1 + rs2, degilse yalnizca rs1 | rd == 5'b0
+`define CONV_LD_W  000000_010 //funct7[6] == 1 ise rs1 + rs2, degilse yalnizca rs1 | rd == 5'b0
+`define CONV_CLR_X 0000000_001 //rs1 = rs2 = rd = 5'b0
+`define CONV_CLR_W 0000000_011 //rs1 = rs2 = rd = 5'b0
+`define CONV_RUN   0000000_100 //rs1 = rs2 = 5'b0

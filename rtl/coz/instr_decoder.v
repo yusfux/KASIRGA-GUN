@@ -71,6 +71,7 @@ module instr_decoder(
     wire [31:0] imm_b_w  = {{20{instruction_i[31]}}, instruction_i[7],     instruction_i[30:25], instruction_i[11:8], 1'b0};
     wire [31:0] imm_u_w  = {    instruction_i[31],   instruction_i[30:20], instruction_i[19:12], 12'b0};
     wire [31:0] imm_j_w  = {{12{instruction_i[31]}}, instruction_i[19:12], instruction_i[20],    instruction_i[30:25], instruction_i[24:21], 1'b0};
+    wire [31:0] shamt_w  = {{27{instruction_i[24]}}, instruction_i[24:20]};
 
     //enable
     reg en_alu_r;
@@ -121,361 +122,289 @@ module instr_decoder(
         immediate_r         = 32'b0; 
 
         //TODO: NEED TO IMPLEMNENT AI & CRYPTO INSTRUCTIONS
-        //cok daha kompakt hale getirilebilir, ayni olanlar bilestirilerek bakilabilir bu sekliyle cok gereksiz uzun
-
         //decoder for I and M extension,
-        case({funct7_w, funct3_w, op_code_w})
+        case(op_code_w)
 
-            //only op_code
-            {funct7_w, funct3_w, 7'b`LUI}:   begin
+            7'b`LUI:   begin
                 en_alu_r    = 1'b1;
                 op_alu_r    = `ALU_LUI;
                 reg_write_r = 1'b1;
                 immediate_r = imm_u_w;
             end   
-            {funct7_w, funct3_w, 7'b`AUIPC}: begin
+            7'b`AUIPC: begin
                 en_alu_r    = 1'b1;
                 op_alu_r    = `ALU_AUIPC;
                 reg_write_r = 1'b1;
                 immediate_r = imm_u_w;
             end   
-            {funct7_w, funct3_w, 7'b`JAL}:   begin
+            7'b`JAL:   begin
                 en_alu_r    = 1'b1;
                 op_alu_r    = `ALU_JAL;
                 reg_write_r = 1'b1;
                 immediate_r = imm_j_w;
             end   
 
-            //funct3 + op_code
-            {funct7_w, 10'b`JALR}:  begin
-                en_alu_r    = 1'b1;
-                op_alu_r    = `ALU_JALR;
-                reg_write_r = 1'b1;
-                immediate_r = imm_i_w;
+            7'b`JALR:  begin
+                if(funct3_w == 3'b0) begin
+                    en_alu_r     = 1'b1;
+                    op_alu_r     = `ALU_JALR;
+                    reg_read_rs1 = 1'b1'
+                    reg_write_r  = 1'b1;
+                    immediate_r  = imm_i_w;
+                end
             end
-            {funct7_w, 10'b`BEQ}:   begin
-                en_alu_r            = 1'b1;
-                en_branching_unit_r = 1'b1;
-                op_alu_r            = `ALU_BEQ;
-                op_branching_r      = `BRA_BEQ;
-                reg_read_rs1_r      = 1'b1;
-                reg_read_rs2_r      = 1'b1;
-                immediate_r         = imm_b_w;
 
-            end
-            {funct7_w, 10'b`BNE}:   begin
+            7'b`BRANCH: begin //---------------------------------------
                 en_branching_unit_r = 1'b1;
                 en_alu_r            = 1'b1;
-                op_alu_r            = `ALU_BNE;
-                op_branching_r      = `BRA_BNE;
                 reg_read_rs1_r      = 1'b1;
                 reg_read_rs2_r      = 1'b1;
                 immediate_r         = imm_b_w;
-            end
-            {funct7_w, 10'b`BLT}:   begin
-                en_branching_unit_r = 1'b1;
-                en_alu_r            = 1'b1;
-                op_alu_r            = `ALU_BLT;
-                op_branching_r      = `BRA_BLT;
-                reg_read_rs1_r      = 1'b1;
-                reg_read_rs2_r      = 1'b1;
-                immediate_r         = imm_b_w;
+                case (funct3_w)
+                    3'b`BEQ:   begin
+                        op_alu_r        = `ALU_BEQ;
+                        op_branching_r  = `BRA_BEQ;
+                    end
+                    3'b`BNE:   begin
+                        op_alu_r        = `ALU_BNE;
+                        op_branching_r  = `BRA_BNE;
+                    end
+                    3'b`BLT:   begin
+                        op_alu_r        = `ALU_BLT;
+                        op_branching_r  = `BRA_BLT;
+                    end
+                    3'b`BGE:   begin
+                        op_alu_r        = `ALU_BGE;
+                        op_branching_r  = `BRA_BGE;
 
-            end
-            {funct7_w, 10'b`BGE}:   begin
-                en_branching_unit_r = 1'b1;
-                en_alu_r            = 1'b1;
-                op_alu_r            = `ALU_BGE;
-                op_branching_r      = `BRA_BGE;
-                reg_read_rs1_r      = 1'b1;
-                reg_read_rs2_r      = 1'b1;
-                immediate_r         = imm_b_w;
+                    end
+                    3'b`BLTU:  begin
+                        op_alu_r        = `ALU_BLTU;
+                        op_branching_r  = `BRA_BLTU;
 
-            end
-            {funct7_w, 10'b`BLTU}:  begin
-                en_branching_unit_r = 1'b1;
-                en_alu_r            = 1'b1;
-                op_alu_r            = `ALU_BLTU;
-                op_branching_r      = `BRA_BLTU;
-                reg_read_rs1_r      = 1'b1;
-                reg_read_rs2_r      = 1'b1;
-                immediate_r         = imm_b_w;
+                    end
+                    3'b`BGEU:  begin
+                        op_alu_r        = `ALU_BGEU;
+                        op_branching_r  = `BRA_BGEU;
 
-            end
-            {funct7_w, 10'b`BGEU}:  begin
-                en_branching_unit_r = 1'b1;
-                en_alu_r            = 1'b1;
-                op_alu_r            = `ALU_BGEU;
-                op_branching_r      = `BRA_BGEU;
-                reg_read_rs1_r      = 1'b1;
-                reg_read_rs2_r      = 1'b1;
-                immediate_r         = imm_b_w;
+                    end
+                endcase
+            end //-----------------------------------------------------
 
-            end
-            {funct7_w, 10'b`LB}:    begin
+            7'b`LOAD: begin //-----------------------------------------
                 en_mem_r       = 1'b1;
-                en_alu_r       = 1'b1;
-                op_mem_r       = `MEM_LB;
+                en_alu_o       = 1'b1;
+                op_alu_o       = `ALU_MEM;
                 mem_read_r     = 1'b1;
                 reg_read_rs1_r = 1'b1;
+                reg_write_o    = 1'b1;
                 immediate_r    = imm_i_w;
-            end
-            {funct7_w, 10'b`LH}:    begin
-                en_mem_r       = 1'b1;
-                en_alu_r       = 1'b1;
-                op_mem_r       = `MEM_LH;
-                mem_read_r     = 1'b1;
-                reg_read_rs1_r = 1'b1;
-                immediate_r    = imm_i_w;
+                case (funct3_w)
+                    3'b`LB:    begin
+                        op_mem_r       = `MEM_LB;
+                    end
+                    3'b`LH:    begin
+                        op_mem_r       = `MEM_LH;
+                    end
+                    3'b`LW:    begin
+                        op_mem_r       = `MEM_LW;
+                    end
+                    3'b`LBU:   begin
+                        op_mem_r       = `MEM_LBU;
+                    end
+                    3'b`LHU:   begin
+                        op_mem_r       = `MEM_LHU;
+                    end
+                endcase
+            end //-----------------------------------------------------
 
-            end
-            {funct7_w, 10'b`LW}:    begin
+            7'b`STORE: begin //----------------------------------------
                 en_mem_r       = 1'b1;
-                en_alu_r       = 1'b1;
-                op_mem_r       = `MEM_LW;
-                mem_read_r     = 1'b1;
-                reg_read_rs1_r = 1'b1;
-                immediate_r    = imm_i_w;
-
-            end
-            {funct7_w, 10'b`LBU}:   begin
-                en_mem_r       = 1'b1;
-                en_alu_r       = 1'b1;
-                op_mem_r       = `MEM_LBU;
-                mem_read_r     = 1'b1;
-                reg_read_rs1_r = 1'b1;
-                immediate_r    = imm_i_w;
-
-            end
-            {funct7_w, 10'b`LHU}:   begin
-                en_mem_r       = 1'b1;
-                en_alu_r       = 1'b1;
-                op_mem_r       = `MEM_LHU;
-                mem_read_r     = 1'b1;
-                reg_read_rs1_r = 1'b1;
-                immediate_r    = imm_i_w;
-
-            end
-            {funct7_w, 10'b`SB}:    begin
-                en_mem_r       = 1'b1;
-                en_alu_r       = 1'b1;
-                op_mem_r       = `MEM_SB;
+                en_alu_o       = 1'b1;
+                op_alu_o       = `ALU_MEM;
                 mem_write_r    = 1'b1;
                 reg_read_rs1_r = 1'b1;
                 reg_read_rs2_r = 1'b1;
                 immediate_r    = imm_s_w;
+                case(funct3_w)
+                    3'b`SB:    begin
+                        op_mem_r       = `MEM_SB;
+                    end
+                    3'b`SH:    begin
+                        op_mem_r       = `MEM_SH;
+                    end
+                    3'b`SW:    begin
+                        op_mem_r       = `MEM_SW;
+                    end
+                endcase
+            end //-----------------------------------------------------
 
-            end
-            {funct7_w, 10'b`SH}:    begin
-                en_mem_r       = 1'b1;
+            7'b`OP_IMM: begin //---------------------------------------
                 en_alu_r       = 1'b1;
-                op_mem_r       = `MEM_SH;
-                mem_write_r    = 1'b1;
                 reg_read_rs1_r = 1'b1;
-                reg_read_rs2_r = 1'b1;
-                immediate_r    = imm_s_w;
-
-            end
-            {funct7_w, 10'b`SW}:    begin
-                en_mem_r       = 1'b1;
-                en_alu_r       = 1'b1;
-                op_mem_r       = `MEM_SW;
-                mem_write_r    = 1'b1;
-                reg_read_rs1_r = 1'b1;
-                reg_read_rs2_r = 1'b1;
-                immediate_r    = imm_s_w;
-
-            end
-            {funct7_w, 10'b`ADDI}:  begin
-                en_alu_r       = 1'b1;
-                op_alu_r       = `ALU_ADDI;
-                reg_read_rs1_r = 1'b1;
+                reg_write_r    = 1'b1;
                 immediate_r    = imm_i_w;
+                case(funct3_w)
+                    3'b`ADDI:    begin
+                        op_alu_r       = `ALU_ADDI;
+                    end
+                    3'b`SLTI:    begin
+                        op_alu_r       = `ALU_SLTI;
+                    end
+                    3'b`SLTIU:   begin
+                        op_alu_r       = `ALU_SLTIU;
+                    end
+                    3'b`XORI:    begin
+                        op_alu_r       = `ALU_XORI;
+                    end
+                    3'b`ORI:     begin
+                        op_alu_r       = `ALU_ORI;
+                    end
+                    3'b`ANDI:    begin
+                        op_alu_r       = `ALU_ANDI;
+                    end
+                endcase
+                //we can reduce the code size iwth combining SRLI and SRAI by checking their 30th bits
+                case({funct7_w, funct3_w})
+                    {10'b`SLLI}: begin
+                        op_alu_r       = `ALU_SLLI;
+                        immediate_r    = shamt_w
+                    end
+                    {10'b`SRLI}: begin
+                        op_alu_r       = `ALU_SRLI;
+                        immediate_r    = shamt_w
+                    end
+                    {10'b`SRAI}: begin
+                        op_alu_r       = `ALU_SRAI;
+                        immediate_r    = shamt_w
+                    end
+                endcase
 
-            end
-            {funct7_w, 10'b`SLTI}:  begin
-                en_alu_r       = 1'b1;
-                op_alu_r       = `ALU_SLTI;
-                reg_read_rs1_r = 1'b1;
-                immediate_r    = imm_i_w;
+                case ({funct7_w, rs2_w, funct3_w})
+                    en_alu_r         = 1'b0;
+                    en_crypto_unit_r = 1'b1;
+                    13'b`RVRS: begin
+                        op_crypto_r  = `CRY_RVRS;
+                    end
+                    13'b`CNTZ: begin
+                        op_crypto_r  = `CRY_CNTZ;
+                    end
+                    13'b`CNTP: begin
+                        op_crypto_r  = `CRY_CNTP;
+                    end
+                endcase
+            end //-----------------------------------------------------
 
-            end
-            {funct7_w, 10'b`SLTIU}: begin
+            7'b`OP: begin //-------------------------------------------
                 en_alu_r       = 1'b1;
-                op_alu_r       = `ALU_SLTIU;
-                reg_read_rs1_r = 1'b1;
-                immediate_r    = imm_i_w;
-
-            end
-            {funct7_w, 10'b`XORI}:  begin
-                en_alu_r       = 1'b1;
-                op_alu_r       = `ALU_XORI;
-                reg_read_rs1_r = 1'b1;
-                immediate_r    = imm_i_w;
-
-            end
-            {funct7_w, 10'b`ORI}:   begin
-                en_alu_r       = 1'b1;
-                op_alu_r       = `ALU_ORI;
-                reg_read_rs1_r = 1'b1;
-                immediate_r    = imm_i_w;
-
-            end
-            {funct7_w, 10'b`ANDI}:  begin
-                en_alu_r       = 1'b1;
-                op_alu_r       = `ALU_ANDI;
-                reg_read_rs1_r = 1'b1;
-                immediate_r    = imm_i_w;
-            end
-
-            //funct7 + funct3 + op_code
-            {17'b`SLLI}:   begin
-                en_alu_r       = 1'b1;
-                op_alu_r       = `ALU_SLLI;
-                reg_read_rs1_r = 1'b1;
-                immediate_r    = {{27{instruction_i[24]}}, instruction_i[24:20]};
-
-            end
-            {17'b`SRLI}:   begin
-                en_alu_r       = 1'b1;
-                op_alu_r       = `ALU_SRLI;
-                reg_read_rs1_r = 1'b1;
-                immediate_r    = {{27{instruction_i[24]}}, instruction_i[24:20]};
-
-            end
-            {17'b`SRAI}:   begin
-                en_alu_r       = 1'b1;
-                op_alu_r       = `ALU_SRAI;
-                reg_read_rs1_r = 1'b1;
-                immediate_r    = {{27{instruction_i[24]}}, instruction_i[24:20]};
-
-            end
-            {17'b`ADD}:    begin
-                en_alu_r       = 1'b1;
-                op_alu_r       = `ALU_ADD;
                 reg_read_rs1_r = 1'b1;
                 reg_read_rs2_r = 1'b1;
+                reg_write_r    = 1'b1;
+                case ({funct7_w, funct3_w})
+                    10'b`ADD:    begin
+                        op_alu_r       = `ALU_ADD;
+                    end
+                    10'b`SUB:    begin
+                        op_alu_r       = `ALU_SUB;
+                    end
+                    10'b`SLL:    begin
+                        op_alu_r       = `ALU_SLL;
+                    end
+                    10'b`SLT:    begin
+                        op_alu_r       = `ALU_SLT;
+                    end
+                    10'b`SLTU:   begin
+                        op_alu_r       = `ALU_SLTU;
+                    end
+                    10'b`XOR:    begin
+                        op_alu_r       = `ALU_XOR;
+                    end
+                    10'b`SRL:    begin
+                        op_alu_r       = `ALU_SRL;
+                    end
+                    10'b`SRA:    begin
+                        op_alu_r       = `ALU_SRA;
+                    end
+                    10'b`OR:     begin
+                        op_alu_r       = `ALU_OR;
+                    end
+                    10'b`AND:    begin
+                        op_alu_r       = `ALU_AND;
+                    end
+                    10'b`MUL:    begin
+                        op_alu_r       = `ALU_MUL;
+                    end
+                    10'b`MULH:   begin
+                        op_alu_r       = `ALU_MULH;
+                    end
+                    10'b`MULHSU: begin
+                        op_alu_r       = `ALU_MULHSU;
+                    end
+                    10'b`MULHU:  begin
+                        op_alu_r       = `ALU_MULHU;
+                    end
+                    10'b`DIV:    begin
+                        op_alu_r       = `ALU_DIV;
+                    end
+                    10'b`DIVU:   begin
+                        op_alu_r       = `ALU_DIVU;
+                    end
+                    10'b`REM:    begin
+                        op_alu_r       = `ALU_REM;
+                    end
+                    10'b`REMU:   begin
+                        op_alu_r       = `ALU_REMU;
+                    end
+                    10'b`HMDST:  begin
+                        en_alu_r         = 1'b0;
+                        en_crypto_unit_r = 1'b1;
+                        op_crypto_o    = `CRY_HMDST;
+                    end
+                    10'b`PKG:    begin
+                        en_alu_r         = 1'b0;
+                        en_crypto_unit_r = 1'b1;
+                        op_crypto_o    = `CRY_PKG;
+                    end
+                    10'b`SLADD:  begin
+                        en_alu_r         = 1'b0;
+                        en_crypto_unit_r = 1'b1;
+                        op_crypto_o    = `CRY_SLADD;
+                    end
+                endcase
+            end //-----------------------------------------------------
 
-            end
-            {17'b`SUB}:    begin
-                en_alu_r       = 1'b1;
-                op_alu_r       = `ALU_SUB;
-                reg_read_rs1_r = 1'b1;
-                reg_read_rs2_r = 1'b1;
-
-            end
-            {17'b`SLL}:    begin
-                en_alu_r       = 1'b1;
-                op_alu_r       = `ALU_SLL;
-                reg_read_rs1_r = 1'b1;
-                reg_read_rs2_r = 1'b1;
-
-            end
-            {17'b`SLT}:    begin
-                en_alu_r       = 1'b1;
-                op_alu_r       = `ALU_SLT;
-                reg_read_rs1_r = 1'b1;
-                reg_read_rs2_r = 1'b1;
-
-            end
-            {17'b`SLTU}:   begin
-                en_alu_r       = 1'b1;
-                op_alu_r       = `ALU_SLTU;
-                reg_read_rs1_r = 1'b1;
-                reg_read_rs2_r = 1'b1;
-
-            end
-            {17'b`XOR}:    begin
-                en_alu_r       = 1'b1;
-                op_alu_r       = `ALU_XOR;
-                reg_read_rs1_r = 1'b1;
-                reg_read_rs2_r = 1'b1;
-
-            end
-            {17'b`SRL}:    begin
-                en_alu_r       = 1'b1;
-                op_alu_r       = `ALU_SRL;
-                reg_read_rs1_r = 1'b1;
-                reg_read_rs2_r = 1'b1;
-
-            end
-            {17'b`SRA}:    begin
-                en_alu_r       = 1'b1;
-                op_alu_r       = `ALU_SRA;
-                reg_read_rs1_r = 1'b1;
-                reg_read_rs2_r = 1'b1;
-
-            end
-            {17'b`OR}:     begin
-                en_alu_r       = 1'b1;
-                op_alu_r       = `ALU_OR;
-                reg_read_rs1_r = 1'b1;
-                reg_read_rs2_r = 1'b1;
-
-            end
-            {17'b`AND}:    begin
-                en_alu_r       = 1'b1;
-                op_alu_r       = `ALU_AND;
-                reg_read_rs1_r = 1'b1;
-                reg_read_rs2_r = 1'b1;
-
-            end
-            {17'b`MUL}:    begin
-                en_alu_r       = 1'b1;
-                op_alu_r       = `ALU_MUL;
-                reg_read_rs1_r = 1'b1;
-                reg_read_rs2_r = 1'b1;
-
-            end
-            {17'b`MULH}:   begin
-                en_alu_r       = 1'b1;
-                op_alu_r       = `ALU_MULH;
-                reg_read_rs1_r = 1'b1;
-                reg_read_rs2_r = 1'b1;
-
-            end
-            {17'b`MULHSU}: begin
-                en_alu_r       = 1'b1;
-                op_alu_r       = `ALU_MULHSU;
-                reg_read_rs1_r = 1'b1;
-                reg_read_rs2_r = 1'b1;
-
-            end
-            {17'b`MULHU}:  begin
-                en_alu_r       = 1'b1;
-                op_alu_r       = `ALU_MULHU;
-                reg_read_rs1_r = 1'b1;
-                reg_read_rs2_r = 1'b1;
-
-            end
-            {17'b`DIV}:    begin
-                en_alu_r       = 1'b1;
-                op_alu_r       = `ALU_DIV;
-                reg_read_rs1_r = 1'b1;
-                reg_read_rs2_r = 1'b1;
-
-            end
-            {17'b`DIVU}:   begin
-                en_alu_r       = 1'b1;
-                op_alu_r       = `ALU_DIVU;
-                reg_read_rs1_r = 1'b1;
-                reg_read_rs2_r = 1'b1;
-
-            end
-            {17'b`REM}:    begin
-                en_alu_r       = 1'b1;
-                op_alu_r       = `ALU_REM;
-                reg_read_rs1_r = 1'b1;
-                reg_read_rs2_r = 1'b1;
-
-            end
-            {17'b`REMU}:   begin
-                en_alu_r       = 1'b1;
-                op_alu_r       = `ALU_REMU;
-                reg_read_rs1_r = 1'b1;
-                reg_read_rs2_r = 1'b1;
-
-            end
+            //TODO: asagidaki korkunc yeri duzenlesem iyi olacak
+            7'b`AI: begin //----------------------------------------------
+                en_ai_unit_r = 1'b1;
+                case({funct7_w, funct3_w})
+                    {funct7_w[6], 10'b`CONV_LD_X}: begin
+                        op_ai_r = `OP_CONV_LD_X;
+                        if(funct7_w[6] == 1'b1)
+                            reg_read_rs2_r = 1'b1;
+                        reg_read_rs1_r = 1'b1;
+                    end
+                    {funct7_w[6], 10'b`CONV_LD_W}: begin
+                        op_ai_r = `OP_CONV_LD_W;
+                        if(funct7_w[6] == 1'b1)
+                            reg_read_rs2_r = 1'b1;
+                        reg_read_rs1_r = 1'b1;
+                    end
+                    10'b`CONV_CLR_X: begin
+                        if(rs1_w == 5'b0 && rs2_w == 5'b0 && rd_w == 5'b0)
+                            op_ai_r = `OP_CONV_CLR_X;
+                    end
+                    10'b`CONV_CLR_W: begin
+                        if(rs1_w == 5'b0 && rs2_w == 5'b0 && rd_w == 5'b0)
+                            op_ai_r = `OP_CONV_CLR_X;
+                    end
+                    10'b`CONV_RUN: begin
+                        if(rs1_w == 5'b0 && rs2_w == 5'b0) begin
+                            op_ai_r = `OP_CONV_RUN;
+                            reg_write_r = 1'b1;
+                        end
+                    end
+                endcase
+            end //-----------------------------------------------------
         endcase
     end
 
