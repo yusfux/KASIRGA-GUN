@@ -141,7 +141,7 @@ end
 
 end
 
-assign sonuc_o       =   sonuc_r;
+assign sonuc_o       =   sonuc_r [31:0];
 assign adres_o       =   adres_r;    
 assign AMB_hazir_o   =   AMB_hazir_r;
 
