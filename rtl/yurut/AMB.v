@@ -5,7 +5,7 @@
 
 /*
     JUMP flash gerektirebilir * -> denetim birimine sinyal gitmeli
-    JUMP geldiginde clock'ta program sayac? üreticisine adres gonderimi yapildi
+    JUMP geldiginde clock'ta program sayac? ?reticisine adres gonderimi yapildi
 */
 
 module AMB(
@@ -21,13 +21,13 @@ module AMB(
     
     output                  AMB_hazir_o,
     output      [31:0]      sonuc_o,
-    output      [31:0]      adres_o,            //jal ve jalr buyru?u için 
+    output      [31:0]      adres_o,            //jal ve jalr buyru?u i?in 
     output                  esit_mi_o,  
     output                  buyuk_mu_o            
 );
 
-reg     [31:0]  sonuc_r           =    0    ;
-reg     [31:0]  sonuc_r_next      =    0    ;
+reg     [63:0]  sonuc_r           =    0    ;
+reg     [63:0]  sonuc_r_next      =    0    ;
 reg     [31:0]  adres_r           =    0    ;        
 reg     [31:0]  adres_r_next      =    0    ;        
 reg             AMB_hazir_r       =    0    ;
@@ -43,19 +43,20 @@ always @(*) begin
    AMB_hazir_r_next  =   AMB_hazir_r;
    
    if(AMB_aktif_i) begin
+       AMB_hazir_r_next = 0;
        case(islem_kodu_i)
             
-            // aritmetik islemler 
+            // aritmatik i?lemler 
            `ALU_ADD     :   sonuc_r_next     =   yazmac_degeri1_i + yazmac_degeri2_i;
            
            `ALU_ADDI    :   sonuc_r_next     =   yazmac_degeri1_i + anlik_i;
            
            `ALU_MUL     :   sonuc_r_next     =   yazmac_degeri1_i * yazmac_degeri2_i; 
       
-           `ALU_MULH    :   sonuc_r_next     =   ($signed(yazmac_degeri1_i) * $signed(yazmac_degeri2_i)) >> 32; 
-      
-           `ALU_MULHSU  :   sonuc_r_next     =   ($signed(yazmac_degeri1_i) * $unsigned(yazmac_degeri2_i)) >> 32; 
-        
+           `ALU_MULH    :   sonuc_r_next     =   ($signed(yazmac_degeri1_i) * $signed(yazmac_degeri2_i)) >> 32;
+                      
+           `ALU_MULHSU  :   sonuc_r_next     =   ($signed(yazmac_degeri1_i) * $unsigned(yazmac_degeri2_i)) >> 32;
+                      
            `ALU_MULHU   :   sonuc_r_next     =   ($unsigned(yazmac_degeri1_i) * $unsigned(yazmac_degeri2_i)) >> 32; 
       
            `ALU_DIV     :   sonuc_r_next     =   yazmac_degeri1_i / yazmac_degeri2_i;
@@ -70,7 +71,7 @@ always @(*) begin
            
            `ALU_LUI     :   sonuc_r_next     =   anlik_i[19:0] << 12;
                      
-           `ALU_JAL     : begin  // GETIRDE HANDLE ET, DURDUR, NEXT DURUMUNU KONTROL ET
+           `ALU_JAL     : begin  
                     sonuc_r_next     =   adres_i + 4; 
                     adres_r_next     =   adres_i + anlik_i; 
             end        
@@ -78,22 +79,9 @@ always @(*) begin
                      sonuc_r_next     =   adres_i + 4;      
                      adres_r_next     =   yazmac_degeri1_i + anlik_i;                                 
             end
-           `MEM_LB      :   sonuc_r_next     =   yazmac_degeri1_i + anlik_i; 
-        
-           `MEM_LH      :   sonuc_r_next     =   yazmac_degeri1_i + anlik_i;
-        
-           `MEM_LW      :   sonuc_r_next     =   yazmac_degeri1_i + anlik_i;
-      
-           `MEM_LBU     :   sonuc_r_next     =   yazmac_degeri1_i + anlik_i;
-      
-           `MEM_LHU     :   sonuc_r_next     =   yazmac_degeri1_i + anlik_i; 
-      
-           `MEM_SB      :   sonuc_r_next     =   yazmac_degeri1_i + anlik_i;
-     
-           `MEM_SH      :   sonuc_r_next     =   yazmac_degeri1_i + anlik_i;
-     
-           `MEM_SW      :   sonuc_r_next     =   yazmac_degeri1_i + anlik_i;
-     
+            
+           `ALU_MEM      :   sonuc_r_next     =   yazmac_degeri1_i + anlik_i;
+           
            `ALU_SUB     :   sonuc_r_next     =   yazmac_degeri1_i - yazmac_degeri2_i;
      
            
@@ -119,7 +107,7 @@ always @(*) begin
      
            `ALU_SLL    :    sonuc_r_next = yazmac_degeri1_i << yazmac_degeri2_i[4:0];
      
-           `ALU_SLT     :   sonuc_r_next = $signed(yazmac_degeri1_i) < $signed(yazmac_degeri2_i);
+           `ALU_SLT     :   sonuc_r_next = (yazmac_degeri1_i) < (yazmac_degeri2_i);
      
            `ALU_SLTU    :   sonuc_r_next = $unsigned(yazmac_degeri1_i) < $unsigned(yazmac_degeri2_i); 
      
@@ -142,7 +130,9 @@ if(rst_i) begin
     sonuc_r             <=   0;
     adres_r             <=   0;
     AMB_hazir_r         <=   0;
+    
 end
+
 else begin
     AMB_hazir_r        <=    AMB_hazir_r_next;
     sonuc_r            <=    sonuc_r_next;
