@@ -49,11 +49,10 @@ module Dallanma_Birimi(
     
     reg guncelle_gecerli_o_r = 0;
     reg guncelle_atladi_o_r = 0;
-    reg guncelle_ps_o_r = 0;
     
     assign guncelle_gecerli_o = guncelle_gecerli_o_r;
     assign guncelle_atladi_o = guncelle_atladi_o_r;
-    assign dallanma_hata_o = blok_aktif_i ? !(dallanma_ongorusu_i && guncelle_atladi_o_r) : 1'b0;
+    assign dallanma_hata_o = (blok_aktif_i && !rst_i) ? !(dallanma_ongorusu_i == guncelle_atladi_o_r) : 1'b0;
     
     always @ * begin
     
