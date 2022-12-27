@@ -43,8 +43,11 @@ module dallanma_ongoru_blogu(
 	assign gun_str_idx = guncelle_gecerli_i ? guncelle_ps_i[8:2] : 0;
 	
 	// Etiket
-	wire [22:0] etiket;
-	assign etiket = guncelle_gecerli_i ? guncelle_ps_i[31:9] : 0; 
+	wire [22:0] etiket_gun;
+	assign etiket_gun = guncelle_gecerli_i ? guncelle_ps_i[31:9] : 0; 
+	
+	wire [22:0] etiket_anl;
+	assign etiket_anl = ongoru_aktif_i ? ps_i[31:9] : 0; 
 	
 	reg  etiket_gecerli =0;
 	
@@ -147,7 +150,7 @@ module dallanma_ongoru_blogu(
 	
 	if(ongoru_aktif_i) begin
 		
-		if((etiket==etiket_r[an_str_idx]) && (etiket_gecerli_r[an_str_idx])) begin
+		if((etiket_anl==etiket_r[an_str_idx]) && (etiket_gecerli_r[an_str_idx])) begin
 		
 			ongoru_gecerli_o_r = 1'b1;
 
@@ -182,7 +185,7 @@ module dallanma_ongoru_blogu(
 		
 	
 		if(guncelle_gecerli_i) begin
-		    if(etiket != etiket_r[gun_str_idx]) begin
+		    if(etiket_gun != etiket_r[gun_str_idx]) begin
                 durum_r[gun_str_idx] <= GT;
             end
             else begin
@@ -190,7 +193,7 @@ module dallanma_ongoru_blogu(
             end
             
             etiket_gecerli_r[gun_str_idx] <= etiket_gecerli; 
-            etiket_r[gun_str_idx] <= etiket; // emin degilim
+            etiket_r[gun_str_idx] <= etiket_gun; // emin degilim
    	 
 			if(durum_buf[1]) begin // atlar yazilacaksa
 				hedef_adres_r[gun_str_idx] <= hedef_adres_buf;
