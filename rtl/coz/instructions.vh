@@ -68,7 +68,7 @@
 
 //funct3 + op_code
 `define C_ADDI4SPN 000_00 
-`define C_LW       001_00
+`define C_LW       010_00
 `define C_SW       110_00
 `define C_JAL      001_01
 `define C_J        101_01
