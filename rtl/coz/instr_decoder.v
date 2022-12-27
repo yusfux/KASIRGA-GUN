@@ -146,11 +146,11 @@ module instr_decoder(
 
             7'b`JALR:  begin
                 if(funct3_w == 3'b0) begin
-                    en_alu_r     = 1'b1;
-                    op_alu_r     = `ALU_JALR;
-                    reg_read_rs1 = 1'b1'
-                    reg_write_r  = 1'b1;
-                    immediate_r  = imm_i_w;
+                    en_alu_r       = 1'b1;
+                    op_alu_r       = `ALU_JALR;
+                    reg_read_rs1_r = 1'b1;
+                    reg_write_r    = 1'b1;
+                    immediate_r    = imm_i_w;
                 end
             end
 
@@ -193,11 +193,11 @@ module instr_decoder(
 
             7'b`LOAD: begin //-----------------------------------------
                 en_mem_r       = 1'b1;
-                en_alu_o       = 1'b1;
-                op_alu_o       = `ALU_MEM;
+                en_alu_r       = 1'b1;
+                op_alu_r       = `ALU_MEM;
                 mem_read_r     = 1'b1;
                 reg_read_rs1_r = 1'b1;
-                reg_write_o    = 1'b1;
+                reg_write_r    = 1'b1;
                 immediate_r    = imm_i_w;
                 case (funct3_w)
                     3'b`LB:    begin
@@ -220,8 +220,8 @@ module instr_decoder(
 
             7'b`STORE: begin //----------------------------------------
                 en_mem_r       = 1'b1;
-                en_alu_o       = 1'b1;
-                op_alu_o       = `ALU_MEM;
+                en_alu_r       = 1'b1;
+                op_alu_r       = `ALU_MEM;
                 mem_write_r    = 1'b1;
                 reg_read_rs1_r = 1'b1;
                 reg_read_rs2_r = 1'b1;
@@ -268,28 +268,32 @@ module instr_decoder(
                 case({funct7_w, funct3_w})
                     {10'b`SLLI}: begin
                         op_alu_r       = `ALU_SLLI;
-                        immediate_r    = shamt_w
+                        immediate_r    = shamt_w;
                     end
                     {10'b`SRLI}: begin
                         op_alu_r       = `ALU_SRLI;
-                        immediate_r    = shamt_w
+                        immediate_r    = shamt_w;
                     end
                     {10'b`SRAI}: begin
                         op_alu_r       = `ALU_SRAI;
-                        immediate_r    = shamt_w
+                        immediate_r    = shamt_w;
                     end
                 endcase
 
-                case ({funct7_w, rs2_w, funct3_w})
-                    en_alu_r         = 1'b0;
-                    en_crypto_unit_r = 1'b1;
-                    13'b`RVRS: begin
+                case({funct7_w, rs2_w, funct3_w})       
+                    15'b`RVRS: begin
+                        en_alu_r         = 1'b0;
+                        en_crypto_unit_r = 1'b1;
                         op_crypto_r  = `CRY_RVRS;
                     end
-                    13'b`CNTZ: begin
+                    15'b`CNTZ: begin
+                        en_alu_r         = 1'b0;
+                        en_crypto_unit_r = 1'b1;
                         op_crypto_r  = `CRY_CNTZ;
                     end
-                    13'b`CNTP: begin
+                    15'b`CNTP: begin
+                        en_alu_r         = 1'b0;
+                        en_crypto_unit_r = 1'b1;
                         op_crypto_r  = `CRY_CNTP;
                     end
                 endcase
@@ -358,17 +362,17 @@ module instr_decoder(
                     10'b`HMDST:  begin
                         en_alu_r         = 1'b0;
                         en_crypto_unit_r = 1'b1;
-                        op_crypto_o    = `CRY_HMDST;
+                        op_crypto_r    = `CRY_HMDST;
                     end
                     10'b`PKG:    begin
                         en_alu_r         = 1'b0;
                         en_crypto_unit_r = 1'b1;
-                        op_crypto_o    = `CRY_PKG;
+                        op_crypto_r    = `CRY_PKG;
                     end
                     10'b`SLADD:  begin
                         en_alu_r         = 1'b0;
                         en_crypto_unit_r = 1'b1;
-                        op_crypto_o    = `CRY_SLADD;
+                        op_crypto_r    = `CRY_SLADD;
                     end
                 endcase
             end //-----------------------------------------------------
