@@ -26,8 +26,8 @@
        
     dallanma_ps_i -> dallanmanin program sayaci boru hattinda tasinmali
     
-    esit_mi_i -> Dallanma birimine ekstra donaným eklememek icin AMB'den gelmeli
-    buyuk_mu_i -> Dallanma birimine ekstra donaným eklememek icin AMB'den gelmeli
+    esit_mi_i -> Dallanma birimine ekstra donanÄ±m eklememek icin AMB'den gelmeli
+    buyuk_mu_i -> Dallanma birimine ekstra donanÄ±m eklememek icin AMB'den gelmeli
     
     
     Dallanmanin atlamadan onceki ps'i boru hattinda ilerletilecek
@@ -35,7 +35,7 @@
 
 `include "operations.vh"
 
-module Dallanma_Birimi(
+module dallanma_birimi(
     input rst_i,
     input blok_aktif_i,
     input [2:0] dal_buy_turu_i,
@@ -111,7 +111,7 @@ module Dallanma_Birimi(
                         guncelle_atladi_o_r = 1'b0;
                 end
                 
-                default : begin // bir hata oluþursa
+                default : begin // bir hata oluÅŸursa
                     guncelle_atladi_o_r = 1'b0;
                     guncelle_gecerli_o_r = 1'b0;
                 end
