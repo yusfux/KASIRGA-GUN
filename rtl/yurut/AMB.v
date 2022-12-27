@@ -45,7 +45,7 @@ always @(*) begin
    if(AMB_aktif_i) begin
        case(islem_kodu_i)
             
-            // aritmatik i?lemler 
+            // aritmetik islemler 
            `ALU_ADD     :   sonuc_r_next     =   yazmac_degeri1_i + yazmac_degeri2_i;
            
            `ALU_ADDI    :   sonuc_r_next     =   yazmac_degeri1_i + anlik_i;
@@ -70,7 +70,7 @@ always @(*) begin
            
            `ALU_LUI     :   sonuc_r_next     =   anlik_i[19:0] << 12;
                      
-           `ALU_JAL     : begin  
+           `ALU_JAL     : begin  // GETIRDE HANDLE ET, DURDUR, NEXT DURUMUNU KONTROL ET
                     sonuc_r_next     =   adres_i + 4; 
                     adres_r_next     =   adres_i + anlik_i; 
             end        

@@ -33,6 +33,7 @@
     Dallanmanin atlamadan onceki ps'i boru hattinda ilerletilecek
 */
 
+`include "operations.vh"
 
 module Dallanma_Birimi(
     input rst_i,
@@ -54,13 +55,6 @@ module Dallanma_Birimi(
     assign guncelle_atladi_o = guncelle_atladi_o_r;
     assign dallanma_hata_o = blok_aktif_i ? !(dallanma_ongorusu_i && guncelle_atladi_o_r) : 1'b0;
     
-    localparam  BEQ = 3'b000;
-    localparam  BNE = 3'b001;
-    localparam  BLT = 3'b010;
-    localparam  BGE = 3'b011;
-    localparam  BLTU = 3'b100;
-    localparam  BGEU = 3'b101;
-    
     always @ * begin
     
     guncelle_atladi_o_r = 1'b0;
@@ -76,42 +70,42 @@ module Dallanma_Birimi(
         
             case (dal_buy_turu_i) 
             
-                BEQ : begin
+                `BRA_BEQ : begin
                     if(esit_mi_i) 
                         guncelle_atladi_o_r = 1'b1;
                     else 
                         guncelle_atladi_o_r = 1'b0;
                 end
                 
-                BNE : begin
+                `BRA_BNE : begin
                     if(!esit_mi_i) 
                         guncelle_atladi_o_r = 1'b1;
                     else 
                         guncelle_atladi_o_r = 1'b0;
                 end
                  
-                BLT : begin
+                `BRA_BLT : begin
                     if(!buyuk_mu_i) 
                         guncelle_atladi_o_r = 1'b1;
                     else 
                         guncelle_atladi_o_r = 1'b0;
                 end
                 
-                BGE : begin
+                `BRA_BGE : begin
                     if(buyuk_mu_i) 
                         guncelle_atladi_o_r = 1'b1;
                     else 
                         guncelle_atladi_o_r = 1'b0;
                 end
                 
-                BLTU : begin
+                `BRA_BLTU : begin
                     if(!buyuk_mu_i || esit_mi_i) 
                         guncelle_atladi_o_r = 1'b1;
                     else
                         guncelle_atladi_o_r = 1'b0;
                 end
                 
-                BGEU : begin
+                `BRA_BGEU : begin
                     if(buyuk_mu_i || esit_mi_i) 
                         guncelle_atladi_o_r = 1'b1;
                     else 

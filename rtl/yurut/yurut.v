@@ -38,7 +38,7 @@ module yurut(
     input                   amb_aktif_i,
     input       [31:0]      yazmac_degeri1_i,
     input       [31:0]      yazmac_degeri2_i,
-    input       [31:0]      hedef_yazmac_degeri_i,
+    // Hedef yazmac degeri i, ihtiyac olmadigindan silindi
     input       [31:0]      anlik_i,
     input       [31:0]      adres_i,
     input       [5:0]       islem_kodu_i,       
@@ -62,6 +62,7 @@ module yurut(
     input                    veri_sil_i,
 
     input                    conv_yap_yaz_en_i, 
+    output                   yz_bir_cevrim_stall_o, // yeni eklendi, denetim birimine
     
     // kriptografi icin cozden gelenler
     input                    kriptografi_aktif_i,
@@ -86,15 +87,17 @@ module yurut(
     output                   yazmaca_yaz_o,
     
     output      [31:0]       bellek_adresi_o,
-    output      [31:0]       bellek_veri_o // bellege yazilacak olan veri
+    output      [31:0]       bellek_veri_o, // bellege yazilacak olan veri
+    
+    output      [31:0]       hedef_yazmac_verisi_o // yeni eklendi
     
 );
 
 
 
-reg     [31:0]      bellek_veri_r       =    0;
+wire    [31:0]      bellek_veri_r;
 
-reg     [31:0]      bellek_adresi_r     =    0;
+wire     [31:0]      bellek_adresi_r;
 
 reg     [4:0]       hedef_yazmaci_r     =    0;
 
@@ -157,22 +160,23 @@ Yapay_Zeka_Hizlandirici yapay_zeka(
     .rst_i(rst_i),
     
     .blok_aktif_i(yapay_zeka_aktif_i),
-    .filtre_rs1_i(yazmac_degeri1_i),
+    .rs1_veri_i(yazmac_degeri1_i),
+    .rs2_veri_i(yazmac_degeri2_i),
+    
     .filtre_rs1_en_i(filtre_rs1_en_i),
-    .filtre_rs2_i(yazmac_degeri2_i),
     .filtre_rs2_en_i(filtre_rs2_en_i),
     .filtre_sil_i(filtre_sil_i),
     
-    .veri_rs1_i(yazmac_degeri1_i),
     .veri_rs1_en_i(veri_rs1_en_i),
-    .veri_rs2_i(yazmac_degeri2_i),
     .veri_rs2_en_i(veri_rs2_en_i),
     .veri_sil_i(veri_sil_i),
     
     .conv_yap_yaz_en_i(conv_yap_yaz_en_i), 
     
     .convolution_sonuc_o(convolution_sonuc),
-    .conv_hazir_o(conv_hazir)
+    .conv_hazir_o(conv_hazir),
+    
+    .bir_cevrim_stall_o(yz_bir_cevrim_stall_o)
 );
 
 // kriptografiden çýkanlar
@@ -192,24 +196,13 @@ Kriptografi_Birimi kriptografi(
 );
 
 // burada yapilan islem bellege gidecek olan adresi secmek cunku 3 farklý modulden de adres cikiyor ayni sekilde yaizlacak olana veri de belirlenir
-always @* begin
-   
-   if(conv_hazir) begin
-       bellek_veri_r = convolution_sonuc;
-       bellek_adresi_r = hedef_yazmac_degeri_i;
-   end
-   else if (kriptografi_hazir) begin
-       bellek_veri_r = kriptografi_sonuc;
-       bellek_adresi_r = hedef_yazmac_degeri_i; // bidaha bakilmali
-   end
-   else if(AMB_hazir)begin
-       bellek_veri_r = yazmac_degeri2_i;
-       bellek_adresi_r = AMB_sonuc;
-   end
-
-  
-end
-                                                                                                             
+//assign bellek_veri_r = conv_hazir ? convolution_sonuc : kriptografi_hazir ? kriptografi_sonuc : AMB_hazir ? yazmac_degeri2_i : 0;
+//assign bellek_adresi_r = conv_hazir ? hedef_yazmac_degeri_i : kriptografi_hazir ? hedef_yazmac_degeri_i : AMB_hazir ? AMB_sonuc : 0;
+assign bellek_adresi_r =  AMB_hazir ? AMB_sonuc : 0;
+assign bellek_veri_r = AMB_hazir ? yazmac_degeri2_i : 0;  
+// YAZMACA YAZILMA ADRESI VE VERISINI CIKAR
+assign hedef_yazmac_verisi_o = conv_hazir ? convolution_sonuc : kriptografi_hazir ? kriptografi_sonuc : 0;
+                                                                                           
 always @(posedge clk_i) begin                               
                                                             
     if(rst_i == 1'b1) begin
