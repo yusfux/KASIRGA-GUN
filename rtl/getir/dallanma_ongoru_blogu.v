@@ -22,13 +22,13 @@ module dallanma_ongoru_blogu(
 	input               dallanma_hata_i,
 	
     // Atlama sonucunu belirten sinyaller
-    /* Bu kýsým program sayacý üreticisine girecek */
+    /* Bu kï¿½sï¿½m program sayacï¿½ ï¿½reticisine girecek */
     output  [31:0]      atlanan_ps_o,       // Atlanilacak olan program sayaci
     output              ongoru_gecerli_o    // Ongoru gecerli
     );
     
     
-    reg [127:0] etiket_gecerli_r = 0;
+    reg [127:0] etiket_gecerli_r = {128{1'b1}};
     reg [22:0] etiket_r [127:0];
 	reg [1:0] durum_r [127:0];
 	reg [31:0] hedef_adres_r [127:0];
@@ -38,7 +38,7 @@ module dallanma_ongoru_blogu(
     
 	// Satir numaralari
 	wire [6:0]an_str_idx;
-	assign an_str_idx =  ongoru_aktif_i ? ps_i[8:2] : 0;
+	assign an_str_idx = ps_i[8:2];
 	wire [6:0]gun_str_idx;
 	assign gun_str_idx = guncelle_gecerli_i ? guncelle_ps_i[8:2] : 0;
 	
@@ -63,7 +63,7 @@ module dallanma_ongoru_blogu(
 	reg ongoru_gecerli_o_r = 0;
 	assign ongoru_gecerli_o = ongoru_gecerli_o_r; 
 
-	// TEST ÝÇÝN
+	// TEST ï¿½ï¿½ï¿½N
     reg [31:0]atlamaz_tahmin = 0;
     reg [31:0]atlar_tahmin = 0;
     reg [31:0]atladi= 0;
@@ -80,12 +80,15 @@ module dallanma_ongoru_blogu(
 		for(i=0;i<128;i=i+1) begin
 		
 			etiket_r[i] = 0;
-			durum_r[i] = 0;
+			durum_r[i] = 2'b11;
 			hedef_adres_r[i] = 0;
 			
 		end
 		
+		hedef_adres_r[10] = 48;
+		hedef_adres_r[12] = 56;
 	end
+
 	
 	always @* begin
 	
@@ -156,6 +159,7 @@ module dallanma_ongoru_blogu(
 
 			if(durum_r[an_str_idx][1]) begin // ATLAR
 				atlar_tahmin_ns = atlar_tahmin + 1'b1;
+				$display("Hedef Adres: %d, Satir indeksi: %d", hedef_adres_r[an_str_idx], an_str_idx);
 			    atlanan_ps_o_r = hedef_adres_r[an_str_idx];
 			end
 			else begin // ATLAMAZ
