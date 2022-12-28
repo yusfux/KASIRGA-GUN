@@ -28,7 +28,7 @@ module dallanma_ongoru_blogu(
     );
     
     
-    reg [127:0] etiket_gecerli_r = {128{1'b1}};
+    reg [127:0] etiket_gecerli_r = 0;
     reg [22:0] etiket_r [127:0];
 	reg [1:0] durum_r [127:0];
 	reg [31:0] hedef_adres_r [127:0];
@@ -80,15 +80,12 @@ module dallanma_ongoru_blogu(
 		for(i=0;i<128;i=i+1) begin
 		
 			etiket_r[i] = 0;
-			durum_r[i] = 2'b11;
+			durum_r[i] = 0;
 			hedef_adres_r[i] = 0;
 			
 		end
 		
-		hedef_adres_r[10] = 48;
-		hedef_adres_r[12] = 56;
 	end
-
 	
 	always @* begin
 	
@@ -159,7 +156,6 @@ module dallanma_ongoru_blogu(
 
 			if(durum_r[an_str_idx][1]) begin // ATLAR
 				atlar_tahmin_ns = atlar_tahmin + 1'b1;
-				$display("Hedef Adres: %d, Satir indeksi: %d", hedef_adres_r[an_str_idx], an_str_idx);
 			    atlanan_ps_o_r = hedef_adres_r[an_str_idx];
 			end
 			else begin // ATLAMAZ
