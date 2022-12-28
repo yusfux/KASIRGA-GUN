@@ -38,28 +38,22 @@ module yurut_wrapper(
     input                    amb_aktif_i,
     input       [31:0]       yazmac_degeri1_i,
     input       [31:0]       yazmac_degeri2_i,
-	input		[31:0]		  ps_i,
-	input		[31:0]		  br_i,
+	input		[31:0]		 ps_i,
     input       [31:0]       anlik_i, 
-    input       [31:0]       adres_i,
     input       [5:0]        islem_kodu_i,       
     input       [4:0]        hedef_yazmaci_i,
-    input                    dallanma_mi_i,
+    input                    dallanma_aktif_i,
     input                    yazmaca_yaz_i,
     input       [2:0]        load_save_buyrugu_i,       
     input                    bellege_yaz_i, 
     input                    bellekten_oku_i, 
-    input                    dallanma_ongorusu_i,
     input       [2:0]        dallanma_buy_turu_i, 
+    // GETIR->COZ->YURUT
+    input                    dallanma_ongorusu_i,
 	// \--------------------- COZ-YURUT -> YAPAY ZEKA -----------------------------/		
     input                    yapay_zeka_aktif_i,
-    input                    filtre_rs1_en_i,
-    input                    filtre_rs2_en_i,
-    input                    filtre_sil_i,
-    input                    veri_rs1_en_i,
-    input                    veri_rs2_en_i,
-    input                    veri_sil_i,
-    input                    conv_yap_en_i, 
+    input                    rs2_en_i,
+    input                    yz_islem_kodu_i,
     output                   yz_stall_o, 
     // \--------------------- COZ-YURUT -> KRIPTOGRAFI ----------------------------/		
     input                    kriptografi_aktif_i,
@@ -94,7 +88,18 @@ module yurut_wrapper(
 );
 
 
-
+    wire                    veri_sil_i;
+    wire                    conv_yap_en_i; 
+    wire                    filtre_sil_i;
+    wire                    filtre_rs1_en_i;
+    wire                    veri_rs1_en_i;                                     
+    
+    assign filtre_sil_i = (yz_islem_kodu_i == 3'b011);
+    assign veri_sil_i = (yz_islem_kodu_i == 3'b010);
+    assign conv_yap_en_i = (yz_islem_kodu_i == 3'b100);
+    assign filtre_rs1_en_i = (yz_islem_kodu_i == 3'b001);
+    assign veri_rs1_en_i = (yz_islem_kodu_i == 3'b000);
+    
 	wire    [31:0]      bellek_veri_r;
 	wire    [31:0]      bellek_adresi_r;
 
@@ -121,7 +126,7 @@ module yurut_wrapper(
 		.anlik_i(anlik_i),
 		.yazmac_degeri1_i(yazmac_degeri1_i),
 		.yazmac_degeri2_i(yazmac_degeri2_i),  
-		.adres_i(adres_i),
+		.adres_i(ps_i),
 		.islem_kodu_i(islem_kodu_i),
 		// 		OUTPUTS
 		.AMB_hazir_o(AMB_hazir),
@@ -134,13 +139,13 @@ module yurut_wrapper(
 	dallanma_birimi dallanma(
 		// 		INPUTS
 		.rst_i(rst_i),
-		.blok_aktif_i(dallanma_mi_i),
+		.blok_aktif_i(dallanma_aktif_i),
 		.dal_buy_turu_i(dallanma_buy_turu_i), 
 		.dallanma_ongorusu_i(dallanma_ongorusu_i),
 		.esit_mi_i(esit_mi),
 		.buyuk_mu_i(buyuk_mu),
 		.ps_i(ps_i),
-		.br_i(br_i),
+		.br_i(anlik_i),
 		// 		OUTPUTS
 		.guncelle_gecerli_o(guncelle_gecerli_o),
 		.guncelle_atladi_o(guncelle_atladi_o),
@@ -160,10 +165,10 @@ module yurut_wrapper(
 		.rs1_veri_i(yazmac_degeri1_i),
 		.rs2_veri_i(yazmac_degeri2_i),
 		.filtre_rs1_en_i(filtre_rs1_en_i),
-		.filtre_rs2_en_i(filtre_rs2_en_i),
+		.filtre_rs2_en_i(rs2_en_i),
 		.filtre_sil_i(filtre_sil_i),
 		.veri_rs1_en_i(veri_rs1_en_i),
-		.veri_rs2_en_i(veri_rs2_en_i),
+		.veri_rs2_en_i(rs2_en_i),
 		.veri_sil_i(veri_sil_i),
 		.conv_yap_en_i(conv_yap_en_i), 
 		//		OUTPUTS
