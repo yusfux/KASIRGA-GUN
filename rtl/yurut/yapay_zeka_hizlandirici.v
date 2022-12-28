@@ -1,10 +1,6 @@
 `timescale 1ns / 1ps
 
-/*  POST SYNTHESIS SIMULATION'I GECTI
-    or.
-    bir cevrim 2 filtre yukle, hemen ustune conv yap gelirse, 1 cevrim fazladan beklenmesi gerekiyor
-    bu durum cozulmeli (bir_cevrim_stall_o denetim birimine verilecek)
-*/
+// POST SYNTHESIS SIMULATION'I GECTI
 
 module yapay_zeka_hizlandirici(
 
@@ -29,12 +25,12 @@ module yapay_zeka_hizlandirici(
     input veri_sil_i,
     
     // Sartnamede belirtildigi sekliyle bu sinyaller cozden gelmeli
-    input conv_yap_yaz_en_i, // conv_run
+    input conv_yap_en_i, // conv_run
     
     output [31:0] convolution_sonuc_o,
     output conv_hazir_o,
     
-    output bir_cevrim_stall_o 
+    output stall_o 
 
     );
     
@@ -49,7 +45,7 @@ module yapay_zeka_hizlandirici(
 	
     assign conv_hazir_o = blok_aktif_i ? conv_hazir_r : 0;
     assign convolution_sonuc_o = blok_aktif_i ? convolution_sonuc_r : 0;
-    assign bir_cevrim_stall_o = blok_aktif_i ? bir_cevrim_stall_r : 0;
+    assign stall_o = blok_aktif_i ? bir_cevrim_stall_r : 0;
     
     reg [31:0] veri_matris_r [15:0];
     reg [31:0] filtre_matris_r [15:0];
@@ -139,7 +135,7 @@ module yapay_zeka_hizlandirici(
                 bir_cevrim_stall_r_next = 1'b0;
             end
         
-            if(conv_yap_yaz_en_i) begin
+            if(conv_yap_en_i) begin
                if((conv_idx == 15) || conv_hazir_r) begin
                     bir_cevrim_stall_r_next = 1'b0;
                     conv_hazir_r_next = 1'b1;

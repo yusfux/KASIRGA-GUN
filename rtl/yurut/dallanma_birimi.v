@@ -51,7 +51,6 @@ module dallanma_birimi(
 	output [31:0] guncelle_hedef_adresi_o // hata varsa ps buna donmeli !
     );
     
-	//reg [31:0] guncelle_ps_o_r = 0;
 	reg [31:0] guncelle_hedef_adresi_o_r = 0;
 	
     reg guncelle_gecerli_o_r = 0;
