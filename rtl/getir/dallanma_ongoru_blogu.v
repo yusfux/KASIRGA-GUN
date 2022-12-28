@@ -22,7 +22,7 @@ module dallanma_ongoru_blogu(
 	input               dallanma_hata_i,
 	
     // Atlama sonucunu belirten sinyaller
-    /* Bu kï¿½sï¿½m program sayacï¿½ ï¿½reticisine girecek */
+    /* Bu kýsým program sayacý üreticisine girecek */
     output  [31:0]      atlanan_ps_o,       // Atlanilacak olan program sayaci
     output              ongoru_gecerli_o    // Ongoru gecerli
     );
@@ -38,7 +38,7 @@ module dallanma_ongoru_blogu(
     
 	// Satir numaralari
 	wire [6:0]an_str_idx;
-	assign an_str_idx = ps_i[8:2];
+	assign an_str_idx =  ongoru_aktif_i ? ps_i[8:2] : 0;
 	wire [6:0]gun_str_idx;
 	assign gun_str_idx = guncelle_gecerli_i ? guncelle_ps_i[8:2] : 0;
 	
@@ -63,7 +63,7 @@ module dallanma_ongoru_blogu(
 	reg ongoru_gecerli_o_r = 0;
 	assign ongoru_gecerli_o = ongoru_gecerli_o_r; 
 
-	// TEST ï¿½ï¿½ï¿½N
+	// TEST ÝÇÝN
     reg [31:0]atlamaz_tahmin = 0;
     reg [31:0]atlar_tahmin = 0;
     reg [31:0]atladi= 0;
@@ -78,13 +78,10 @@ module dallanma_ongoru_blogu(
 	
 	initial begin
 		for(i=0;i<128;i=i+1) begin
-		
 			etiket_r[i] = 0;
 			durum_r[i] = 0;
 			hedef_adres_r[i] = 0;
-			
 		end
-		
 	end
 	
 	always @* begin
@@ -94,22 +91,19 @@ module dallanma_ongoru_blogu(
 	atlamadi_ns = atlamadi;
 	atladi_ns = atladi;
 	
-	
     ongoru_gecerli_o_r = 0;
     atlanan_ps_o_r = 0;
     durum_buf = 0;
     hedef_adres_buf = 0;
     etiket_gecerli = 0;
 	
-
 	if(guncelle_gecerli_i) begin
-	    
 	    etiket_gecerli = 1;
-	    
 	    if(guncelle_atladi_i) begin
 	       atladi_ns = atladi + 1'b1;
 		   hedef_adres_buf = guncelle_hedef_adresi_i;
 		end
+		
 	    else 
 	       atlamadi_ns = atlamadi + 1'b1;
 	    
@@ -126,8 +120,7 @@ module dallanma_ongoru_blogu(
 				if(guncelle_atladi_i)
 					durum_buf = ZA;
 				else 	
-					durum_buf = GT;
-						
+					durum_buf = GT;		
 			end
 				
 			ZA : begin
@@ -142,18 +135,13 @@ module dallanma_ongoru_blogu(
 					durum_buf = GA;
 				else 	
 					durum_buf = ZA;
-			end
-			
+			end		
 		endcase
-	
 	end
 	
-	if(ongoru_aktif_i) begin
-		
+	if(ongoru_aktif_i) begin	
 		if((etiket_anl==etiket_r[an_str_idx]) && (etiket_gecerli_r[an_str_idx])) begin
-		
 			ongoru_gecerli_o_r = 1'b1;
-
 			if(durum_r[an_str_idx][1]) begin // ATLAR
 				atlar_tahmin_ns = atlar_tahmin + 1'b1;
 			    atlanan_ps_o_r = hedef_adres_r[an_str_idx];
@@ -169,20 +157,17 @@ module dallanma_ongoru_blogu(
 				atlanan_ps_o_r = ps_i + 4;
 		end
 	end
-	
 	end
 	
 	
 	always @(posedge clk_i) begin
 	
-	
 	if(!rst_i) begin
-		
+	
 		atlamaz_tahmin <= atlamaz_tahmin_ns;
         atlar_tahmin <= atlar_tahmin_ns; 
         atlamadi <= atlamadi_ns;
         atladi <= atladi_ns;
-		
 	
 		if(guncelle_gecerli_i) begin
 		    if(etiket_gun != etiket_r[gun_str_idx]) begin
@@ -198,11 +183,7 @@ module dallanma_ongoru_blogu(
 			if(durum_buf[1]) begin // atlar yazilacaksa
 				hedef_adres_r[gun_str_idx] <= hedef_adres_buf;
 			end
-           
 		end
-		
-     
-        
 	end
 	
 	else begin // RESET
