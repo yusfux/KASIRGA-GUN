@@ -24,7 +24,7 @@
 `include "operations.vh"
 
 module instr_decoder(
-        //input clk_i, rst_i,
+        input clk_i, rst_i,
         //--------------------------signals from "rvc expander"--------------------------
         input [31:0] instruction_i,
         //-------------------------------------------------------------------------------
@@ -46,6 +46,8 @@ module instr_decoder(
 
         output mem_read_o,
         output mem_write_o,
+
+        output enable_rs2_conv,
         //-------------------------------------------------------------------------------
 
         //--------------------------signals to "register file"---------------------------
@@ -121,7 +123,6 @@ module instr_decoder(
 
         immediate_r         = 32'b0; 
 
-        //TODO: NEED TO IMPLEMNENT AI & CRYPTO INSTRUCTIONS
         //decoder for I and M extension,
         case(op_code_w)
 
@@ -382,34 +383,37 @@ module instr_decoder(
                 en_ai_unit_r = 1'b1;
                 case({funct7_w, funct3_w})
                     {funct7_w[6], 10'b`CONV_LD_X}: begin
-                        op_ai_r = `OP_CONV_LD_X;
+                        op_ai_r = `AI_CONV_LD_X;
                         if(funct7_w[6] == 1'b1)
                             reg_read_rs2_r = 1'b1;
                         reg_read_rs1_r = 1'b1;
                     end
                     {funct7_w[6], 10'b`CONV_LD_W}: begin
-                        op_ai_r = `OP_CONV_LD_W;
+                        op_ai_r = `AI_CONV_LD_W;
                         if(funct7_w[6] == 1'b1)
                             reg_read_rs2_r = 1'b1;
                         reg_read_rs1_r = 1'b1;
                     end
                     10'b`CONV_CLR_X: begin
                         if(rs1_w == 5'b0 && rs2_w == 5'b0 && rd_w == 5'b0)
-                            op_ai_r = `OP_CONV_CLR_X;
+                            op_ai_r = `AI_CONV_CLR_X;
                     end
                     10'b`CONV_CLR_W: begin
                         if(rs1_w == 5'b0 && rs2_w == 5'b0 && rd_w == 5'b0)
-                            op_ai_r = `OP_CONV_CLR_X;
+                            op_ai_r = `AI_CONV_CLR_X;
                     end
                     10'b`CONV_RUN: begin
                         if(rs1_w == 5'b0 && rs2_w == 5'b0) begin
-                            op_ai_r = `OP_CONV_RUN;
+                            op_ai_r = `AI_CONV_RUN;
                             reg_write_r = 1'b1;
                         end
                     end
                 endcase
             end //-----------------------------------------------------
         endcase
+    end
+
+    always @(posedge clk_i, negedge rst_i) begin
     end
 
     assign en_alu_o            = en_alu_r;
@@ -436,4 +440,5 @@ module instr_decoder(
     assign reg_rs2_o   = rs2_w;
     assign reg_rd_o    = rd_w;
 
+    assign enable_rs2_conv = reg_read_rs2_r;
 endmodule

@@ -36,7 +36,7 @@ module register_file(
         //------------------------signals from "write-back stage"------------------------
         input        reg_write_wb_i,
         input [4:0]  reg_rd_wb_i,
-        input [31:0] reg_data_rd_wb_i,
+        input [31:0] reg_rd_data_wb_i,
         //-------------------------------------------------------------------------------
 
         //--------------------------signals to "execute stage"---------------------------
@@ -46,76 +46,79 @@ module register_file(
 
         //we need to stall the "fetch stage" due to the "read after write" hazard
         //until that register gets ready to read, 
+        //input stall,
         output stall_register_file_o
     );
 
-    //TODO: x0 have to be zero
     reg [31:0] register [0:31];
-    reg [1:0]  reg_is_valid [0:31];
-    reg        reg_is_ready;
+    reg [1:0]  reg_valid_counter [0:31];
+    reg        reg_is_ready_rs1_r;
+    reg        reg_is_ready_rs2_r;
 
-    reg [31:0] reg_rs1_data;
-    reg [31:0] reg_rs2_data;
-    reg        reg_rs1_data_valid;
-    reg        reg_rs2_data_valid;
+    reg [31:0] reg_rs1_data_r;
+    reg [31:0] reg_rs2_data_r;
 
     integer i;
+    
     initial begin
-        for(i = 0; i < 31; i = i + 1) begin
-            register[i]     = 32'b0;
-            reg_is_valid[i] = 2'b0;
+        for(i = 0; i < 32; i = i + 1) begin
+            register[i]     = i;
+            reg_valid_counter[i] = 2'b0;
         end
+        reg_rs1_data_r       = 32'b0;
+        reg_rs2_data_r       = 32'b0;
+        reg_is_ready_rs1_r       = 1'b1;
+        reg_is_ready_rs2_r       = 1'b1;
     end
 
-    always @(*) begin
-        reg_rs1_data = 32'b0;
-        reg_rs2_data = 32'b0;
-        reg_rs1_data_valid = 2'b00;
-        reg_rs2_data_valid = 2'b00;
-
-        if(reg_is_valid[reg_rs1_i] == 2'b00) begin
-            reg_rs1_data_valid = 1'b1;
-        end
-        if(reg_is_valid[reg_rs2_i] == 2'b00) begin
-            reg_rs2_data_valid = 1'b1;
-        end
-    end
-
+    
+    /**
     always @(negedge clk_i) begin
         if(reg_write_wb_i) begin
-            register[reg_rd_wb_i]     <= reg_data_rd_wb_i;
-            reg_is_valid[reg_rd_wb_i] <= reg_is_valid[reg_rd_wb_i] - 2'b01;
+            register[reg_rd_wb_i]          <= reg_rd_data_wb_i;
+            reg_valid_counter[reg_rd_wb_i] <= reg_valid_counter[reg_rd_wb_i] - 2'b01;
         end
 
         if(reg_write_i) begin
-            reg_is_valid[reg_rd_i] = reg_is_valid[reg_rd_i] + 2'b01;
+            reg_valid_counter[reg_rd_i] <= reg_valid_counter[reg_rd_i] + 2'b01;
         end
     end
+    */
 
-    always @(posedge clk_i) begin
-        if(reg_read_rs1_i) begin
-            if(reg_rs1_data_valid) begin
-                reg_rs1_data <= register[reg_rs1_i];
-                reg_is_ready <= 1'b1;
+    always @(posedge clk_i, negedge rst_i) begin
+        if(!rst_i) begin
+        
+        end else begin
+            if(reg_read_rs1_i) begin           
+                if(reg_valid_counter[reg_rs1_i] == 2'b00) begin
+                    reg_rs1_data_r <= register[reg_rs1_i];
+                    reg_is_ready_rs1_r <= 1'b1;
+                end else begin
+                    reg_is_ready_rs1_r <= 1'b0;
+                end
             end
-            else begin
-                reg_is_ready <= 1'b0;
+    
+            if(reg_read_rs2_i) begin
+                if(reg_valid_counter[reg_rs2_i] == 2'b00) begin
+                    reg_rs2_data_r <= register[reg_rs2_i];
+                    reg_is_ready_rs2_r <= 1'b1;
+                end else begin
+                    reg_is_ready_rs2_r <= 1'b0;
+                end
             end
-        end
-
-        if(reg_read_rs2_i) begin
-            if(reg_rs2_data_valid) begin
-                reg_rs2_data <= register[reg_rs2_i];
-                reg_is_ready <= 1'b1;
-            end
-            else begin
-                reg_is_ready <= 1'b0;
-            end
+        end 
+    end
+    /**
+    always @(posedge clk_i, negedge rst_i) begin
+        if(!rst_i) begin
+            register[0] <= 32'b0;
+        end else begin
+            register[0] <= 32'b0;
         end
     end
-
-    assign reg_rs1_data_o = reg_rs1_data;
-    assign reg_rs2_data_o = reg_rs2_data;
-    assign stall_register_file_o = reg_is_ready;
+    */
+    assign reg_rs1_data_o        = reg_rs1_data_r;
+    assign reg_rs2_data_o        = reg_rs2_data_r;
+    assign stall_register_file_o = ~(reg_is_ready_rs1_r & reg_is_ready_rs2_r);
 
 endmodule

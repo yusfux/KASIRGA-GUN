@@ -22,7 +22,7 @@
 `include "instructions.vh"
 
 module rvc_expander(
-        //input  clk_i, rst_i,
+        input  clk_i, rst_i,
 
         //--------------------------signals from "fetch stage"---------------------------
         input  [31:0] instruction_i,
@@ -177,6 +177,9 @@ module rvc_expander(
 
         endcase
     end   
+
+    always @(posedge clk_i, negedge rst_i) begin
+    end
 
     assign instruction_o = (instruction_i[1:0] == 2'b11) ? instruction_i : expanded_instruction_r;
 endmodule
