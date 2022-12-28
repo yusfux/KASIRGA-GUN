@@ -53,7 +53,7 @@ module yurut_wrapper(
 	// \--------------------- COZ-YURUT -> YAPAY ZEKA -----------------------------/		
     input                    yapay_zeka_aktif_i,
     input                    rs2_en_i,
-    input                    yz_islem_kodu_i,
+    input       [2:0]        yz_islem_kodu_i,
     output                   yz_stall_o, 
     // \--------------------- COZ-YURUT -> KRIPTOGRAFI ----------------------------/		
     input                    kriptografi_aktif_i,
