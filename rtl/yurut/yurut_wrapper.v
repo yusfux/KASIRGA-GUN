@@ -117,8 +117,6 @@ module yurut_wrapper(
     assign filtre_rs1_en_i = (yz_islem_kodu_r == 3'b001);
     assign veri_rs1_en_i = (yz_islem_kodu_r == 3'b000);
     
-	wire    [31:0]      bellek_veri_r;
-	wire    [31:0]      bellek_adresi_r;
 
 	// AMB den ??kanlar
 	wire    [31:0]      AMB_sonuc;      // AMB den ??kan sonu?, adres veya yazamaca yazilacak deger 
@@ -233,8 +231,6 @@ module yurut_wrapper(
 	assign atlanilmis_adres_o   =  atlanilmis_adres;
 	assign conv_hazir_o         =  conv_hazir;
 	assign kriptografi_hazir_o  =  kriptografi_hazir;
-	assign bellek_veri_o        =  bellek_veri_r;
-	assign bellek_adresi_o      =  bellek_adresi_r;
 	assign AMB_hazir_o          =  AMB_hazir;
 	
 		// Bellege gidecek degerler icin mux
