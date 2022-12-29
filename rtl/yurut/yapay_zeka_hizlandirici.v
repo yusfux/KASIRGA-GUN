@@ -49,10 +49,8 @@ module yapay_zeka_hizlandirici(
     
     reg [31:0] veri_matris_r [15:0];
     reg [31:0] filtre_matris_r [15:0];
-	reg [31:0] rs1_veri_r = 0;
-    reg [31:0] rs2_veri_r = 0;
-    reg [15:0] rs1_veri_r_next = 0;
-    reg [15:0] rs2_veri_r_next = 0;
+    reg [31:0] rs1_veri_r_next = 0;
+    reg [31:0] rs2_veri_r_next = 0;
    
     
     reg [3:0] veri_matris_idx = 0;
@@ -127,8 +125,8 @@ module yapay_zeka_hizlandirici(
         mod_next = 0;
         conv_hazir_r_next = conv_hazir_r;
         
-        rs1_veri_r_next = rs1_veri_r;
-        rs2_veri_r_next = rs2_veri_r;
+        rs1_veri_r_next = 0;
+        rs2_veri_r_next = 0;
             
             if(conv_idx == 15) begin 
                 conv_hazir_r_next = 1'b1;
@@ -163,14 +161,15 @@ module yapay_zeka_hizlandirici(
                 if((!filtre_sil_i) && (!veri_sil_i)) begin
                     
                     if(filtre_rs1_en_i && (!filtre_rs2_en_i)) begin
-                        rs1_veri_r_next = rs1_veri_r;
+                        rs1_veri_r_next = rs1_veri_i;
                         filtre_matris_dolu_next[filtre_matris_idx] = 1'b1;
                         filtre_matris_idx_next = filtre_matris_idx + 1'b1;
                         mod_next = filtre_1;
                     end
                     
                     else if(filtre_rs2_en_i) begin
-                        rs2_veri_r_next = rs2_veri_r; // rs2 yükleniyorsa zaten rs1 kesinlikle yükelenecek
+                        rs1_veri_r_next = rs1_veri_i;
+                        rs2_veri_r_next = rs2_veri_i; // rs2 yükleniyorsa zaten rs1 kesinlikle yükelenecek
                         filtre_matris_dolu_next[filtre_matris_idx + 1'b1] = 1'b1;
                         filtre_matris_dolu_next[filtre_matris_idx] = 1'b1;
                         filtre_matris_idx_next = filtre_matris_idx + 2'b10;
@@ -179,14 +178,15 @@ module yapay_zeka_hizlandirici(
                    
                     else begin
                         if(veri_rs1_en_i && (!veri_rs2_en_i)) begin
-                            rs1_veri_r_next = rs1_veri_r;
+                            rs1_veri_r_next = rs1_veri_i;
                             veri_matris_dolu_next[veri_matris_idx] = 1'b1;
                             veri_matris_idx_next = veri_matris_idx + 1'b1;
                             mod_next = veri_1;
                         end
                         
                         else if(veri_rs2_en_i) begin
-                            rs2_veri_r_next = rs2_veri_r; // rs2 yukleniyorsa zaten rs1 kesinlikle yuklenecek
+                            rs1_veri_r_next = rs1_veri_i;
+                            rs2_veri_r_next = rs2_veri_i; // rs2 yukleniyorsa zaten rs1 kesinlikle yuklenecek
                             veri_matris_dolu_next[veri_matris_idx + 1'b1] = 1'b1;
                             veri_matris_dolu_next[veri_matris_idx] = 1'b1;
                             veri_matris_idx_next = veri_matris_idx + 2'b10;
@@ -202,8 +202,6 @@ module yapay_zeka_hizlandirici(
     
     always @ (posedge clk_i) begin
         if(filtre_sil_i || veri_sil_i) begin
-         rs1_veri_r <= 0;
-         rs2_veri_r <= 0;
          convolution_sonuc_r <= 0;
          conv_idx <= 0; 
          conv_hazir_r <= 0;
@@ -243,12 +241,6 @@ module yapay_zeka_hizlandirici(
         filtre_matris_dolu <= filtre_matris_dolu_next;
         
         conv_idx <= conv_idx_next;
-        
-        mod <= mod_next;
-        
-        rs1_veri_r <= rs1_veri_i;
-        rs2_veri_r <= rs2_veri_i;
-	
 	 
 	    case(mod_next)
 	       filtre_1 : begin
