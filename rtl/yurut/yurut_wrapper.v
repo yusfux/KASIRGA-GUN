@@ -1,34 +1,34 @@
 `timescale 1ns / 1ps
 
 /*
-    ****çözden gelmesi gerekenler****
+    ****ï¿½ï¿½zden gelmesi gerekenler****
   
-        yazmac_degeri1       ==>     kaynak yazmacý 1 den çikan deger
+        yazmac_degeri1       ==>     kaynak yazmacï¿½ 1 den ï¿½ikan deger
         yazmaz_degeri2       ==>     kaynak yazmaci 2 den cikanb deger
-        anlik_i              ==>     çözde genisletilmis anlik
-        adres_i              ==>     içerdeki buyruðun adresi    
-        islem_kodu_i         ==>     12 bitlik hangi iþlemin yapilacagini söyleyen deger 
-        hedef_yazmaci_i      ==>     hedef yazmaci kaybolmamalý bu yüzden bütün aþamalarda taþýnýr
-        bellege_yaz_i        ==>     save buyruðuysa onu belirtmek için yürütte kullanýlmaz
-        bellekten_oku_i      ==>     load buyruðuysa onu belirtmek için yürütte kullanýlmaz
-        dallanma_ongorusu_i  ==>     öngörücüden cikan sonuc
-        dallanma_mi_i        ==>     dallanma birimini aktif yapmak için
-        load_save_buyrugu_i  ==>     bellege hangi tür load veya save in gittigini soyler
+        anlik_i              ==>     ï¿½ï¿½zde genisletilmis anlik
+        adres_i              ==>     iï¿½erdeki buyruï¿½un adresi    
+        islem_kodu_i         ==>     12 bitlik hangi iï¿½lemin yapilacagini sï¿½yleyen deger 
+        hedef_yazmaci_i      ==>     hedef yazmaci kaybolmamalï¿½ bu yï¿½zden bï¿½tï¿½n aï¿½amalarda taï¿½ï¿½nï¿½r
+        bellege_yaz_i        ==>     save buyruï¿½uysa onu belirtmek iï¿½in yï¿½rï¿½tte kullanï¿½lmaz
+        bellekten_oku_i      ==>     load buyruï¿½uysa onu belirtmek iï¿½in yï¿½rï¿½tte kullanï¿½lmaz
+        dallanma_ongorusu_i  ==>     ï¿½ngï¿½rï¿½cï¿½den cikan sonuc
+        dallanma_mi_i        ==>     dallanma birimini aktif yapmak iï¿½in
+        load_save_buyrugu_i  ==>     bellege hangi tï¿½r load veya save in gittigini soyler
         
     ****denetime gitmesi gerekenler****
  
-        dallanma_hata_o        ==>     dallanma yanlýþ öngörülmüþ çöz boþaltýlmalý
+        dallanma_hata_o        ==>     dallanma yanlï¿½ï¿½ ï¿½ngï¿½rï¿½lmï¿½ï¿½ ï¿½ï¿½z boï¿½altï¿½lmalï¿½
     
     ****yurutten getire gidecek olanlar****
  
-        guncelle_gecerli_o      ==>     dallanma biriminde islem biiti öngörücüde ilgili degisiklikler yapýlabilir
+        guncelle_gecerli_o      ==>     dallanma biriminde islem biiti ï¿½ngï¿½rï¿½cï¿½de ilgili degisiklikler yapï¿½labilir
         guncelle_ps_o           ==>     yeni adres degeri
         guncelle_atladi_o       ==>     dallanma atladi 
         
     ****yurutten bellege gidecek olanlar****
-       bellek_adresi_o          ==>     amb de hesaplnan deðer
-       bellek_veri_o            ==>     yazmac_degeri2_i ye eþit
-       load_save_buyrugu_o      ==>     bellege hangi tür load veya save in gittigini soyler
+       bellek_adresi_o          ==>     amb de hesaplnan deï¿½er
+       bellek_veri_o            ==>     yazmac_degeri2_i ye eï¿½it
+       load_save_buyrugu_o      ==>     bellege hangi tï¿½r load veya save in gittigini soyler
 */
 module yurut_wrapper(
     
@@ -69,7 +69,7 @@ module yurut_wrapper(
 	// Dallanma ongorucusu + ps ureticisine
 	output 	    [31:0]		 guncelle_hedef_adresi_o, 
 	output                   dallanma_hata_o,
-	// PS ureticisine (jump buyruðundan sonra gidilecek adres)
+	// PS ureticisine (jump buyruï¿½undan sonra gidilecek adres)
     output      [31:0]       atlanilmis_adres_o,    
 	// \--------------------- YURUT-BELLEK ----------------------------------------/		
 	output      [31:0]       bellek_adresi_o,
@@ -87,34 +87,45 @@ module yurut_wrapper(
     
 );
 
+	reg                 amb_aktif_r;
+    reg     [31:0]      yazmac_degeri1_r;
+    reg     [31:0]      yazmac_degeri2_r;
+	reg		[31:0]	    ps_r;
+    reg     [31:0]      anlik_r;
+    reg     [5:0]       islem_kodu_r;
+    reg     [4:0]       hedef_yazmaci_r;
+    reg                 dallanma_aktif_r;
+    reg                 yazmaca_yaz_r;
+    reg     [2:0]       load_save_buyrugu_r;
+    reg                 bellege_yaz_r;
+    reg                 bellekten_oku_r;
+    reg     [2:0]       dallanma_buy_turu_r;
+    reg                 dallanma_ongorusu_r;
+    reg                 yapay_zeka_aktif_r;
+    reg                 rs2_en_r;
+    reg     [2:0]       yz_islem_kodu_r;
+    reg                 kriptografi_aktif_r;
+    reg     [2:0]       kriptografi_islem_kodu_r;
 
-    wire                    veri_sil_i;
-    wire                    conv_yap_en_i; 
-    wire                    filtre_sil_i;
-    wire                    filtre_rs1_en_i;
-    wire                    veri_rs1_en_i;                                     
+    wire                veri_sil_i;
+    wire                conv_yap_en_i; 
+    wire                filtre_sil_i;
+    wire                filtre_rs1_en_i;
+    wire                veri_rs1_en_i;                                     
     
-    assign filtre_sil_i = (yz_islem_kodu_i == 3'b011);
-    assign veri_sil_i = (yz_islem_kodu_i == 3'b010);
-    assign conv_yap_en_i = (yz_islem_kodu_i == 3'b100);
-    assign filtre_rs1_en_i = (yz_islem_kodu_i == 3'b001);
-    assign veri_rs1_en_i = (yz_islem_kodu_i == 3'b000);
+    assign filtre_sil_i = (yz_islem_kodu_r == 3'b011);
+    assign veri_sil_i = (yz_islem_kodu_r == 3'b010);
+    assign conv_yap_en_i = (yz_islem_kodu_r == 3'b100);
+    assign filtre_rs1_en_i = (yz_islem_kodu_r == 3'b001);
+    assign veri_rs1_en_i = (yz_islem_kodu_r == 3'b000);
     
 	wire    [31:0]      bellek_veri_r;
 	wire    [31:0]      bellek_adresi_r;
 
-	reg     [4:0]       hedef_yazmaci_r     =    0;
-	reg                 bellekten_oku_r     =    0;
-	reg                 bellege_yaz_r       =    0;
-	reg                 yazmaca_yaz_r       =    0;
-	reg      [2:0]      load_save_buyrugu_r =    0;
-
-
-
-	// AMB den çýkanlar
-	wire    [31:0]      AMB_sonuc;      // AMB den çýkan sonuç, adres veya yazamaca yazilacak deger 
-	wire                esit_mi;        // ky1 ky2 ye eþit mi
-	wire                buyuk_mu;       // ky1 ky2 den büyük mü 
+	// AMB den ï¿½ï¿½kanlar
+	wire    [31:0]      AMB_sonuc;      // AMB den ï¿½ï¿½kan sonuï¿½, adres veya yazamaca yazilacak deger 
+	wire                esit_mi;        // ky1 ky2 ye eï¿½it mi
+	wire                buyuk_mu;       // ky1 ky2 den bï¿½yï¿½k mï¿½ 
 	wire    [31:0]      atlanilmis_adres;
 	wire                AMB_hazir;
  
@@ -123,11 +134,11 @@ module yurut_wrapper(
 		.rst_i(rst_i),
 		.clk_i(clk_i),
 		.AMB_aktif_i(amb_aktif_i),
-		.anlik_i(anlik_i),
-		.yazmac_degeri1_i(yazmac_degeri1_i),
-		.yazmac_degeri2_i(yazmac_degeri2_i),  
+		.anlik_i(anlik_r),
+		.yazmac_degeri1_i(yazmac_degeri1_r),
+		.yazmac_degeri2_i(yazmac_degeri2_r),  
 		.adres_i(ps_i),
-		.islem_kodu_i(islem_kodu_i),
+		.islem_kodu_i(islem_kodu_r),
 		// 		OUTPUTS
 		.AMB_hazir_o(AMB_hazir),
 		.sonuc_o(AMB_sonuc),
@@ -139,13 +150,13 @@ module yurut_wrapper(
 	dallanma_birimi dallanma(
 		// 		INPUTS
 		.rst_i(rst_i),
-		.blok_aktif_i(dallanma_aktif_i),
-		.dal_buy_turu_i(dallanma_buy_turu_i), 
-		.dallanma_ongorusu_i(dallanma_ongorusu_i),
+		.blok_aktif_i(dallanma_aktif_r),
+		.dal_buy_turu_i(dallanma_buy_turu_r), 
+		.dallanma_ongorusu_i(dallanma_ongorusu_r),
 		.esit_mi_i(esit_mi),
 		.buyuk_mu_i(buyuk_mu),
 		.ps_i(ps_i),
-		.br_i(anlik_i),
+		.br_i(anlik_r),
 		// 		OUTPUTS
 		.guncelle_gecerli_o(guncelle_gecerli_o),
 		.guncelle_atladi_o(guncelle_atladi_o),
@@ -161,14 +172,14 @@ module yurut_wrapper(
 		//		INPUTS
 		.clk_i(clk_i),
 		.rst_i(rst_i),
-		.blok_aktif_i(yapay_zeka_aktif_i),
-		.rs1_veri_i(yazmac_degeri1_i),
-		.rs2_veri_i(yazmac_degeri2_i),
+		.blok_aktif_i(yapay_zeka_aktif_r),
+		.rs1_veri_i(yazmac_degeri1_r),
+		.rs2_veri_i(yazmac_degeri2_r),
 		.filtre_rs1_en_i(filtre_rs1_en_i),
-		.filtre_rs2_en_i(rs2_en_i),
+		.filtre_rs2_en_i(rs2_en_r),
 		.filtre_sil_i(filtre_sil_i),
 		.veri_rs1_en_i(veri_rs1_en_i),
-		.veri_rs2_en_i(rs2_en_i),
+		.veri_rs2_en_i(rs2_en_r),
 		.veri_sil_i(veri_sil_i),
 		.conv_yap_en_i(conv_yap_en_i), 
 		//		OUTPUTS
@@ -177,7 +188,7 @@ module yurut_wrapper(
 		.stall_o(yz_stall_o)
 	);
 
-	// kriptografiden çýkanlar
+	// kriptografiden ï¿½ï¿½kanlar
 	wire    [31:0]      kriptografi_sonuc;
 	wire                kriptografi_hazir;
 
@@ -185,10 +196,10 @@ module yurut_wrapper(
 		//		INPUTS
 		.clk_i(clk_i),
 		.rst_i(rst_i),
-		.blok_aktif_i(kriptografi_aktif_i),
-		.yazmac_rs1_i(yazmac_degeri1_i),
-		.yazmac_rs2_i(yazmac_degeri2_i),
-		.islem_kodu_i(kriptografi_islem_kodu_i),
+		.blok_aktif_i(kriptografi_aktif_r),
+		.yazmac_rs1_i(yazmac_degeri1_r),
+		.yazmac_rs2_i(yazmac_degeri2_r),
+		.islem_kodu_i(kriptografi_islem_kodu_r),
 		//		OUTPUTS
 		.sonuc_o(kriptografi_sonuc),
 		.kriptografi_hazir_o(kriptografi_hazir)
@@ -196,28 +207,29 @@ module yurut_wrapper(
 
 	// Bellege gidecek degerler icin mux
 	assign bellek_adresi_r =  AMB_hazir ? AMB_sonuc : 0;
-	assign bellek_veri_r = AMB_hazir ? yazmac_degeri2_i : 0;  
+	assign bellek_veri_r = AMB_hazir ? yazmac_degeri2_r : 0;  
 	assign hedef_yazmac_verisi_o = conv_hazir ? convolution_sonuc : kriptografi_hazir ? kriptografi_sonuc : 0;
-																							   
-	always @(posedge clk_i) begin                               
-																
-		if(rst_i == 1'b1) begin
-		// COZDEN GELENLER
-		hedef_yazmaci_r      <=   0;
-		bellege_yaz_r        <=   0;
-		yazmaca_yaz_r        <=   0;
-		bellekten_oku_r      <=   0;
-		load_save_buyrugu_r  <=   0;       
-		end
-		
-		else begin
-		// COZDEN GELENLER
-		hedef_yazmaci_r     <=   hedef_yazmaci_i;    
-		bellege_yaz_r       <=   bellege_yaz_i;
-		yazmaca_yaz_r       <=   yazmaca_yaz_i;
-		bellekten_oku_r     <=   bellekten_oku_i;
-		load_save_buyrugu_r <=   load_save_buyrugu_i;
-		end
+
+	always @(posedge clk_i) begin
+		amb_aktif_r <= amb_aktif_i;
+		yazmac_degeri1_r <= yazmac_degeri1_i;
+		yazmac_degeri2_r <= yazmac_degeri2_i;
+		ps_r <= ps_i;
+		anlik_r <= anlik_i;
+		islem_kodu_r <= islem_kodu_i;
+		hedef_yazmaci_r <= hedef_yazmaci_i;
+		dallanma_aktif_r <= dallanma_aktif_i;
+		yazmaca_yaz_r <= yazmaca_yaz_i;
+		load_save_buyrugu_r <= load_save_buyrugu_i;
+		bellege_yaz_r <= bellege_yaz_i;
+		bellekten_oku_r <= bellekten_oku_i;
+		dallanma_buy_turu_r <= dallanma_buy_turu_i;
+		dallanma_ongorusu_r <= dallanma_ongorusu_i;
+		yapay_zeka_aktif_r <= yapay_zeka_aktif_i;
+		rs2_en_r <= rs2_en_i;
+		yz_islem_kodu_r <= yz_islem_kodu_i;
+		kriptografi_aktif_r <= kriptografi_aktif_i;
+		kriptografi_islem_kodu_r <= kriptografi_islem_kodu_i;
 	end
 
 	assign load_save_buyrugu_o  =  load_save_buyrugu_r;
@@ -228,8 +240,8 @@ module yurut_wrapper(
 	assign atlanilmis_adres_o   =  atlanilmis_adres;
 	assign conv_hazir_o         =  conv_hazir;
 	assign kriptografi_hazir_o  =  kriptografi_hazir;
-	assign bellek_veri_o        = bellek_veri_r;
-	assign bellek_adresi_o      = bellek_adresi_r;
-	assign AMB_hazir_o          = AMB_hazir;
+	assign bellek_veri_o        =  bellek_veri_r;
+	assign bellek_adresi_o      =  bellek_adresi_r;
+	assign AMB_hazir_o          =  AMB_hazir;
 
 	endmodule

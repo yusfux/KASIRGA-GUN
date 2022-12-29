@@ -108,7 +108,7 @@ module register_file(
             end
         end 
     end
-    /**
+
     always @(posedge clk_i, negedge rst_i) begin
         if(!rst_i) begin
             register[0] <= 32'b0;
@@ -116,7 +116,7 @@ module register_file(
             register[0] <= 32'b0;
         end
     end
-    */
+    
     assign reg_rs1_data_o        = reg_rs1_data_r;
     assign reg_rs2_data_o        = reg_rs2_data_r;
     assign stall_register_file_o = ~(reg_is_ready_rs1_r & reg_is_ready_rs2_r);

@@ -75,6 +75,10 @@ module wrapper_decode(
         //-------------------------------------------------------------------------------
     );
 
+    reg  [31:0] instruction_r;
+    reg  [31:0] program_counter_r;
+    reg         branch_taken_r;
+
     // output signals from "rvc_expander" to "instr_decoder"
     wire [31:0] expanded_instruction_r;
 
@@ -92,7 +96,7 @@ module wrapper_decode(
         .clk_i(clk_i),
         .rst_i(rst_i),
 
-        .instruction_i(instruction_i),
+        .instruction_i(instruction_r),
         .instruction_o(expanded_instruction_r)
     );
 
@@ -142,8 +146,14 @@ module wrapper_decode(
         .stall_register_file_o(stall_decode_o)
     );
 
-    assign program_counter_o = program_counter_i;
-    assign branch_taken_o    = branch_taken_i;
+    always @(posedge clk_i) begin
+        instruction_r       <= instruction_i;
+        program_counter_r   <= program_counter_i;
+        branch_taken_r      <= branch_taken_i;
+    end
+
+    assign program_counter_o = program_counter_r;
+    assign branch_taken_o    = branch_taken_r;
     assign reg_rd_o          = reg_rd_r;
     assign reg_write_o       = reg_write_r;
 
