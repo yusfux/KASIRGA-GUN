@@ -30,7 +30,11 @@ module rvc_expander(
 
 
         //-----------------------signals to "instruction decoder"------------------------
-        output [31:0] instruction_o
+        output [31:0] instruction_o,
+        //-------------------------------------------------------------------------------
+
+        //-----------------------signals to "control status unit"------------------------
+        output illegal_instruction_o
         //-------------------------------------------------------------------------------
     );
     
@@ -39,14 +43,15 @@ module rvc_expander(
     wire [2:0] c_funct3_w   = instruction_i[15:13];
     wire [3:0] c_funct4_w   = instruction_i[15:12];
 
-    //they are here just for paying respect to the time that I've spent while I was trying to understand their encodings
-    wire [5:0]  c_imm_ci    = {instruction_i[3:2], instruction_i[12], instruction_i[6:4]};
-    wire [7:0]  c_imm_css   = {instruction_i[8:7], instruction_i[12:9], 2'b00};
-    wire [9:0]  c_imm_ciw   = {instruction_i[10:7], instruction_i[12:11], instruction_i[5], instruction_i[6], 2'b00};
-    wire [6:0]  c_imm_cl    = {instruction_i[5], instruction_i[12:10], instruction_i[6], 2'b00};
-    wire [6:0]  c_imm_cs    = {instruction_i[5], instruction_i[12:10], instruction_i[6], 2'b00};
-    wire [10:0] c_imm_cj    = {instruction_i[12], instruction_i[8], instruction_i[10:9], instruction_i[6], instruction_i[7], instruction_i[2], instruction_i[11], instruction_i[5:3]};
-    wire [8:0]  c_imm_cb    = {instruction_i[12], instruction_i[6:5], instruction_i[2], instruction_i[11:10], instruction_i[4:3]};
+    /** they are here just for paying respect to the time that I've spent while I was trying to understand their encodings
+        wire [5:0]  c_imm_ci    = {instruction_i[3:2], instruction_i[12], instruction_i[6:4]};
+        wire [7:0]  c_imm_css   = {instruction_i[8:7], instruction_i[12:9], 2'b00};
+        wire [9:0]  c_imm_ciw   = {instruction_i[10:7], instruction_i[12:11], instruction_i[5], instruction_i[6], 2'b00};
+        wire [6:0]  c_imm_cl    = {instruction_i[5], instruction_i[12:10], instruction_i[6], 2'b00};
+        wire [6:0]  c_imm_cs    = {instruction_i[5], instruction_i[12:10], instruction_i[6], 2'b00};
+        wire [10:0] c_imm_cj    = {instruction_i[12], instruction_i[8], instruction_i[10:9], instruction_i[6], instruction_i[7], instruction_i[2], instruction_i[11], instruction_i[5:3]};
+        wire [8:0]  c_imm_cb    = {instruction_i[12], instruction_i[6:5], instruction_i[2], instruction_i[11:10], instruction_i[4:3]};
+    */
 
     wire [4:0] c_rd_w       = instruction_i[11:7];
     wire [4:0] c_rs1_w      = instruction_i[11:7];
@@ -58,6 +63,7 @@ module rvc_expander(
     wire [4:0] c_3rs2_w     = {2'b01, instruction_i[4:2]};
 
     reg [31:0] expanded_instruction_r;
+    reg        illegal_instruction_r;
 
     always @(*) begin
         //this may be illegal instruction, so it would be better not to use it for default value
@@ -65,10 +71,13 @@ module rvc_expander(
         //this quickly traps erroneous jumps into zeroed memory regions. Similarly, we also reserve the
         //instruction encoding containing all ones to be an illegal instruction,
         expanded_instruction_r = 32'h0000_0000;
+        illegal_instruction_r  = 1'b0;
 
         case ({c_funct3_w, c_op_code_w})
 
             5'b`C_ADDI4SPN: begin   //-> addi rd', x2, imm
+                if(instruction_i[12:5] == 8'b0) //reserved nzuimm = 0
+                    illegal_instruction_r = 1'b1;
                 expanded_instruction_r = {2'b00, instruction_i[10:7], instruction_i[12:11], instruction_i[5], instruction_i[6], 2'b00, 5'b00010, 3'b000, c_3rd_w, 7'b`OP_IMM};
             end 
             5'b`C_LW:       begin   //-> lw rd', imm(rs1')
@@ -115,6 +124,9 @@ module rvc_expander(
             end
 
             5'b011_01:      begin   //C_ADDI16SP & C_LUI
+                if({instruction_i[12], instruction_i[6:2]} == 6'b0) //reserved nzimm = 0 for both ADDI16SP and LUI
+                    illegal_instruction_r = 1'b1;
+
                 if     (c_rd_w == 5'b00010) begin   //-> addi x2, x2, nzimm
                     expanded_instruction_r = {{3{instruction_i[12]}}, instruction_i[4:3], instruction_i[5], instruction_i[2], instruction_i[6], 4'b0000, 5'b000010, 3'b000, 5'b000010, 7'b`OP_IMM};
                 end
@@ -126,21 +138,27 @@ module rvc_expander(
 
             5'b000_10:      begin   //C_SLLI
                 if(c_rd_w != 5'b00000) begin    //-> slli rd, rd, shamt
+                    if(instruction_i[12] == 1'b1)   //non standart extension nzuimm[5] = 1
+                        illegal_instruction_r = 1'b1;
                     expanded_instruction_r =  {7'b0000000, instruction_i[6:2], c_rd_w, 3'b001, c_rd_w, 7'b`OP_IMM};
                 end
             end
 
             5'b010_10:      begin   //C_LWSP
-                if(c_rd_w != 5'b00000) begin    //-> lw rd, imm(x2)
-                    expanded_instruction_r =  {4'b0000, instruction_i[3:2], instruction_i[12], instruction_i[6:4], 2'b00, 5'b00010, 3'b010, c_rd_w, 7'b`LOAD};
-                end
+                if(c_rd_w == 5'b00000)    //-> lw rd, imm(x2)
+                    illegal_instruction_r = 1'b1;   //reserved rd=0
+                expanded_instruction_r =  {4'b0000, instruction_i[3:2], instruction_i[12], instruction_i[6:4], 2'b00, 5'b00010, 3'b010, c_rd_w, 7'b`LOAD};
             end
 
             5'b100_01:      begin   //C_SRLI & C_SRAI & C_ANDI & C_SUB & C_XOR & C_OR & C_AND 
                 if     (instruction_i[11:10] == 2'b00) begin    //-> srli rd, rd, shamt
+                    if(instruction_i[12] == 1'b1)   //non standart extension nzuimm[5] = 1
+                        illegal_instruction_r = 1'b1;
                     expanded_instruction_r = {7'b0000000, instruction_i[6:2], c_3rs1_w, 3'b101, c_3rs1_w, 7'b`OP_IMM};
                 end
                 else if(instruction_i[11:10] == 2'b01) begin    //-> srai rd, rd, shamt
+                    if(instruction_i[12] == 1'b1)   //non standart extension nzuimm[5] = 1
+                        illegal_instruction_r = 1'b1;
                     expanded_instruction_r = {7'b0100000, instruction_i[6:2], c_3rs1_w, 3'b101, c_3rs1_w, 7'b`OP_IMM};
                 end
                 else if(instruction_i[11:10] == 2'b10) begin    //-> andi rd, rd, imm
@@ -161,25 +179,30 @@ module rvc_expander(
             end
 
             5'b100_10:      begin   //C_JR & C_MV & C_JALR & C_ADD
-                if     (instruction_i[12] == 1'b0 && c_rd_w != 5'b00000 && c_rs2_w == 5'b00000) begin   //-> jalr x0, rd, 0
+                if     (instruction_i[12] == 1'b0 && c_rs2_w == 5'b00000) begin   //-> jalr x0, rd, 0
+                    if(c_rs1_w == 5'b00000)  //reserved rs1 = 0
+                        illegal_instruction_r = 1'b1;
                     expanded_instruction_r = {12'b000000000000, c_rs1_w, 3'b000, 5'b000000, 7'b`JALR};
                 end
-                else if((instruction_i[12] == 1'b0) && (c_rd_w != 5'b00000) && (c_rs2_w != 5'b00000)) begin   //-> add rd, x0, rs2
+                else if((instruction_i[12] == 1'b0) && (c_rs2_w != 5'b00000)) begin   //-> add rd, x0, rs2 | since rd != 0 is HINT, we can ignore this check
                     expanded_instruction_r = {7'b0000000, c_rs2_w, 5'b000000, 3'b000, c_rd_w, 7'b`OP};
                 end
                 else if(instruction_i[12] == 1'b1 && c_rd_w != 5'b00000 && c_rs2_w == 5'b00000) begin   //-> jalr x1, rs1, 0
                     expanded_instruction_r = {12'b000000000000, c_rs1_w, 3'b000, 5'b00001, 7'b`JALR};
                 end
-                else if(instruction_i[12] == 1'b1 && c_rd_w != 5'b00000 && c_rs2_w != 5'b00000) begin   //-> add rd, rd, rs2
+                else if(instruction_i[12] == 1'b1 && c_rs2_w != 5'b00000) begin   //-> add rd, rd, rs2 | since rd != 0 is HINT, we can ignore this check
                     expanded_instruction_r = {7'b0000000, c_rs2_w, c_rs1_w, 3'b000, c_rs1_w, 7'b`OP};
                 end
             end
-
         endcase
+
+        if (expanded_instruction_r == 31'b0)
+            illegal_instruction_r = 1'b1;
     end   
 
     always @(posedge clk_i, negedge rst_i) begin
     end
 
-    assign instruction_o = (instruction_i[1:0] == 2'b11) ? instruction_i : expanded_instruction_r;
+    assign instruction_o         = (instruction_i[1:0] == 2'b11) ? instruction_i : expanded_instruction_r;
+    assign illegal_instruction_o = illegal_instruction_r;
 endmodule
