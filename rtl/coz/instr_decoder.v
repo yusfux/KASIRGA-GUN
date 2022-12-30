@@ -74,6 +74,7 @@ module instr_decoder(
     wire [31:0] imm_u_w  = {    instruction_i[31],   instruction_i[30:20], instruction_i[19:12], 12'b0};
     wire [31:0] imm_j_w  = {{12{instruction_i[31]}}, instruction_i[19:12], instruction_i[20],    instruction_i[30:25], instruction_i[24:21], 1'b0};
     wire [31:0] shamt_w  = {{27{instruction_i[24]}}, instruction_i[24:20]};
+    wire [31:0] zimm     = {{27{1'b0}}, instruction_i[19:15]};
 
     //enable
     reg en_alu_r;
@@ -101,6 +102,8 @@ module instr_decoder(
     //immediate
     reg [31:0] immediate_r;
 
+    //TODO: need to implement illegal_instruction signals for every possible instruction,
+    //also need to implement CSR's, and machine mode instructions i believe
     always @(*) begin
         en_alu_r            = 1'b0;
         en_branching_unit_r = 1'b0;
@@ -123,7 +126,6 @@ module instr_decoder(
 
         immediate_r         = 32'b0; 
 
-        //decoder for I and M extension,
         case(op_code_w)
 
             7'b`LUI:   begin
@@ -410,6 +412,28 @@ module instr_decoder(
                     end
                 endcase
             end //-----------------------------------------------------
+
+            7'b`SYSTEM: begin
+                //need to implement fence, fence.i, ecall & ebreak
+                case (funct3_w)
+                    3'b`CSRRW:  begin
+                    end
+                    3'b`CSRRS:  begin
+                    end
+                    3'b`CSRRC:  begin
+                    end
+                    3'b`CSRRWI: begin
+                        immediate_r = zimm;
+                    end
+                    3'b`CSRRSI: begin
+                        immediate_r = zimm;
+                    end
+                    3'b`CSRRCI: begin
+                        immediate_r = zimm;
+                    end
+
+                endcase 
+            end
         endcase
     end
 
@@ -440,5 +464,6 @@ module instr_decoder(
     assign reg_rs2_o   = rs2_w;
     assign reg_rd_o    = rd_w;
 
+    //ahmet hakan'in ozel istegi
     assign enable_rs2_conv = reg_read_rs2_r;
 endmodule
