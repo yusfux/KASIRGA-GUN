@@ -57,7 +57,7 @@ module wrapper_decode(
 
         output [31:0] immediate_o,
 
-        output enable_rs2_conv,
+        output enable_rs2_conv_o,
         //-------------------------------------------------------------------------------
 
         //------------output signals from "register file" to "execute stage" ------------
@@ -71,40 +71,39 @@ module wrapper_decode(
         //-------------------------------------------------------------------------------
 
         //----------------------output signals to stall the pipeline---------------------
-        output stall_decode_o
+        output stall_decode_o,
+        output illegal_instruction_o
         //-------------------------------------------------------------------------------
     );
 
-    reg  [31:0] instruction_r;
-    reg  [31:0] program_counter_r;
-    reg         branch_taken_r;
+    reg [31:0] instruction_r;
+    reg [31:0] program_counter_r;
+    reg        branch_taken_r;
 
     // output signals from "rvc_expander" to "instr_decoder"
-    wire [31:0] expanded_instruction_r;
+    wire [31:0] expanded_instruction_w;
 
     // output signals from "instr_decoder" to "register_file"
-    wire reg_read_rs1_r;
-    wire reg_read_rs2_r;
-    wire reg_write_r;
+    wire reg_read_rs1_w;
+    wire reg_read_rs2_w;
+    wire reg_write_w;
 
-    wire [4:0] reg_rs1_r;
-    wire [4:0] reg_rs2_r;
-    wire [4:0] reg_rd_r;
+    wire [4:0] reg_rs1_w;
+    wire [4:0] reg_rs2_w;
+    wire [4:0] reg_rd_w;
 
+
+    //TODO: need to clock the signals that are coming from prev stages in every wrapper
 
     rvc_expander  compressed_expander (
-        .clk_i(clk_i),
-        .rst_i(rst_i),
-
         .instruction_i(instruction_r),
-        .instruction_o(expanded_instruction_r)
+
+        .instruction_o(expanded_instruction_w),
+        .illegal_instruction_o(illegal_instruction_o)
     );
 
     instr_decoder instruction_decoder (
-        .clk_i(clk_i),
-        .rst_i(rst_i),
-
-        .instruction_i(expanded_instruction_r),
+        .instruction_i(expanded_instruction_w),
 
         .en_alu_o(en_alu_o),
         .en_branching_unit_o(en_branching_unit_o),
@@ -119,24 +118,25 @@ module wrapper_decode(
         .immediate_o(immediate_o),
         .mem_read_o(mem_read_o),
         .mem_write_o(mem_write_o),
-        .reg_read_rs1_o(reg_read_rs1_r),
-        .reg_read_rs2_o(reg_read_rs2_r),
-        .reg_write_o(reg_write_r),
-        .reg_rs1_o(reg_rs1_r),
-        .reg_rs2_o(reg_rs2_r),
-        .reg_rd_o(reg_rd_r)
+        .enable_rs2_conv_o(enable_rs2_conv_o),
+        .reg_read_rs1_o(reg_read_rs1_w),
+        .reg_read_rs2_o(reg_read_rs2_w),
+        .reg_write_o(reg_write_w),
+        .reg_rs1_o(reg_rs1_w),
+        .reg_rs2_o(reg_rs2_w),
+        .reg_rd_o(reg_rd_w)
     );
 
     register_file register_file       (
         .clk_i(clk_i),
         .rst_i(rst_i),
 
-        .reg_read_rs1_i(reg_read_rs1_r),
-        .reg_read_rs2_i(reg_read_rs2_r),
-        .reg_rs1_i(reg_rs1_r),
-        .reg_rs2_i(reg_rs2_r),
-        .reg_write_i(reg_write_r),
-        .reg_rd_i(reg_rd_r),
+        .reg_read_rs1_i(reg_read_rs1_w),
+        .reg_read_rs2_i(reg_read_rs2_w),
+        .reg_rs1_i(reg_rs1_w),
+        .reg_rs2_i(reg_rs2_w),
+        .reg_write_i(reg_write_w),
+        .reg_rd_i(reg_rd_w),
         .reg_write_wb_i(reg_write_wb_i),
         .reg_rd_wb_i(reg_rd_wb_i),
         .reg_rd_data_wb_i(reg_rd_data_wb_i),
@@ -146,15 +146,17 @@ module wrapper_decode(
         .stall_register_file_o(stall_decode_o)
     );
 
+    //TODO: check if signals from write-backs stage need to get clocked
     always @(posedge clk_i) begin
-        instruction_r       <= instruction_i;
-        program_counter_r   <= program_counter_i;
-        branch_taken_r      <= branch_taken_i;
+        instruction_r     <= instruction_i;
+        program_counter_r <= program_counter_i;
+        branch_taken_r    <= branch_taken_i;
     end
 
     assign program_counter_o = program_counter_r;
     assign branch_taken_o    = branch_taken_r;
-    assign reg_rd_o          = reg_rd_r;
-    assign reg_write_o       = reg_write_r;
+
+    assign reg_rd_o          = reg_rd_w;
+    assign reg_write_o       = reg_write_w;
 
 endmodule

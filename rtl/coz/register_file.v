@@ -59,7 +59,6 @@ module register_file(
     reg [31:0] reg_rs2_data_r;
 
     integer i;
-    
     initial begin
         for(i = 0; i < 32; i = i + 1) begin
             register[i]     = i;
@@ -67,12 +66,10 @@ module register_file(
         end
         reg_rs1_data_r       = 32'b0;
         reg_rs2_data_r       = 32'b0;
-        reg_is_ready_rs1_r       = 1'b1;
-        reg_is_ready_rs2_r       = 1'b1;
+        reg_is_ready_rs1_r   = 1'b1;
+        reg_is_ready_rs2_r   = 1'b1;
     end
 
-    
-    /**
     always @(negedge clk_i) begin
         if(reg_write_wb_i) begin
             register[reg_rd_wb_i]          <= reg_rd_data_wb_i;
@@ -82,12 +79,13 @@ module register_file(
         if(reg_write_i) begin
             reg_valid_counter[reg_rd_i] <= reg_valid_counter[reg_rd_i] + 2'b01;
         end
+
+        register[0] <= 1'b0;
     end
-    */
 
     always @(posedge clk_i, negedge rst_i) begin
         if(!rst_i) begin
-        
+
         end else begin
             if(reg_read_rs1_i) begin           
                 if(reg_valid_counter[reg_rs1_i] == 2'b00) begin
@@ -109,14 +107,6 @@ module register_file(
         end 
     end
 
-    always @(posedge clk_i, negedge rst_i) begin
-        if(!rst_i) begin
-            register[0] <= 32'b0;
-        end else begin
-            register[0] <= 32'b0;
-        end
-    end
-    
     assign reg_rs1_data_o        = reg_rs1_data_r;
     assign reg_rs2_data_o        = reg_rs2_data_r;
     assign stall_register_file_o = ~(reg_is_ready_rs1_r & reg_is_ready_rs2_r);

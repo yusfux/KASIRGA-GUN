@@ -22,8 +22,6 @@
 `include "instructions.vh"
 
 module rvc_expander(
-        input  clk_i, rst_i,
-
         //--------------------------signals from "fetch stage"---------------------------
         input  [31:0] instruction_i,
         //-------------------------------------------------------------------------------
@@ -199,9 +197,6 @@ module rvc_expander(
         if (expanded_instruction_r == 31'b0)
             illegal_instruction_r = 1'b1;
     end   
-
-    always @(posedge clk_i, negedge rst_i) begin
-    end
 
     assign instruction_o         = (instruction_i[1:0] == 2'b11) ? instruction_i : expanded_instruction_r;
     assign illegal_instruction_o = illegal_instruction_r;

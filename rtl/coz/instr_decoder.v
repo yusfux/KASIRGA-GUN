@@ -23,8 +23,7 @@
 `include "instructions.vh"
 `include "operations.vh"
 
-module instr_decoder(
-        input clk_i, rst_i,
+module instr_decoder (
         //--------------------------signals from "rvc expander"--------------------------
         input [31:0] instruction_i,
         //-------------------------------------------------------------------------------
@@ -47,7 +46,7 @@ module instr_decoder(
         output mem_read_o,
         output mem_write_o,
 
-        output enable_rs2_conv,
+        output enable_rs2_conv_o,
         //-------------------------------------------------------------------------------
 
         //--------------------------signals to "register file"---------------------------
@@ -435,9 +434,6 @@ module instr_decoder(
                 endcase 
             end
         endcase
-    end
-
-    always @(posedge clk_i, negedge rst_i) begin
     end
 
     assign en_alu_o            = en_alu_r;
