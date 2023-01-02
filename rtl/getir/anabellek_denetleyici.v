@@ -75,9 +75,9 @@ module anabellek_denetleyici(
             okunan_veri_obegi_hazir_r <= 0;
             okunan_veri_obegi_r <= 0;
             adres_r <= 0;
-            yaz_veri_r <= 0;// multi driven pin warning, satiri acma
-            wr_strb_r <= 0; //multi driven pin warning, satiri acma
-            iomem_valid_r <= 0; //multi driven pin warning, satiri acma
+            yaz_veri_r <= 0;
+            wr_strb_r <= 0; 
+            iomem_valid_r <= 0; 
         end
     
     end
