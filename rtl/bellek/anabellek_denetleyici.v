@@ -55,7 +55,7 @@ module anabellek_denetleyici(
     
     assign okunan_veri_obegi_o = okunan_veri_obegi_r;
     //assign okunan_veri_obegi_hazir_o = okunan_veri_obegi_hazir_r;
-    assign adres_o = adres_r; //adres_r yapinca yanlis adres gonderiyor
+    assign adres_o = adres_r; 
     assign yaz_veri_o = yaz_veri_r;
     assign wr_strb_o = wr_strb_r;
     assign iomem_valid_o = iomem_valid_r;//!(durum_next == MUSAIT);
@@ -148,9 +148,9 @@ module anabellek_denetleyici(
             veri_sayisi_r <= 3'd0;
             okunan_veri_obegi_r <= 128'd0;
             adres_r <= 32'd0;
-            yaz_veri_r <= 32'd0;// multi driven pin warning, satiri acma
-            wr_strb_r <= 4'd0; //multi driven pin warning, satiri acma
-            iomem_valid_r <= 1'b0; //multi driven pin warning, satiri acma
+            yaz_veri_r <= 32'd0;
+            wr_strb_r <= 4'd0; 
+            iomem_valid_r <= 1'b0; 
             anabellek_musait_r <= 1'b0;
             okunan_veri_obegi_hazir_r <= 1'b0;
         end
