@@ -33,6 +33,11 @@ module register_file(
         input [4:0] reg_rd_i,
         //-------------------------------------------------------------------------------
 
+        //------------------signals from "control status register file"------------------
+        input        reg_write_csr_i,
+        input [31:0] reg_rd_data_csr_i,
+        //-------------------------------------------------------------------------------
+
         //------------------------signals from "write-back stage"------------------------
         input        reg_write_wb_i,
         input [4:0]  reg_rd_wb_i,
@@ -64,18 +69,36 @@ module register_file(
             register[i]     = i;
             reg_valid_counter[i] = 2'b0;
         end
-        reg_rs1_data_r       = 32'b0;
-        reg_rs2_data_r       = 32'b0;
-        reg_is_ready_rs1_r   = 1'b1;
-        reg_is_ready_rs2_r   = 1'b1;
     end
 
+    always @(*) begin
+        reg_rs1_data_r     = 31'b0;
+        reg_rs2_data_r     = 31'b0;
+        reg_is_ready_rs1_r = 1'b0;
+        reg_is_ready_rs2_r = 1'b0;
+
+        if(reg_read_rs1_i && reg_valid_counter[reg_rs1_i] == 2'b00) begin         
+                reg_rs1_data_r     = register[reg_rs1_i];
+                reg_is_ready_rs1_r = 1'b1;
+        end
+
+        if(reg_read_rs2_i && reg_valid_counter[reg_rs2_i] == 2'b00) begin
+                reg_rs2_data_r = register[reg_rs2_i];
+                reg_is_ready_rs2_r = 1'b1;
+        end
+    end
+
+    //what will happen when reg_write_wb_i and reg_write_csr_i try to write the same register
+    //burada kesin boku yedik test lazim
+    //TODO: inst x5, x0, x5 gibi bir durumda ayni registeri okuyup yazacagi icin negedgede valid = 01 oluyor ve bu nedenle okuyamiyor
     always @(negedge clk_i) begin
         if(reg_write_wb_i) begin
             register[reg_rd_wb_i]          <= reg_rd_data_wb_i;
             reg_valid_counter[reg_rd_wb_i] <= reg_valid_counter[reg_rd_wb_i] - 2'b01;
         end
-
+        if(reg_write_csr_i) begin
+            register[reg_rd_i] <= reg_rd_data_csr_i;
+        end
         if(reg_write_i) begin
             reg_valid_counter[reg_rd_i] <= reg_valid_counter[reg_rd_i] + 2'b01;
         end
@@ -85,30 +108,11 @@ module register_file(
 
     always @(posedge clk_i, negedge rst_i) begin
         if(!rst_i) begin
-
-        end else begin
-            if(reg_read_rs1_i) begin           
-                if(reg_valid_counter[reg_rs1_i] == 2'b00) begin
-                    reg_rs1_data_r <= register[reg_rs1_i];
-                    reg_is_ready_rs1_r <= 1'b1;
-                end else begin
-                    reg_is_ready_rs1_r <= 1'b0;
-                end
-            end
-    
-            if(reg_read_rs2_i) begin
-                if(reg_valid_counter[reg_rs2_i] == 2'b00) begin
-                    reg_rs2_data_r <= register[reg_rs2_i];
-                    reg_is_ready_rs2_r <= 1'b1;
-                end else begin
-                    reg_is_ready_rs2_r <= 1'b0;
-                end
-            end
         end 
     end
 
     assign reg_rs1_data_o        = reg_rs1_data_r;
     assign reg_rs2_data_o        = reg_rs2_data_r;
-    assign stall_register_file_o = ~(reg_is_ready_rs1_r & reg_is_ready_rs2_r);
+    assign stall_register_file_o = ((reg_read_rs1_i && ~reg_is_ready_rs1_r) || (reg_read_rs2_i && ~reg_is_raedy_rs2_r));
 
 endmodule

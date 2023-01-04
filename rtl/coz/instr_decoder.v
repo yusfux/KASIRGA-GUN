@@ -48,6 +48,14 @@ module instr_decoder (
 
         output enable_rs2_conv_o,
         //-------------------------------------------------------------------------------
+        output en_csr_read_o,
+        output en_csr_write_o,
+        output [11:0] adress_csr_read_o,
+        output [11:0] adress_csr_write_o,
+        output [2:0]  op_csr_o,
+        //-------------------signals to "control status register file"-------------------
+        output 
+        //-------------------------------------------------------------------------------
 
         //--------------------------signals to "register file"---------------------------
         output reg_read_rs1_o,
@@ -60,12 +68,13 @@ module instr_decoder (
         //-------------------------------------------------------------------------------
     );
 
-    wire [6:0] op_code_w = instruction_i[6:0];
-    wire [2:0] funct3_w  = instruction_i[14:12];
-    wire [6:0] funct7_w  = instruction_i[31:25];
-    wire [4:0] rd_w      = instruction_i[11:7];
-    wire [4:0] rs1_w     = instruction_i[19:15];
-    wire [4:0] rs2_w     = instruction_i[24:20];
+    wire [6:0] op_code_w     = instruction_i[6:0];
+    wire [2:0] funct3_w      = instruction_i[14:12];
+    wire [6:0] funct7_w      = instruction_i[31:25];
+    wire [4:0] rd_w          = instruction_i[11:7];
+    wire [4:0] rs1_w         = instruction_i[19:15];
+    wire [4:0] rs2_w         = instruction_i[24:20];
+    wire [11:0] adress_csr_w = instruction_i[31:20];
 
     wire [31:0] imm_i_w  = {{21{instruction_i[31]}}, instruction_i[30:25], instruction_i[24:21], instruction_i[20]};
     wire [31:0] imm_s_w  = {{21{instruction_i[31]}}, instruction_i[30:25], instruction_i[11:8],  instruction_i[7]};
@@ -74,6 +83,12 @@ module instr_decoder (
     wire [31:0] imm_j_w  = {{12{instruction_i[31]}}, instruction_i[19:12], instruction_i[20],    instruction_i[30:25], instruction_i[24:21], 1'b0};
     wire [31:0] shamt_w  = {{27{instruction_i[24]}}, instruction_i[24:20]};
     wire [31:0] zimm     = {{27{1'b0}}, instruction_i[19:15]};
+
+
+    //csr signals
+    reg en_csr_read_r;
+    reg en_csr_write_r;
+    reg [2:0]  op_csr_r;
 
     //enable
     reg en_alu_r;
@@ -104,6 +119,10 @@ module instr_decoder (
     //TODO: need to implement illegal_instruction signals for every possible instruction,
     //also need to implement CSR's, and machine mode instructions i believe
     always @(*) begin
+        en_csr_read_r       = 1'b0;
+        en_csr_write_r      = 1'b0;
+        adress_csr_write_r  = 11'b0;
+
         en_alu_r            = 1'b0;
         en_branching_unit_r = 1'b0;
         en_ai_unit_r        = 1'b0;
@@ -413,28 +432,73 @@ module instr_decoder (
             end //-----------------------------------------------------
 
             7'b`SYSTEM: begin
-                //need to implement fence, fence.i, ecall & ebreak
+                //need to implement fence, fence.i, ecall, ebreak, and some other M-mode instructions
+                //any side effect that may occur when csr read is illegal inst exception
                 case (funct3_w)
                     3'b`CSRRW:  begin
+                        op_csr_r = `CSR_CSRRW;
+                        en_csr_write_r = 1'b1;
+                        en_csr_read_r  = 1'b1;
+                        reg_read_rs1_r = 1'b1;
+                        if(rd_w == 5'b0)
+                            en_csr_read_r  = 1'b0;
                     end
                     3'b`CSRRS:  begin
+                        op_csr_r = `CSR_CSRRS;
+                        en_csr_write_r = 1'b1;
+                        en_csr_read_r  = 1'b1;
+                        reg_read_rs1_r = 1'b1;
+                        if(rs1_w == 5'b0) begin
+                            en_csr_write_r  = 1'b0;
+                            reg_read_rs1_r  = 1'b0;
+                        end
                     end
                     3'b`CSRRC:  begin
+                        op_csr_r = `CSR_CSRRC;
+                        en_csr_write_r = 1'b1;
+                        en_csr_read_r  = 1'b1;
+                        reg_read_rs1_r = 1'b1;
+                        if(rs1_w == 5'b0) begin
+                            en_csr_write_r  = 1'b0;
+                            reg_read_rs1_r  = 1'b0;
+                        end
                     end
                     3'b`CSRRWI: begin
                         immediate_r = zimm;
+
+                        op_csr_r = `CSR_CSRWI;
+                        en_csr_write_r = 1'b1;
+                        en_csr_read_r  = 1'b1;
+                        if(rd_w == 5'b0)
+                            en_csr_read_r  = 1'b0;
                     end
                     3'b`CSRRSI: begin
                         immediate_r = zimm;
+
+                        op_csr_r = `CSRRSI;
+                        en_csr_write_r = 1'b1;
+                        en_csr_read_r  = 1'b1;
+                        if(zimm == 32'b0)
+                            en_csr_write_r  = 1'b0;
                     end
                     3'b`CSRRCI: begin
                         immediate_r = zimm;
-                    end
 
+                        op_csr_r = `CSRRCI;
+                        en_csr_write_r = 1'b1;
+                        en_csr_read_r  = 1'b1;
+                        if(zimm == 32'b0)
+                            en_csr_write_r  = 1'b0;
+                    end
                 endcase 
             end
         endcase
     end
+
+    assign en_csr_read_o  = en_csr_read_r;
+    assign en_csr_write_o = en_csr_write_r;
+    assign adress_csr_o   = adress_csr_read_w
+    assign op_csr_o       = op_csr_r;
 
     assign en_alu_o            = en_alu_r;
     assign en_branching_unit_o = en_branching_unit_r;

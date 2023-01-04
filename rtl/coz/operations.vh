@@ -90,3 +90,14 @@
 `define CRY_RVRS  3'b011
 `define CRY_CNTZ  3'b100
 `define CRY_CNTP  3'b101
+
+
+//-------------------------------------------------------------------------------------
+//-----------------------------------CSR OPERATIONS------------------------------------
+//-------------------------------------------------------------------------------------
+`define CSR_CSRRW  3'b000
+`define CSR_CSRRS  3'b001
+`define CSR_CSRRC  3'b010
+`define CSR_CSRRWI 3'b011
+`define CSR_CSRRSI 3'b100
+`define CSR_CSRRCI 3'b101
