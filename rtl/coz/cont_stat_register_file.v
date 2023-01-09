@@ -19,16 +19,20 @@
 // 
 //////////////////////////////////////////////////////////////////////////////////
 
+//WPRI bu bolumlere read/write ignore ediliyor, read-only zero yapabiliriz
+//WLRL legal write legal read yapilmali, write legal degilse arbitrary bir bit pattern donmemiz gerekiyor read yapildiginda?
+//WARL her seyi yazabiliyorsun ama sadece legal okuyabiliyorsun, legal value previous write'a deterministically depend etmeli
+//sikicem bu field specificationlari read legallarda onceki yazmaya dependent olmayacak sekilde en sonki legal degeri dondurecegim
 
 module cont_stat_register_file (
         input clk_i, rst_i,
 
         //-------------signals from 'pipeline controller' to 'control status registers'------------
-        input interrupt_external_i,
-        input interrupt_timer_i,
-        input interrupt_software_i,
+        input       en_interrupt_i,
+        input [?:?] interrupt_cause,
 
-        input [?:?]  exception_cause,
+        input        en_exception_i,
+        input [5:0]  exception_cause,
         input [31:0] exception_adress_i,
         input [31:0] exception_program_counter_i,
         //-----------------------------------------------------------------------------------------
@@ -89,25 +93,12 @@ module cont_stat_register_file (
     //SD | WPRI | TSR | TW | TVM | MXR | SUM | MPRIV | XS | FS | MPP | VS | SPP | MPIE | UBE | SPIE | WPRI | MIE | WPRI | SIE | WPRI
     // when a trap is taken: MPIE = MIE, MIE = 0, MPP = M(Machine mode in our case)
     // when executing MRET: MIE = MPIE, MPIE = 1, MPP = M(Machine mode in our case)
-    // MPRIV is read-only zero if U-mode is not supported
-    // SUM is read-only zero if S-mode is not supported
-    // MXR is read-only zero if S-mode is not supported
-    // if MBE = 0, memory acceses are little-endian, big-endian otherwise
-    // SBE is read-only zer oif S-mode is not suppoerted
-    // UBE is read-only zero if U-mode is not supported
-    // TVM is read-only zero when S-mode is not supported
-    // TW is read-only zero whwen there are no modes less pribiliged than M
-    // TSR is read-only zero when S-mode is not supported
-    // if neither the F extension nor S-mode is implemented, then FS is read-only zero
-    // if neither the v register nor S-mode is implemented, then VS is read-only zero
-    // in systems withotu additional user extensions requiring new state, the XS field is read-only zero
-    // if FS, XS and VS are all read-only zero, then SD is always zero
     reg [31:0] mstatus_r;
     reg [31:0] mstatus_ns;
 
 
     //a value of zero can be returned to indicate the misa register has not been implemented
-    //modifiable bir isa implement etmedigimiz icin read-only olarak kullanabiliriz sanirim 
+    //hicbir zaman isa'nin degistirilmesine izin vermeyecegimiz icin read-only,
     wire [31:0] misa_w = 32'b01_0000_00000000000001000100000100;
 
     //in systems without S-mode, the medeleg and mideleg registers should not exist
@@ -126,7 +117,9 @@ module cont_stat_register_file (
     //reg [31:0] mcounteren;
 
     //it contains the same fields fond in bits 62:36 of mstatus for RV64
+    // if MBE = 0, memory acceses are little-endian, big-endian otherwise
     // 26'bWPRI | MBE | SBE | 4'bWPRI
+    //we can implement this as read-only zero since we fixed our endiannes to little endian
     reg [31:0] mstatush_r;
     reg [31:0] mstatush_ns;
 
@@ -203,6 +196,11 @@ module cont_stat_register_file (
     reg [31:0] data_csr_read_r;
 
     //TODO: check the CSR field specifications
+    //TODO: attempts to access a non-existent CSR raise an illegal instruction exception
+    //TODO: writes to the read-only bits should be ignored
+    //TODO: ignore writes on read-only registers if they are read-only zero
+    //TODO: MPP is warl but it always has to be 2'b11 in our case
+    //TODO: since we support only little-endian memory access, MBE has to be read-only zero
     always @(*) begin
         mstatus_ns   = mstatus_r;
         mie_ns       = mie_r;
@@ -230,17 +228,17 @@ module cont_stat_register_file (
                 `MHARTID:    data_csr_read_r = mhartid_w;
                 `MCONFIGPTR: data_csr_read_r = mconfigptr_w;
 
-                `MSTATUS:    data_csr_read_r = mstatus_r;
+                `MSTATUS:    data_csr_read_r = mstatus_r  & 32'h0000_1888;
                 `MISA:       data_csr_read_r = misa_r;
-                `MIE:        data_csr_read_r = mie_r;
+                `MIE:        data_csr_read_r = mie_r      & 32'h0000_0888;
                 `MTVEC:      data_csr_read_r = mtvec_r;
-                `MSTATUSH:   data_csr_read_r = mstatush_r;
+                `MSTATUSH:   data_csr_read_r = mstatush_r & 32'h0000_0020;
 
                 `MSCRATCH:   data_csr_read_r = mscratch_r;
                 `MEPC:       data_csr_read_r = mepc_r;
                 `MCAUSE:     data_csr_read_r = mcause_r;
                 `MTVAL:      data_csr_read_r = mtval_r;
-                `MIP:        data_csr_read_r = mip_r;
+                `MIP:        data_csr_read_r = mip_r      & 32'h0000_0888;
                 `MTINST:     data_csr_read_r = mtinst_r;
                 `MTVAL2:     data_csr_read_r = mtval2_r;
 
@@ -248,13 +246,15 @@ module cont_stat_register_file (
                 `MINSTRET:   data_csr_read_r = minstret_r;
                 `MCYCLEH:    data_csr_read_r = mcycleh_r;
                 `MINSTRETH:  data_csr_read_r = minstreth_r;
+
+                `CYCLE:      data_csr_read_r = mcycle_r;
+                `INSTRET:    data_csr_read_r = minstret_r;
+                `CYCLEH:     data_csr_read_r = mcycleh_r;
+                `INSTRETH:   data_csr_read_r = minstreth_r;
             endcase
         end
 
         //TODO: need to find more elegant way to write values into csrs
-        //TODO: attempts to access a non-existent CSR raise an illegal instruction exception
-        //TODO: need to seperate read-only registers, attempts to write read-only register should raise illegal instr exception
-        //writes to the read-only bits should be ignored
         if(en_csr_write_i) begin
             case(op_csr_i)
                 `CSR_CSRRS: begin
@@ -323,7 +323,6 @@ module cont_stat_register_file (
                         `MINSTRETH: minstreth_ns = data_csr_write_i;
                     endcase
                 end
-
                 `CSR_CSRRSI: begin
                     case(adress_csr_i)
                         `MSTATUS:     mstatus_ns = data_csr_write_imm_i | mstatus_r;
@@ -397,6 +396,24 @@ module cont_stat_register_file (
         //  -interrupt gelmis olabilir
         //  -exception gelmis olabilir
         //  -exception'dan return ediliyor olabilir
+
+        if(en_interrupt_i) begin
+
+            if(interrupt_cause == `INT_EXTERN) begin
+
+            end
+            else if(interrupt_cause == `INT_SOFT) begin
+
+            end
+            else if(interrupt_cause == `INT_TIMER) begin
+
+            end
+        end
+        else if(en_exception_i) begin
+            case(exception_cause)
+
+            endcase
+        end
 
     end
 

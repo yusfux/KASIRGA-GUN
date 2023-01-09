@@ -150,11 +150,8 @@
 
 `define MSTATUS    12'h300
 `define MISA       12'h301
-//`define MEDELEG    12'h302
-//`define MIDELEG    12'h303
 `define MIE        12'h304
 `define MTVEC      12'h305
-//`define MCOUNTEREN 12'h306
 `define MSTATUSH   12'h310
 
 `define MSCRATCH   12'h340
@@ -165,12 +162,12 @@
 `define MTINST     12'h34A
 `define MTVAL2     12'h34B
 
-//`define MENVCFG    12'h30A
-//`define MENVCFGH   12'h31A
-//`define MSECCFG    12'h747
-//`define MSECCFGH   12'h757
-
 `define MCYCLE     12'hB00
 `define MINSTRET   12'hB00
 `define MCYCLEH    12'hB80
 `define MINSTRETH  12'hB82
+
+`define CYCLE   12'hC00
+`define INSTRET 12'hC02
+`define CYCLEH   12'hC80
+`define INSTRETH 12'hC82
