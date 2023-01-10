@@ -24,17 +24,36 @@
 //WARL her seyi yazabiliyorsun ama sadece legal okuyabiliyorsun, legal value previous write'a deterministically depend etmeli
 //sikicem bu field specificationlari read legallarda onceki yazmaya dependent olmayacak sekilde en sonki legal degeri dondurecegim
 
+`include "instructions.vh"
+
+`define MSTATUS_MPP  12:11
+`define MSTATUS_MPIE 7
+`define MSTATUS_MIE  3
+`define PRIV_MACHINE 2'b11
+
+`define EXCEP_INSTR_ADRESS_MISALIGNED 2'b000
+`define EXCEP_ILLEGAL_INSTRUCTION     2'b001
+`define EXCEP_BREAKPOINT              2'b010
+`define EXCEP_LOAD_ADRESS_MISALIGNED  2'b011
+`define EXCEP_STORE_ADRESS_MISALIGNED 2'b100
+`define EXCEP_ENV_CALL                2'b101
+
+
 module cont_stat_register_file (
         input clk_i, rst_i,
 
         //-------------signals from 'pipeline controller' to 'control status registers'------------
-        input       en_interrupt_i,
-        input [?:?] interrupt_cause,
+
+        //teknofestte hicbir zaman interrupt gelme olasiligi olmadigi icin simdilik bu fieldlari implement etmeyecegim
+        //input       en_interrupt_i,
+        //input [?:?] interrupt_cause,
 
         input        en_exception_i,
-        input [5:0]  exception_cause,
+        input [2:0]  exception_cause_i,
         input [31:0] exception_adress_i,
         input [31:0] exception_program_counter_i,
+
+        input        en_mret_instruction_i,
         //-----------------------------------------------------------------------------------------
 
         //--------------signals from 'decode stage' to 'control and status registers'--------------
@@ -52,11 +71,6 @@ module cont_stat_register_file (
         output [31:0] excep_program_counter_o,
         //-----------------------------------------------------------------------------------------
     );
-
-
-    //----------------------------------------------------------------------------------------------------------------------------
-    //BELOW LINES ARE ONLY VALID FOR IMPLEMENTATIONS WITH M EXTENSION ONLY, THEY ARE NOT GENERAL SITUATIONS FOR EVERY ARCHITECTURE
-    //----------------------------------------------------------------------------------------------------------------------------
 
 
     //------------------------Unpriviliged Counters/Timers------------------------
@@ -107,9 +121,11 @@ module cont_stat_register_file (
 
     //machine interrupt enable register, bit in mie must be writable if the corresponding interrupt can ever become pending.
     // 16'bcustom | 4'b0 | MEIE | 0 | SEIE | 0 | MTIE | 0 | STIE | 0 | MSIE | 0 | SSIE | 0
-    reg [31:0] mie_r;
-    reg [31:0] mie_ns;
+    // interrupt handle etmeyecegimiz gore bunlara da gerek yok sanirim
+    //reg [31:0] mie_r;
+    //reg [31:0] mie_ns;
 
+    //interrupt handle etmeyecegimiz icin direct mode da olsa vectored mode da olsa pc = base olacak
     reg [31:0] mtvec_r;
     reg [31:0] mtvec_ns;
 
@@ -120,8 +136,7 @@ module cont_stat_register_file (
     // if MBE = 0, memory acceses are little-endian, big-endian otherwise
     // 26'bWPRI | MBE | SBE | 4'bWPRI
     //we can implement this as read-only zero since we fixed our endiannes to little endian
-    reg [31:0] mstatush_r;
-    reg [31:0] mstatush_ns;
+    wire [31:0] mstatush_w = 32'b00000000000000000000000000000000;
 
     //------------------------Machine Trap Handling------------------------
     reg [31:0] mscratch_r;
@@ -141,9 +156,8 @@ module cont_stat_register_file (
     reg [31:0] mcause_ns;
 
     //mtval is either set to zero or written with exception-specific information to assist software in handling the trap
-    //we can implement mtval as read-only zero ifwe specifie that no exception set mtval a nonzero value
-    reg [31:0] mtval_r;
-    reg [31:0] mtval_ns;
+    //if the hardware platform specifies that no exceptions set mtval to a nonzero value, then mtval is raed-only zero
+    wire [31:0] mtval_w = 32'b00000000000000000000000000000000;
 
     // 16'bcustom | 4'b0 | MEIP | 0 | SEIP | 0 | MTIP | 0 | STIP | 0 | MSIP | 0 | SSIP | 0
     // MEIP is read-only and is set and cleared by a platform-specific interrupt controller?
@@ -151,15 +165,12 @@ module cont_stat_register_file (
     // MSIP and MSIE are read-only zero since we have only one hart
     // also all fields with SXXX are all read-only zero since supervisor mode is not implemented
     // multiple simultaneous interrupts are handled in the following priority: MEI, MSI, MTI
-    reg [31:0] mip_r;
-    reg [31:0] mip_ns;
+    // interrupt handle etmeyecegimiz gore bunlara da gerek yok sanirim
+    //reg [31:0] mip_r;
+    //reg [31:0] mip_ns;
 
-    reg [31:0] mtinst_r;
-    reg [31:0] mtinst_ns;
-
-    //When a trap is taken into M-mode, mtval2 is written with additional exception-specific information, alongside mtval,
-    reg [31:0] mtval2_r;
-    reg [31:0] mtval2_ns;
+    //mtinst may always be zero, indicating that the hardware is providing no information in the register for this particular trap
+    wire [31:0] mtinst_w = 32'b00000000000000000000000000000000;
 
     //------------------------Machine Configuration------------------------
     //if U-mode is not supported, then registers menvcfg and menvcfgh do not exist
@@ -201,19 +212,18 @@ module cont_stat_register_file (
     //TODO: ignore writes on read-only registers if they are read-only zero
     //TODO: MPP is warl but it always has to be 2'b11 in our case
     //TODO: since we support only little-endian memory access, MBE has to be read-only zero
+    //TODO: mstatusa implicit read yaptigimiz icin sadece okurken maskeliyor olmamiz ise yaramiyor olabilir
+    //TODO: MEPC never written by the implementation, though it may be explicitly written by software??
+    //TODO: MCAUSE never written by the implementation, though it may be explicitly written by software??
+    //TODO: MTVAL never written by the implementation, though it may be explicitly written by software??
+    //TODO: SRET should raise an illegal instruction exception, if supervisor mode is not supported
     always @(*) begin
         mstatus_ns   = mstatus_r;
-        mie_ns       = mie_r;
         mtvec_ns     = mtvec_r;
-        mstatush_ns  = mstatush_r;
 
         mscratch_ns  = mscratch_r;
         mepc_ns      = mepc_r;
         mcause_ns    = mcause_r;
-        mtval_ns     = mtval_r;
-        mip_ns       = mip_r;
-        mtinst_ns    = mtinst_r;
-        mtval2_ns    = mtval2_r;
 
         mcycle_ns    = mcycle_r + 1;
         minstret_ns  = minstret_r;
@@ -230,17 +240,14 @@ module cont_stat_register_file (
 
                 `MSTATUS:    data_csr_read_r = mstatus_r  & 32'h0000_1888;
                 `MISA:       data_csr_read_r = misa_r;
-                `MIE:        data_csr_read_r = mie_r      & 32'h0000_0888;
                 `MTVEC:      data_csr_read_r = mtvec_r;
-                `MSTATUSH:   data_csr_read_r = mstatush_r & 32'h0000_0020;
+                `MSTATUSH:   data_csr_read_r = mstatush_w;
 
                 `MSCRATCH:   data_csr_read_r = mscratch_r;
                 `MEPC:       data_csr_read_r = mepc_r;
                 `MCAUSE:     data_csr_read_r = mcause_r;
-                `MTVAL:      data_csr_read_r = mtval_r;
-                `MIP:        data_csr_read_r = mip_r      & 32'h0000_0888;
+                `MTVAL:      data_csr_read_r = mtval_w;
                 `MTINST:     data_csr_read_r = mtinst_r;
-                `MTVAL2:     data_csr_read_r = mtval2_r;
 
                 `MCYCLE:     data_csr_read_r = mcycle_r;
                 `MINSTRET:   data_csr_read_r = minstret_r;
@@ -261,17 +268,11 @@ module cont_stat_register_file (
                     case(adress_csr_i)
                         `MSTATUS:     mstatus_ns = data_csr_write_i | mstatus_r;
                         `MISA:           misa_ns = data_csr_write_i | misa_r;
-                        `MIE:             mie_ns = data_csr_write_i | mie_r;
                         `MTVEC:         mtvec_ns = data_csr_write_i | mtvec_r;
-                        `MSTATUSH:   mstatush_ns = data_csr_write_i | mstatush_r;
 
                         `MSCRATCH:   mscratch_ns = data_csr_write_i | mscratch_r;
                         `MEPC:           mepc_ns = data_csr_write_i | mepc_r;
                         `MCAUSE:       mcause_ns = data_csr_write_i | mcause_r;
-                        `MTVAL:         mtval_ns = data_csr_write_i | mtval_r;
-                        `MIP:             mip_ns = data_csr_write_i | mip_r;
-                        `MTINST:       mtinst_ns = data_csr_write_i | mtinst_r;
-                        `MTVAL2:       mtval2_ns = data_csr_write_i | mtval2_r;
 
                         `MCYCLE:       mcycle_ns = data_csr_write_i | mcycle_r;
                         `MINSTRET:   minstret_ns = data_csr_write_i | minstret_r;
@@ -283,17 +284,11 @@ module cont_stat_register_file (
                     case(adress_csr_i)
                         `MSTATUS:     mstatus_ns = ~data_csr_write_i & mstatus_r;
                         `MISA:           misa_ns = ~data_csr_write_i & misa_r;
-                        `MIE:             mie_ns = ~data_csr_write_i & mie_r;
                         `MTVEC:         mtvec_ns = ~data_csr_write_i & mtvec_r;
-                        `MSTATUSH:   mstatush_ns = ~data_csr_write_i & mstatush_r;
 
                         `MSCRATCH:   mscratch_ns = ~data_csr_write_i & mscratch_r;
                         `MEPC:           mepc_ns = ~data_csr_write_i & mepc_r;
                         `MCAUSE:       mcause_ns = ~data_csr_write_i & mcause_r;
-                        `MTVAL:         mtval_ns = ~data_csr_write_i & mtval_r;
-                        `MIP:             mip_ns = ~data_csr_write_i & mip_r;
-                        `MTINST:       mtinst_ns = ~data_csr_write_i & mtinst_r;
-                        `MTVAL2:       mtval2_ns = ~data_csr_write_i & mtval2_r;
 
                         `MCYCLE:       mcycle_ns = ~data_csr_write_i & mcycle_r;
                         `MINSTRET:   minstret_ns = ~data_csr_write_i & minstret_r;
@@ -305,17 +300,11 @@ module cont_stat_register_file (
                     case(adress_csr_i)
                         `MSTATUS:     mstatus_ns = data_csr_write_i;
                         `MISA:           misa_ns = data_csr_write_i;
-                        `MIE:             mie_ns = data_csr_write_i;
                         `MTVEC:         mtvec_ns = data_csr_write_i;
-                        `MSTATUSH:   mstatush_ns = data_csr_write_i;
 
                         `MSCRATCH:   mscratch_ns = data_csr_write_i;
                         `MEPC:           mepc_ns = data_csr_write_i;
                         `MCAUSE:       mcause_ns = data_csr_write_i;
-                        `MTVAL:         mtval_ns = data_csr_write_i;
-                        `MIP:             mip_ns = data_csr_write_i;
-                        `MTINST:       mtinst_ns = data_csr_write_i;
-                        `MTVAL2:       mtval2_ns = data_csr_write_i;
 
                         `MCYCLE:       mcycle_ns = data_csr_write_i;
                         `MINSTRET:   minstret_ns = data_csr_write_i;
@@ -327,17 +316,11 @@ module cont_stat_register_file (
                     case(adress_csr_i)
                         `MSTATUS:     mstatus_ns = data_csr_write_imm_i | mstatus_r;
                         `MISA:           misa_ns = data_csr_write_imm_i | misa_r;
-                        `MIE:             mie_ns = data_csr_write_imm_i | mie_r;
                         `MTVEC:         mtvec_ns = data_csr_write_imm_i | mtvec_r;
-                        `MSTATUSH:   mstatush_ns = data_csr_write_imm_i | mstatush_r;
 
                         `MSCRATCH:   mscratch_ns = data_csr_write_imm_i | mscratch_r;
                         `MEPC:           mepc_ns = data_csr_write_imm_i | mepc_r;
                         `MCAUSE:       mcause_ns = data_csr_write_imm_i | mcause_r;
-                        `MTVAL:         mtval_ns = data_csr_write_imm_i | mtval_r;
-                        `MIP:             mip_ns = data_csr_write_imm_i | mip_r;
-                        `MTINST:       mtinst_ns = data_csr_write_imm_i | mtinst_r;
-                        `MTVAL2:       mtval2_ns = data_csr_write_imm_i | mtval2_r;
 
                         `MCYCLE:       mcycle_ns = data_csr_write_imm_i | mcycle_r;
                         `MINSTRET:   minstret_ns = data_csr_write_imm_i | minstret_r;
@@ -349,17 +332,12 @@ module cont_stat_register_file (
                     case(adress_csr_i)
                         `MSTATUS:     mstatus_ns = ~data_csr_write_imm_i & mstatus_r;
                         `MISA:           misa_ns = ~data_csr_write_imm_i & misa_r;
-                        `MIE:             mie_ns = ~data_csr_write_imm_i & mie_r;
                         `MTVEC:         mtvec_ns = ~data_csr_write_imm_i & mtvec_r;
                         `MSTATUSH:   mstatush_ns = ~data_csr_write_imm_i & mstatush_r;
 
                         `MSCRATCH:   mscratch_ns = ~data_csr_write_imm_i & mscratch_r;
                         `MEPC:           mepc_ns = ~data_csr_write_imm_i & mepc_r;
                         `MCAUSE:       mcause_ns = ~data_csr_write_imm_i & mcause_r;
-                        `MTVAL:         mtval_ns = ~data_csr_write_imm_i & mtval_r;
-                        `MIP:             mip_ns = ~data_csr_write_imm_i & mip_r;
-                        `MTINST:       mtinst_ns = ~data_csr_write_imm_i & mtinst_r;
-                        `MTVAL2:       mtval2_ns = ~data_csr_write_imm_i & mtval2_r;
 
                         `MCYCLE:       mcycle_ns = ~data_csr_write_imm_i & mcycle_r;
                         `MINSTRET:   minstret_ns = ~data_csr_write_imm_i & minstret_r;
@@ -371,17 +349,12 @@ module cont_stat_register_file (
                     case(adress_csr_i)
                         `MSTATUS:     mstatus_ns = data_csr_write_imm_i;
                         `MISA:           misa_ns = data_csr_write_imm_i;
-                        `MIE:             mie_ns = data_csr_write_imm_i;
                         `MTVEC:         mtvec_ns = data_csr_write_imm_i;
                         `MSTATUSH:   mstatush_ns = data_csr_write_imm_i;
 
                         `MSCRATCH:   mscratch_ns = data_csr_write_imm_i;
                         `MEPC:           mepc_ns = data_csr_write_imm_i;
                         `MCAUSE:       mcause_ns = data_csr_write_imm_i;
-                        `MTVAL:         mtval_ns = data_csr_write_imm_i;
-                        `MIP:             mip_ns = data_csr_write_imm_i;
-                        `MTINST:       mtinst_ns = data_csr_write_imm_i;
-                        `MTVAL2:       mtval2_ns = data_csr_write_imm_i;
 
                         `MCYCLE:       mcycle_ns = data_csr_write_imm_i;
                         `MINSTRET:   minstret_ns = data_csr_write_imm_i;
@@ -393,32 +366,74 @@ module cont_stat_register_file (
         end
 
         //TODO:
-        //  -interrupt gelmis olabilir
+        //  -interrupt gelmis olabilir | interrupt gelmis olamaz cunku interrupt gelecek bir durumumuz yok :(
         //  -exception gelmis olabilir
         //  -exception'dan return ediliyor olabilir
+        if(en_exception_i) begin
+            mstatus_ns[`MSTATUS_MPIE] = mstatus_r[`MSTATUS_MIE];
+            mstatus_ns[`MSTATUS_MIE]  = 1'b0;
+            mstatus_ns[`MSTATUS_MPP]  = `PRIV_MACHINE;
 
-        if(en_interrupt_i) begin
+            mepc_ns = exception_program_counter_i;
 
-            if(interrupt_cause == `INT_EXTERN) begin
+            en_excep_program_counter_o = 1'b1;
+            excep_program_counter_o    = {mtvec_r[31:2], 2'b00};
 
-            end
-            else if(interrupt_cause == `INT_SOFT) begin
-
-            end
-            else if(interrupt_cause == `INT_TIMER) begin
-
+            //TODO: why there is priority order in page 40 priv-spec
+            case(exception_cause_i) begin
+                `EXCEP_INSTR_ADRESS_MISALIGNED:        begin
+                    mcause_ns = {1'b0, 27'b0, 4'b0000}
+                end
+                `EXCEP_ILLEGAL_INSTRUCTION:     begin
+                    mcause_ns = {1'b0, 27'b0, 4'b0010}
+                end
+                `EXCEP_BREAKPOINT:              begin
+                    mcause_ns = {1'b0, 27'b0, 4'b0011}
+                end
+                `EXCEP_LOAD_ADRESS_MISALIGNED:  begin
+                    mcause_ns = {1'b0, 27'b0, 4'b0100}
+                end
+                `EXCEP_STORE_ADRESS_MISALIGNED: begin
+                    mcause_ns = {1'b0, 27'b0, 4'b0110}
+                end
+                `EXCEP_ENV_CALL:                begin
+                    mcause_ns = {1'b0, 27'b0, 4'b1011}
+                    mepc_ns   = excep_program_counter_i;
+                end
             end
         end
-        else if(en_exception_i) begin
-            case(exception_cause)
+        else if(en_mret_instruction_i) begin
+            mstatus_ns[`MSTATUS_MIE]  = mstatus_r[`MSTATUS_MPIE];
+            mstatus_ns[`MSTATUS_MPIE] = 1'b1;
+            mstatus_ns[`MSTATUS_MPP]  = `PRIV_MACHINE;
 
-            endcase
+            en_excep_program_counter_o = 1'b1;
+            excep_program_counter_o    = {mepc_r[32:1], 1'b0};  //IALIGN = 16
         end
 
     end
 
-    always @(posedge clk_i) begin
+    always @(posedge clk_i, negedge rst_i) begin
+        //TODO: resette yapmamiz gereken hicbir sey yok sanirim performance monitoring registerlari haric
+        if(!rst_i) begin
 
+        end
+        else begin
+            mstatus_r  <= mstatus_ns;
+            mtvec_r    <= mtvec_ns;
+            mscratch_r <= mscratch_ns;
+            mepc_r     <= mepc_ns;
+            mcause_r   <= mcause_ns;
+            mcycle_r   <= mcycle_ns;
+            minstret_r <= minstret_ns;
+
+            //TODO: iskembeden salladim boyle bir sey mi kontrol etmek lazim
+            if(mcycle_ns == 32'hFFFF_FFFF)
+                mcycleh_r <= mcycleh_ns + 1'b1;
+
+            if(minstret_ns == 32'hFFFF_FFFF)
+                minstreth_r <= minstreth_ns + 1'b1;
+        end
     end
 
     assign data_csr_read_o = data_csr_read_r;
