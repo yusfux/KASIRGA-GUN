@@ -2,9 +2,10 @@
 
 module buyruk_onbellegi_denetleyici(
 
-    input                clk_i,                    
-    input                rst_i,// active low reset
+    input               clk_i,                    
+    input               rst_i,// active low reset
     
+    input               durdur_i,
     input   [31:0]      adres_i,                    
   
     // onbellek sinyalleri
@@ -49,61 +50,62 @@ module buyruk_onbellegi_denetleyici(
     assign veri_araligi = adres_i[3:2];
       
     always @(*) begin
-       
         durum_ns             = durum_r;
         buyruk_r             = 32'd0;
         anabellek_adres_r    = 32'd0;
         veri_obegi_r         = 128'd0;
         onbellege_obek_yaz_r = 1'b0; 
         buyruk_hazir_r       = 1'b0; 
-        
-        case(durum_r)
-                    
-            ONBELLEK_OKU: begin
             
-                if(adres_bulundu_i) begin
-                    buyruk_r       = buyruk_i;       
-                    buyruk_hazir_r = 1'b1;
-                end
-                else begin   
-                    buyruk_hazir_r = 1'b0;          
-                    if(anabellek_musait_i) begin
-                        anabellek_adres_r = {adres_i[31:4], 4'b0000};
-                        buyruk_hazir_r    = 1'b0;
-                        durum_ns          = ANABELLEK_OKU ;                     
-                    end
-                end
-            end
-            
-            ANABELLEK_OKU :begin
-                 if(getir_asamasina_veri_hazir_i) begin
-                      
-                            if(veri_araligi == 2'b00)begin
-                                buyruk_r = okunan_obek_i[31:0];
-                            end
-                            else if(veri_araligi == 2'b01)begin
-                                buyruk_r = okunan_obek_i[63:32];
-                            end
-                            else if(veri_araligi == 2'b10)begin
-                                buyruk_r = okunan_obek_i[95:64];
-                            end
-                            else if(veri_araligi == 2'b11)begin
-                                buyruk_r = okunan_obek_i[127:96];
-                            end
-                            
-                            buyruk_hazir_r = 1'b1;
-                                                    
-                            onbellege_obek_yaz_r = 1'b1;
-                            veri_obegi_r         = okunan_obek_i;
-                            durum_ns             = ONBELLEK_YAZ;    
-                    end
-        
-            end
-            ONBELLEK_YAZ : begin 
-                durum_ns = ONBELLEK_OKU;
+        if(!durdur_i)begin   
+            case(durum_r)
+                        
+                ONBELLEK_OKU: begin
                 
-            end
-       endcase
+                    if(adres_bulundu_i) begin
+                        buyruk_r       = buyruk_i;       
+                        buyruk_hazir_r = 1'b1;
+                    end
+                    else begin   
+                        buyruk_hazir_r = 1'b0;          
+                        if(anabellek_musait_i) begin
+                            anabellek_adres_r = {adres_i[31:4], 4'b0000};
+                            buyruk_hazir_r    = 1'b0;
+                            durum_ns          = ANABELLEK_OKU ;                     
+                        end
+                    end
+                end
+                
+                ANABELLEK_OKU :begin
+                     if(getir_asamasina_veri_hazir_i) begin
+                          
+                                if(veri_araligi == 2'b00)begin
+                                    buyruk_r = okunan_obek_i[31:0];
+                                end
+                                else if(veri_araligi == 2'b01)begin
+                                    buyruk_r = okunan_obek_i[63:32];
+                                end
+                                else if(veri_araligi == 2'b10)begin
+                                    buyruk_r = okunan_obek_i[95:64];
+                                end
+                                else if(veri_araligi == 2'b11)begin
+                                    buyruk_r = okunan_obek_i[127:96];
+                                end
+                                
+                                buyruk_hazir_r = 1'b1;
+                                                        
+                                onbellege_obek_yaz_r = 1'b1;
+                                veri_obegi_r         = okunan_obek_i;
+                                durum_ns             = ONBELLEK_YAZ;    
+                        end
+            
+                end
+                ONBELLEK_YAZ : begin 
+                    durum_ns = ONBELLEK_OKU;
+                    
+                end
+           endcase
+        end
     end
 
     
