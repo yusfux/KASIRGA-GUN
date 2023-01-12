@@ -172,13 +172,14 @@
     always @(posedge clk_i) begin
         if(!rst_i) begin
             durum                     <= MUSAIT;
+            
             veri_sayisi_r             <= 3'd0  ;
             okunan_veri_obegi_r       <= 128'd0;
             adres_r                   <= 32'd0 ;
             yaz_veri_r                <= 32'd0 ;
             wr_strb_r                 <= 4'd0  ; 
             iomem_valid_r             <= 1'b0  ;
-            anabellek_musait_r        <= 1'b1  ;
+            anabellek_musait_r        <= 1'b0  ; //DEGISTIRME: bu sinyal 1 oldugunda rst durumunda buyruk onb denetleyiciden cikan anabellek istek sinyali 1 oluyor, rst bittiginde anabellek musait o 0 oluyor(ama 1 olmali) 
             asama_r                   <= 1'b0  ;
             getir_asamasina_veri_hazir_r  <= 1'b0;
             bellek_asamasina_veri_hazir_r <= 1'b0;
