@@ -67,18 +67,19 @@ always @(posedge clk_i) begin
              kirli_buffer[i]  <= 1'b0;        
              gecerli_buffer[i] <= 1'b0;        
          end                         
-        veri_obegi_r <=128'd0;           
-        adres_bulundu_r <= 1'b0;          
-        okunan_veri_r  <= 32'd0;           
-        obek_kirli_r  <= 1'd0;                                           
-        kirli_obek_adresi_r <= 32'd0;                
+         veri_obegi_r <=128'd0;           
+         adres_bulundu_r <= 1'b0;          
+         okunan_veri_r  <= 32'd0;           
+         obek_kirli_r  <= 1'd0;                                           
+         kirli_obek_adresi_r <= 32'd0;                
     end 
     else begin        
         if(bellekten_oku_i) begin
             
             if(gecerli_buffer[onbellek_adres] == 1'b0) begin
                 
-                adres_bulundu_r <= 0;
+                obek_kirli_r <= 1'b0;
+                adres_bulundu_r <= 1'b0;
                 etiket_buffer[onbellek_adres] <= etiket; // obek geldiginde ilk else if e girmemeli
                 gecerli_buffer[onbellek_adres] <= 1'b1; // sýradaki sefer geldiginde buraya girmemeli   
             end 
@@ -130,6 +131,7 @@ always @(posedge clk_i) begin
             
             if(gecerli_buffer[onbellek_adres] == 1'b0) begin
             
+                obek_kirli_r <= 1'b0;
                 adres_bulundu_r <= 0;
                 etiket_buffer[onbellek_adres] <= etiket; // obek geldiginde ilk else if e girmemeli
                 gecerli_buffer[onbellek_adres] <= 1'b1 ; // sýradaki sefer geldiginde buraya girmemeli
@@ -155,7 +157,7 @@ always @(posedge clk_i) begin
                 case(buyruk_turu_i) 
                     `MEM_SB :  onbellek[onbellek_adres][(secilen_byte*8)+:7]  <= veri_i[7:0];                  
                     `MEM_SH :  onbellek[onbellek_adres][(secilen_byte*8)+:15] <= veri_i[15:0];                
-                    `MEM_SW :  onbellek[onbellek_adres][(secilen_byte*8)+:32] <= veri_i;     //// + 32 mi 31 mi
+                    `MEM_SW :  onbellek[onbellek_adres][(secilen_byte*8)+:31] <= veri_i;     //// + 32 mi 31 mi
                 endcase
                 kirli_buffer[onbellek_adres] <= 1'b1;
             end
