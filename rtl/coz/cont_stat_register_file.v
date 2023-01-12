@@ -25,19 +25,12 @@
 //sikicem bu field specificationlari read legallarda onceki yazmaya dependent olmayacak sekilde en sonki legal degeri dondurecegim
 
 `include "instructions.vh"
+`include "operations.vh"
 
 `define MSTATUS_MPP  12:11
 `define MSTATUS_MPIE 7
 `define MSTATUS_MIE  3
 `define PRIV_MACHINE 2'b11
-
-`define EXCEP_INSTR_ADRESS_MISALIGNED 2'b000
-`define EXCEP_ILLEGAL_INSTRUCTION     2'b001
-`define EXCEP_BREAKPOINT              2'b010
-`define EXCEP_LOAD_ADRESS_MISALIGNED  2'b011
-`define EXCEP_STORE_ADRESS_MISALIGNED 2'b100
-`define EXCEP_ENV_CALL                2'b101
-
 
 module cont_stat_register_file (
         input clk_i, rst_i,
@@ -68,7 +61,7 @@ module cont_stat_register_file (
 
         //-----------------------signals from 'controller' to 'fetch stage'------------------------
         output en_excep_program_counter_o,
-        output [31:0] excep_program_counter_o,
+        output [31:0] excep_program_counter_o
         //-----------------------------------------------------------------------------------------
     );
 
@@ -205,6 +198,8 @@ module cont_stat_register_file (
 
 
     reg [31:0] data_csr_read_r;
+    reg [31:0] excep_program_counter_r;
+    reg        en_excep_program_counter_r;
 
     //TODO: check the CSR field specifications
     //TODO: attempts to access a non-existent CSR raise an illegal instruction exception
@@ -239,7 +234,7 @@ module cont_stat_register_file (
                 `MCONFIGPTR: data_csr_read_r = mconfigptr_w;
 
                 `MSTATUS:    data_csr_read_r = mstatus_r  & 32'h0000_1888;
-                `MISA:       data_csr_read_r = misa_r;
+                `MISA:       data_csr_read_r = misa_w;
                 `MTVEC:      data_csr_read_r = mtvec_r;
                 `MSTATUSH:   data_csr_read_r = mstatush_w;
 
@@ -247,7 +242,7 @@ module cont_stat_register_file (
                 `MEPC:       data_csr_read_r = mepc_r;
                 `MCAUSE:     data_csr_read_r = mcause_r;
                 `MTVAL:      data_csr_read_r = mtval_w;
-                `MTINST:     data_csr_read_r = mtinst_r;
+                `MTINST:     data_csr_read_r = mtinst_w;
 
                 `MCYCLE:     data_csr_read_r = mcycle_r;
                 `MINSTRET:   data_csr_read_r = minstret_r;
@@ -264,10 +259,9 @@ module cont_stat_register_file (
         //TODO: need to find more elegant way to write values into csrs
         if(en_csr_write_i) begin
             case(op_csr_i)
-                `CSR_CSRRS: begin
+                `OP_CSR_CSRRS: begin
                     case(adress_csr_i)
                         `MSTATUS:     mstatus_ns = data_csr_write_i | mstatus_r;
-                        `MISA:           misa_ns = data_csr_write_i | misa_r;
                         `MTVEC:         mtvec_ns = data_csr_write_i | mtvec_r;
 
                         `MSCRATCH:   mscratch_ns = data_csr_write_i | mscratch_r;
@@ -280,10 +274,9 @@ module cont_stat_register_file (
                         `MINSTRETH: minstreth_ns = data_csr_write_i | minstreth_r;
                     endcase
                 end
-                `CSR_CSRRC: begin
+                `OP_CSR_CSRRC: begin
                     case(adress_csr_i)
                         `MSTATUS:     mstatus_ns = ~data_csr_write_i & mstatus_r;
-                        `MISA:           misa_ns = ~data_csr_write_i & misa_r;
                         `MTVEC:         mtvec_ns = ~data_csr_write_i & mtvec_r;
 
                         `MSCRATCH:   mscratch_ns = ~data_csr_write_i & mscratch_r;
@@ -296,10 +289,9 @@ module cont_stat_register_file (
                         `MINSTRETH: minstreth_ns = ~data_csr_write_i & minstreth_r;
                     endcase
                 end
-                `CSR_CSRRW: begin
+                `OP_CSR_CSRRW: begin
                     case(adress_csr_i)
                         `MSTATUS:     mstatus_ns = data_csr_write_i;
-                        `MISA:           misa_ns = data_csr_write_i;
                         `MTVEC:         mtvec_ns = data_csr_write_i;
 
                         `MSCRATCH:   mscratch_ns = data_csr_write_i;
@@ -312,10 +304,9 @@ module cont_stat_register_file (
                         `MINSTRETH: minstreth_ns = data_csr_write_i;
                     endcase
                 end
-                `CSR_CSRRSI: begin
+                `OP_CSR_CSRRSI: begin
                     case(adress_csr_i)
                         `MSTATUS:     mstatus_ns = data_csr_write_imm_i | mstatus_r;
-                        `MISA:           misa_ns = data_csr_write_imm_i | misa_r;
                         `MTVEC:         mtvec_ns = data_csr_write_imm_i | mtvec_r;
 
                         `MSCRATCH:   mscratch_ns = data_csr_write_imm_i | mscratch_r;
@@ -328,12 +319,10 @@ module cont_stat_register_file (
                         `MINSTRETH: minstreth_ns = data_csr_write_imm_i | minstreth_r;
                     endcase
                 end
-                `CSR_CSRRCI: begin
+                `OP_CSR_CSRRCI: begin
                     case(adress_csr_i)
                         `MSTATUS:     mstatus_ns = ~data_csr_write_imm_i & mstatus_r;
-                        `MISA:           misa_ns = ~data_csr_write_imm_i & misa_r;
                         `MTVEC:         mtvec_ns = ~data_csr_write_imm_i & mtvec_r;
-                        `MSTATUSH:   mstatush_ns = ~data_csr_write_imm_i & mstatush_r;
 
                         `MSCRATCH:   mscratch_ns = ~data_csr_write_imm_i & mscratch_r;
                         `MEPC:           mepc_ns = ~data_csr_write_imm_i & mepc_r;
@@ -345,12 +334,10 @@ module cont_stat_register_file (
                         `MINSTRETH: minstreth_ns = ~data_csr_write_imm_i & minstreth_r;
                     endcase
                 end
-                `CSR_CSRRWI: begin
+                `OP_CSR_CSRRWI: begin
                     case(adress_csr_i)
                         `MSTATUS:     mstatus_ns = data_csr_write_imm_i;
-                        `MISA:           misa_ns = data_csr_write_imm_i;
                         `MTVEC:         mtvec_ns = data_csr_write_imm_i;
-                        `MSTATUSH:   mstatush_ns = data_csr_write_imm_i;
 
                         `MSCRATCH:   mscratch_ns = data_csr_write_imm_i;
                         `MEPC:           mepc_ns = data_csr_write_imm_i;
@@ -376,39 +363,39 @@ module cont_stat_register_file (
 
             mepc_ns = exception_program_counter_i;
 
-            en_excep_program_counter_o = 1'b1;
-            excep_program_counter_o    = {mtvec_r[31:2], 2'b00};
+            en_excep_program_counter_r = 1'b1;
+            excep_program_counter_r    = {mtvec_r[31:2], 2'b00};
 
-            //TODO: why there is priority order in page 40 priv-spec
-            case(exception_cause_i) begin
-                `EXCEP_INSTR_ADRESS_MISALIGNED:        begin
-                    mcause_ns = {1'b0, 27'b0, 4'b0000}
+            //TODO: why there is priority order in page 40 priv-spec, for multiple hart systems?
+            case(exception_cause_i)
+                `EXCEP_INSTR_MISALIGNED:        begin
+                    mcause_ns = {1'b0, 27'b0, 4'b0000};
                 end
                 `EXCEP_ILLEGAL_INSTRUCTION:     begin
-                    mcause_ns = {1'b0, 27'b0, 4'b0010}
+                    mcause_ns = {1'b0, 27'b0, 4'b0010};
                 end
                 `EXCEP_BREAKPOINT:              begin
-                    mcause_ns = {1'b0, 27'b0, 4'b0011}
+                    mcause_ns = {1'b0, 27'b0, 4'b0011};
                 end
                 `EXCEP_LOAD_ADRESS_MISALIGNED:  begin
-                    mcause_ns = {1'b0, 27'b0, 4'b0100}
+                    mcause_ns = {1'b0, 27'b0, 4'b0100};
                 end
                 `EXCEP_STORE_ADRESS_MISALIGNED: begin
-                    mcause_ns = {1'b0, 27'b0, 4'b0110}
+                    mcause_ns = {1'b0, 27'b0, 4'b0110};
                 end
                 `EXCEP_ENV_CALL:                begin
-                    mcause_ns = {1'b0, 27'b0, 4'b1011}
-                    mepc_ns   = excep_program_counter_i;
+                    mcause_ns = {1'b0, 27'b0, 4'b1011};
+                    mepc_ns   = exception_program_counter_i;
                 end
-            end
+            endcase
         end
         else if(en_mret_instruction_i) begin
             mstatus_ns[`MSTATUS_MIE]  = mstatus_r[`MSTATUS_MPIE];
             mstatus_ns[`MSTATUS_MPIE] = 1'b1;
             mstatus_ns[`MSTATUS_MPP]  = `PRIV_MACHINE;
 
-            en_excep_program_counter_o = 1'b1;
-            excep_program_counter_o    = {mepc_r[32:1], 1'b0};  //IALIGN = 16
+            en_excep_program_counter_r = 1'b1;
+            excep_program_counter_r    = {mepc_r[31:1], 1'b0};  //IALIGN = 16
         end
 
     end
@@ -436,6 +423,8 @@ module cont_stat_register_file (
         end
     end
 
-    assign data_csr_read_o = data_csr_read_r;
+    assign data_csr_read_o            = data_csr_read_r;
+    assign en_excep_program_counter_o = en_excep_program_counter_r;
+    assign excep_program_counter_o    = excep_program_counter_r;
 
 endmodule

@@ -113,6 +113,6 @@ module register_file(
 
     assign reg_rs1_data_o        = reg_rs1_data_r;
     assign reg_rs2_data_o        = reg_rs2_data_r;
-    assign stall_register_file_o = ((reg_read_rs1_i && ~reg_is_ready_rs1_r) || (reg_read_rs2_i && ~reg_is_raedy_rs2_r));
+    assign stall_register_file_o = ((reg_read_rs1_i && ~reg_is_ready_rs1_r) || (reg_read_rs2_i && ~reg_is_ready_rs2_r));
 
 endmodule

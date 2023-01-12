@@ -48,13 +48,20 @@ module instr_decoder (
 
         output enable_rs2_conv_o,
         //-------------------------------------------------------------------------------
+
+        //-------------------signals to "control status register file"-------------------
         output en_csr_read_o,
         output en_csr_write_o,
-        output [11:0] adress_csr_read_o,
-        output [11:0] adress_csr_write_o,
+        output en_mret_instruction_o,
+        output [11:0] adress_csr_o,
         output [2:0]  op_csr_o,
-        //-------------------signals to "control status register file"-------------------
-        output 
+        //-------------------------------------------------------------------------------
+
+        //------------------------signals to "pipeline controller"-----------------------
+        output exception_illegal_instruction_o,
+        output exception_breakpoint_o,
+        output exception_env_call_from_M_mode_o,
+
         //-------------------------------------------------------------------------------
 
         //--------------------------signals to "register file"---------------------------
@@ -82,13 +89,14 @@ module instr_decoder (
     wire [31:0] imm_u_w  = {    instruction_i[31],   instruction_i[30:20], instruction_i[19:12], 12'b0};
     wire [31:0] imm_j_w  = {{12{instruction_i[31]}}, instruction_i[19:12], instruction_i[20],    instruction_i[30:25], instruction_i[24:21], 1'b0};
     wire [31:0] shamt_w  = {{27{instruction_i[24]}}, instruction_i[24:20]};
-    wire [31:0] zimm     = {{27{1'b0}}, instruction_i[19:15]};
+    wire [31:0] zimm_w   = {{27{1'b0}}, instruction_i[19:15]};
 
 
     //csr signals
     reg en_csr_read_r;
     reg en_csr_write_r;
-    reg [2:0]  op_csr_r;
+    reg  en_mret_instruction_r;
+    reg  [2:0]  op_csr_r;
 
     //enable
     reg en_alu_r;
@@ -98,11 +106,11 @@ module instr_decoder (
     reg en_mem_r;
 
     //operations
-    reg [5:0]  op_alu_r;
-    reg [2:0]  op_ai_r;
-    reg [2:0]  op_crypto_r;
-    reg [2:0]  op_branching_r;
-    reg [2:0]  op_mem_r;
+    reg [5:0] op_alu_r;
+    reg [2:0] op_ai_r;
+    reg [2:0] op_crypto_r;
+    reg [2:0] op_branching_r;
+    reg [2:0] op_mem_r;
 
     //memory read-write
     reg mem_read_r;
@@ -121,7 +129,6 @@ module instr_decoder (
     always @(*) begin
         en_csr_read_r       = 1'b0;
         en_csr_write_r      = 1'b0;
-        adress_csr_write_r  = 11'b0;
 
         en_alu_r            = 1'b0;
         en_branching_unit_r = 1'b0;
@@ -432,11 +439,11 @@ module instr_decoder (
             end //-----------------------------------------------------
 
             7'b`SYSTEM: begin
-                //need to implement fence, fence.i, ecall, ebreak, and some other M-mode instructions
+                //need to implement fence, fence.i, ecall, ebreak, mret. not sure about fence.i though
                 //any side effect that may occur when csr read is illegal inst exception
                 case (funct3_w)
                     3'b`CSRRW:  begin
-                        op_csr_r = `CSR_CSRRW;
+                        op_csr_r = `OP_CSR_CSRRW;
                         en_csr_write_r = 1'b1;
                         en_csr_read_r  = 1'b1;
                         reg_read_rs1_r = 1'b1;
@@ -444,7 +451,7 @@ module instr_decoder (
                             en_csr_read_r  = 1'b0;
                     end
                     3'b`CSRRS:  begin
-                        op_csr_r = `CSR_CSRRS;
+                        op_csr_r = `OP_CSR_CSRRS;
                         en_csr_write_r = 1'b1;
                         en_csr_read_r  = 1'b1;
                         reg_read_rs1_r = 1'b1;
@@ -454,7 +461,7 @@ module instr_decoder (
                         end
                     end
                     3'b`CSRRC:  begin
-                        op_csr_r = `CSR_CSRRC;
+                        op_csr_r = `OP_CSR_CSRRC;
                         en_csr_write_r = 1'b1;
                         en_csr_read_r  = 1'b1;
                         reg_read_rs1_r = 1'b1;
@@ -464,41 +471,49 @@ module instr_decoder (
                         end
                     end
                     3'b`CSRRWI: begin
-                        immediate_r = zimm;
+                        immediate_r = zimm_w;
 
-                        op_csr_r = `CSR_CSRWI;
+                        op_csr_r = `OP_CSR_CSRRWI;
                         en_csr_write_r = 1'b1;
                         en_csr_read_r  = 1'b1;
                         if(rd_w == 5'b0)
                             en_csr_read_r  = 1'b0;
                     end
                     3'b`CSRRSI: begin
-                        immediate_r = zimm;
+                        immediate_r = zimm_w;
 
-                        op_csr_r = `CSRRSI;
+                        op_csr_r = `OP_CSR_CSRRSI;
                         en_csr_write_r = 1'b1;
                         en_csr_read_r  = 1'b1;
-                        if(zimm == 32'b0)
+                        if(zimm_w == 32'b0)
                             en_csr_write_r  = 1'b0;
                     end
                     3'b`CSRRCI: begin
-                        immediate_r = zimm;
+                        immediate_r = zimm_w;
 
-                        op_csr_r = `CSRRCI;
+                        op_csr_r = `OP_CSR_CSRRCI;
                         en_csr_write_r = 1'b1;
                         en_csr_read_r  = 1'b1;
-                        if(zimm == 32'b0)
+                        if(zimm_w == 32'b0)
                             en_csr_write_r  = 1'b0;
                     end
                 endcase 
+
+                //TODO: bu sekilde yapmak dogru mu? zaten sadece MRET implement ettigimiz icin yalnizca bir iki fielda bakip
+                //baska bir buyruk gelmeyecegini varsayabilir miyiz?
+                //if(funct3_w == 3'b000) begin
+                //    if(r)
+                //end
             end
         endcase
     end
 
-    assign en_csr_read_o  = en_csr_read_r;
-    assign en_csr_write_o = en_csr_write_r;
-    assign adress_csr_o   = adress_csr_read_w
-    assign op_csr_o       = op_csr_r;
+    assign en_csr_read_o         = en_csr_read_r;
+    assign en_csr_write_o        = en_csr_write_r;
+    assign en_mret_instruction_o = en_mret_instruction_r;
+    assign adress_csr_o          = adress_csr_w;
+    assign op_csr_o              = op_csr_r;
+    assign adress_csr_o          = adress_csr_w;
 
     assign en_alu_o            = en_alu_r;
     assign en_branching_unit_o = en_branching_unit_r;
@@ -525,5 +540,5 @@ module instr_decoder (
     assign reg_rd_o    = rd_w;
 
     //ahmet hakan'in ozel istegi
-    assign enable_rs2_conv = reg_read_rs2_r;
+    assign enable_rs2_conv_o = reg_read_rs2_r;
 endmodule

@@ -93,11 +93,18 @@
 
 
 //-------------------------------------------------------------------------------------
-//-----------------------------------CSR OPERATIONS------------------------------------
+//----------------------------------SYSTEM OPERATIONS----------------------------------
 //-------------------------------------------------------------------------------------
-`define CSR_CSRRW  3'b000
-`define CSR_CSRRS  3'b001
-`define CSR_CSRRC  3'b010
-`define CSR_CSRRWI 3'b011
-`define CSR_CSRRSI 3'b100
-`define CSR_CSRRCI 3'b101
+`define OP_CSR_CSRRW  3'b000
+`define OP_CSR_CSRRS  3'b001
+`define OP_CSR_CSRRC  3'b010
+`define OP_CSR_CSRRWI 3'b011
+`define OP_CSR_CSRRSI 3'b100
+`define OP_CSR_CSRRCI 3'b101
+
+`define EXCEP_INSTR_MISALIGNED        3'b000
+`define EXCEP_ILLEGAL_INSTRUCTION     3'b001
+`define EXCEP_BREAKPOINT              3'b010
+`define EXCEP_LOAD_ADRESS_MISALIGNED  3'b011
+`define EXCEP_STORE_ADRESS_MISALIGNED 3'b100
+`define EXCEP_ENV_CALL                3'b101

@@ -92,8 +92,18 @@ module wrapper_decode(
     wire [4:0] reg_rs2_w;
     wire [4:0] reg_rd_w;
 
+    wire [31:0] immediate_r;
+    wire [31:0] reg_rs1_data_r;
 
-    //TODO: need to clock the signals that are coming from prev stages in every wrapper
+    wire en_csr_read_r;
+    wire en_csr_write_r;
+    wire en_mret_instruction_r;
+    wire [11:0] adress_csr_r;
+    wire [2:0]  op_csr_r;
+    wire exception_illegal_instruction_r;
+    wire exception_breakpoint_r;
+    wire exception_env_call_from_M_mode_r;
+
 
     rvc_expander  compressed_expander (
         .instruction_i(instruction_r),
@@ -115,10 +125,20 @@ module wrapper_decode(
         .op_crypto_o(op_crypto_o),
         .op_branching_o(op_branching_o),
         .op_mem_o(op_mem_o),
-        .immediate_o(immediate_o),
+        .immediate_o(immediate_r),
         .mem_read_o(mem_read_o),
         .mem_write_o(mem_write_o),
         .enable_rs2_conv_o(enable_rs2_conv_o),
+
+        .en_csr_read_o(en_csr_read_r),
+        .en_csr_write_o(en_csr_write_r),
+        .en_mret_instruction_o(en_mret_instruction_r),
+        .adress_csr_o(adress_csr_r),
+        .op_csr_o(op_csr_r),
+        .exception_illegal_instruction_o(exception_illegal_instruction_r),
+        .exception_breakpoint_o(exception_breakpoint_r),
+        .exception_env_call_from_M_mode_o(exception_env_call_from_M_mode_r),
+
         .reg_read_rs1_o(reg_read_rs1_w),
         .reg_read_rs2_o(reg_read_rs2_w),
         .reg_write_o(reg_write_w),
@@ -126,6 +146,13 @@ module wrapper_decode(
         .reg_rs2_o(reg_rs2_w),
         .reg_rd_o(reg_rd_w)
     );
+    
+    wire en_exception_r;
+    wire [31:0] exception_adress_r;
+    wire [31:0] exception_program_counter_r;
+    wire [31:0] data_csr_read_r;
+    wire en_excep_program_counter_r;
+    wire [31:0] excep_program_counter_r;
 
     register_file register_file       (
         .clk_i(clk_i),
@@ -137,16 +164,39 @@ module wrapper_decode(
         .reg_rs2_i(reg_rs2_w),
         .reg_write_i(reg_write_w),
         .reg_rd_i(reg_rd_w),
+
+        .reg_write_csr_i(en_csr_read_r),
+        .reg_rd_data_csr_i(data_csr_read_r),
+
         .reg_write_wb_i(reg_write_wb_i),
         .reg_rd_wb_i(reg_rd_wb_i),
         .reg_rd_data_wb_i(reg_rd_data_wb_i),
         
-        .reg_rs1_data_o(reg_rs1_data_o),
+        .reg_rs1_data_o(reg_rs1_data_r),
         .reg_rs2_data_o(reg_rs2_data_o),
         .stall_register_file_o(stall_decode_o)
     );
 
-    //TODO: check if signals from write-backs stage need to get clocked
+    cont_stat_register_file csr_file (
+        .clk_i(clk_i),
+        .rst_i(rst_i),
+        .en_exception_i(en_exception_r),
+        .exception_adress_i(exception_adress_r),
+        .exception_program_counter_i(exception_program_counter_r),
+        .en_mret_instruction_i(en_mret_instruction_r),
+        .op_csr_i(op_csr_r),
+        .en_csr_read_i(en_csr_read_r),
+        .en_csr_write_i(en_csr_write_r),
+        .adress_csr_i(adress_csr_r),
+        .data_csr_write_i(reg_rs1_data_r),
+        .data_csr_write_imm_i(immediate_r),
+
+        .data_csr_read_o(data_csr_read_r),
+        .en_excep_program_counter_o(en_excep_program_counter_r),
+        .excep_program_counter_o(excep_program_counter_r)
+    );
+
+    //TODO: check if signals from write-back stage need to get clocked
     always @(posedge clk_i) begin
         instruction_r     <= instruction_i;
         program_counter_r <= program_counter_i;
@@ -158,5 +208,8 @@ module wrapper_decode(
 
     assign reg_rd_o          = reg_rd_w;
     assign reg_write_o       = reg_write_w;
+
+    assign immediate_o       = immediate_r;
+    assign reg_rs1_data_o    = reg_rs1_data_r;
 
 endmodule
