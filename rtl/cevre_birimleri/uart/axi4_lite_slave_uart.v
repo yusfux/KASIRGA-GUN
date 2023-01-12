@@ -14,7 +14,8 @@ module axi4_lite_slave_uart(
      input              s_axi_rready_i,
      output             s_axi_rvalid_o,
      
-	 output  [31:0]     s_axi_rdata_o, 
+	 output  [31:0]     s_axi_rdata_o,
+	 output             s_axi_rresp_o, 
      
      //         WRITE SIGNALS
 	 // aw -> address write (address in)
@@ -27,15 +28,18 @@ module axi4_lite_slave_uart(
      
      input   [31:0]     s_axi_wdata_i,
      output             s_axi_wready_o,
-     //input   [3:0]      s_axi_wstrb_i,
+     input   [3:0]      s_axi_wstrb_i,
      input              s_axi_wvalid_i,
      
 	 // Bunlarý anlamadým
      input              s_axi_bready_i,
      output             s_axi_bvalid_o,
+     output             s_axi_bresp_o,
+     input   [3:0]      read_size_i,
      
      output tx_o,
-     input rx_i
+     input rx_i,
+     output stall_o
      
      
      
@@ -49,9 +53,8 @@ module axi4_lite_slave_uart(
 	
 	wire [7:0] tx_w;
 	wire [7:0] rx_w;
-  
-    
-    axi_interface axi_connection(
+	
+    axi_interface_uart axi_connection(
         .s_axi_aclk_i(s_axi_aclk_i),
 		.s_axi_aresetn_i(s_axi_aresetn_i),
 		.s_axi_araddr_i(s_axi_araddr_i),  
@@ -59,15 +62,19 @@ module axi4_lite_slave_uart(
         .s_axi_arvalid_i(s_axi_arvalid_i), 
         .s_axi_rready_i(s_axi_rready_i),
         .s_axi_rvalid_o(s_axi_rvalid_o),
-	    .s_axi_rdata_o(s_axi_rdata_o), 
+	    .s_axi_rdata_o(s_axi_rdata_o),
+	    .s_axi_rresp_o(s_axi_rresp_o), 
 	    .s_axi_awaddr_i(s_axi_awaddr_i),
         .s_axi_awready_o(s_axi_awready_o),
         .s_axi_awvalid_i(s_axi_awvalid_i),
         .s_axi_wdata_i(s_axi_wdata_i),
         .s_axi_wready_o(s_axi_wready_o),
+        .s_axi_wstrb_i(s_axi_wstrb_i),
         .s_axi_wvalid_i(s_axi_wvalid_i),
         .s_axi_bready_i(s_axi_bready_i),
         .s_axi_bvalid_o(s_axi_bvalid_o),
+		.s_axi_bresp_o(s_axi_bresp_o),
+		.read_size_i(read_size_i),
 		
 		.r_done_i(r_done_w),
 		.t_done_i(t_done_w),
@@ -75,7 +82,8 @@ module axi4_lite_slave_uart(
 		.tx_en_o(tx_en_w),
 		.rx_en_o(rx_en_w),
 		.tx_o(tx_w),
-		.rx_i(rx_w)
+		.rx_i(rx_w),
+		.stall_o(stall_o)
 	
 		
     );
@@ -98,8 +106,7 @@ module axi4_lite_slave_uart(
         .t_in_i(tx_w),
         .r_out_o(rx_w),
         .tx_o(tx_o),
-        .rx_i(rx_i)
-        
+        .rx_i(rx_i)     
 	);
 	
 	
