@@ -141,6 +141,7 @@ module axi4_lite_wrapper(
         .s_axi_bready_i(axi_bready_w),
         .s_axi_bvalid_o(s_axi_bvalid_o_pwm),
         .s_axi_bresp_o(s_axi_bresp_o_pwm),
+        .read_size_i(read_size_w),
                
         .pwm1_o(pwm1_o),
         .pwm2_o(pwm2_o)
