@@ -36,7 +36,8 @@ module axi4_lite_slave_pwm(
      output             s_axi_bresp_o,
      
      output             pwm1_o,
-     output             pwm2_o
+     output             pwm2_o,
+     input   [3:0]      read_size_i
     );
   // PWM
 
@@ -76,7 +77,8 @@ module axi4_lite_slave_pwm(
 	    .pwm1_threshold1_o(pwm1_threshold1_w),
 	    .pwm1_threshold2_o(pwm1_threshold2_w),
 	    .pwm1_step_o(pwm1_step_w),
-	    .pwm1_i(pwm1_w)
+	    .pwm1_i(pwm1_w),
+	    .read_size_i(read_size_i)
     );
     
     pwm1 pwm_connection(

@@ -45,7 +45,8 @@ module axi_interface_pwm(
 	 output  [31:0]     pwm1_threshold1_o, 
 	 output  [31:0]     pwm1_threshold2_o,
 	 output  [11:0]     pwm1_step_o,
-	 input              pwm1_i
+	 input              pwm1_i,
+	 input   [3:0]      read_size_i
 	 
     );
     
@@ -138,7 +139,27 @@ module axi_interface_pwm(
 	wire w_adress_check;
 	assign r_adress_check = s_axi_arvalid_i & ((s_axi_araddr_i & ~PWM_MASK_ADDR) == PWM_BASE_ADDR); 
 	assign w_adress_check = s_axi_awvalid_i &   s_axi_wvalid_i &  ((s_axi_awaddr_i & ~PWM_MASK_ADDR) == PWM_BASE_ADDR) & write_en;
-
+    
+    reg [3:0] read_size_i_r = 4'd0;
+    wire read_word;
+    wire read_half;
+    wire read_byte;
+   
+    assign read_word = read_size_i_r[3];
+    assign read_half = read_size_i_r[1];
+    assign read_byte = read_size_i_r[0];
+    
+    reg [3:0] s_axi_wstrb_i_r = 4'd0;
+    wire write_word;
+    wire write_half;
+    wire write_byte;
+    
+    assign write_word = s_axi_wstrb_i_r[3];
+    assign write_half = s_axi_wstrb_i_r[1];
+    assign write_byte = s_axi_wstrb_i_r[0];
+    
+    
+    
 	always @* begin
 	
       s_axi_arready_o_next 		= s_axi_arready_o_r;
@@ -165,24 +186,51 @@ module axi_interface_pwm(
 		  
 				case(reg_addres_r)
 					state_pwm_control_1 : begin
-						s_axi_rvalid_o_next 		= 1'b1;
+						s_axi_rvalid_o_next     = 1'b1;
 						s_axi_rdata_o_next[1:0] = pwm_control_1;
 					end
               
                 
 					state_pwm_period_1 : begin
 						s_axi_rvalid_o_next 	= 1'b1;
-						s_axi_rdata_o_next 	= pwm_period_1;
+						s_axi_rdata_o_next[7:0] = pwm_period_1[7:0]; // read_byte kesin
+						
+						if(read_word) begin
+						  s_axi_rdata_o_next[15:8] 	= pwm_period_1[15:8];
+						  s_axi_rdata_o_next[23:16] = pwm_period_1[23:16];
+						  s_axi_rdata_o_next[31:24] = pwm_period_1[31:24];
+						end
+						else if(read_half) begin
+						  s_axi_rdata_o_next[15:8] 	= pwm_period_1[15:8];
+						end
 					end
 					
 					state_pwm_threshold_1_1 : begin
 						s_axi_rvalid_o_next 	= 1'b1;
-						s_axi_rdata_o_next 	= pwm_threshold_1_1;
+						s_axi_rdata_o_next[7:0] = pwm_threshold_1_1[7:0]; // read_byte kesin
+						
+						if(read_word) begin
+						  s_axi_rdata_o_next[15:8] 	= pwm_threshold_1_1[15:8];
+						  s_axi_rdata_o_next[23:16] = pwm_threshold_1_1[23:16];
+						  s_axi_rdata_o_next[31:24] = pwm_threshold_1_1[31:24];
+						end
+						else if(read_half) begin
+						  s_axi_rdata_o_next[15:8] 	= pwm_threshold_1_1[15:8];
+						end
 					end
 					 
 					state_pwm_threshold_1_2 : begin
 						s_axi_rvalid_o_next	= 1'b1;
-						s_axi_rdata_o_next 	= pwm_threshold_1_2;
+						s_axi_rdata_o_next[7:0] = pwm_threshold_1_2[7:0]; // read_byte kesin
+						
+						if(read_word) begin
+						  s_axi_rdata_o_next[15:8] 	= pwm_threshold_1_2[15:8];
+						  s_axi_rdata_o_next[23:16] = pwm_threshold_1_2[23:16];
+						  s_axi_rdata_o_next[31:24] = pwm_threshold_1_2[31:24];
+						end
+						else if(read_half) begin
+						  s_axi_rdata_o_next[15:8] 	= pwm_threshold_1_2[15:8];
+						end
 					end
 					
 					
@@ -210,7 +258,7 @@ module axi_interface_pwm(
         
       if(write_state && s_axi_bready_i)begin
         
-         write_state_next = 1'b0;
+         write_state_next     = 1'b0;
          s_axi_awready_o_next = 1'b0; 
          s_axi_wready_o_next  = 1'b0;	  
         
@@ -222,17 +270,41 @@ module axi_interface_pwm(
               
 				state_pwm_period_1 : begin
 					s_axi_bvalid_o_next = 1'b1;
-					pwm_period_1_next = s_axi_wdata_i;
+					pwm_period_1_next[7:0] = s_axi_wdata_i[7:0];
+					if(write_word) begin
+	                   pwm_period_1_next[15:8]  = s_axi_wdata_i[15:8];
+	                   pwm_period_1_next[23:16] = s_axi_wdata_i[23:16];
+	                   pwm_period_1_next[31:24] = s_axi_wdata_i[31:24];
+					end
+					else if(write_half) begin
+					   pwm_period_1_next[15:8]  = s_axi_wdata_i[15:8];
+					end
 				end
 						
 				state_pwm_threshold_1_1 : begin
 					s_axi_bvalid_o_next = 1'b1;
-					pwm_threshold_1_1_next = s_axi_wdata_i;
+					pwm_threshold_1_1_next[7:0] = s_axi_wdata_i[7:0];
+					if(write_word) begin
+	                   pwm_threshold_1_1_next[15:8]  = s_axi_wdata_i[15:8];
+	                   pwm_threshold_1_1_next[23:16] = s_axi_wdata_i[23:16];
+	                   pwm_threshold_1_1_next[31:24] = s_axi_wdata_i[31:24];
+					end
+					else if(write_half) begin
+					   pwm_threshold_1_1_next[15:8]  = s_axi_wdata_i[15:8];
+					end
 				end
 					 
 				state_pwm_threshold_1_2 : begin
 					s_axi_bvalid_o_next = 1'b1;
-					pwm_threshold_1_2_next = s_axi_wdata_i;
+					pwm_threshold_1_2_next[7:0] = s_axi_wdata_i[7:0];
+					if(write_word) begin
+	                   pwm_threshold_1_2_next[15:8]  = s_axi_wdata_i[15:8];
+	                   pwm_threshold_1_2_next[23:16] = s_axi_wdata_i[23:16];
+	                   pwm_threshold_1_2_next[31:24] = s_axi_wdata_i[31:24];
+					end
+					else if(write_half) begin
+					   pwm_threshold_1_2_next[15:8]  = s_axi_wdata_i[15:8];
+					end
 				end
 						
 				state_pwm_step_1 : begin
@@ -280,7 +352,8 @@ module axi_interface_pwm(
           pwm_output_1      <= 1'b0;    
           s_axi_araddr_i_r  <= 8'd0;
 		  s_axi_awaddr_i_r  <= 8'd0;
-	                                                         
+	      s_axi_wstrb_i_r   <= 4'd0;
+		  read_size_i_r     <= 4'd0;                                                   
 	                                                                 
 	   end    
 	    
@@ -308,6 +381,8 @@ module axi_interface_pwm(
 		 pwm_output_1       <= pwm_output_1_next;
 		 s_axi_araddr_i_r   <= s_axi_araddr_i[7:0];
 		 s_axi_awaddr_i_r   <= s_axi_awaddr_i[7:0];            
+		 s_axi_wstrb_i_r    <= s_axi_wstrb_i;
+		 read_size_i_r      <= read_size_i;
                
       end
 	end
