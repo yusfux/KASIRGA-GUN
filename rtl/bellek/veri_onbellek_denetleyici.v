@@ -108,11 +108,13 @@ reg     [31:0]      anabellek_kirli_adres_r = 32'd0;
 
 reg                 denetim_hazir_r;
 
-wire     [3:0]    secilen_byte;
-assign      secilen_byte   =  adres_i[3:0];
+reg     [3:0]    secilen_byte_r;
+reg     [3:0]    secilen_byte_ns;
 
+   
 always @(*) begin 
-    
+   
+   secilen_byte_ns = secilen_byte_r; 
    durum_ns = durum_r;
    veri_r = 32'd0;
    veri_hazir_r = 1'b0;   
@@ -140,6 +142,7 @@ always @(*) begin
                    else begin
                         veri_hazir_r = 1'b0;
                         denetim_hazir_r = 1'b0;
+                        secilen_byte_ns   =  adres_i[3:0];
                         if(anabellek_musait_i) begin
                             
                               if(obek_kirli_i) begin                                        
@@ -208,19 +211,19 @@ always @(*) begin
             if(bellek_oku_i) begin  
                 case(buyruk_turu_i)
                     `MEM_LB  : begin
-                        veri_r  = {{24{okunan_obek_i[secilen_byte*8 + 7]}} , okunan_obek_i[secilen_byte*8 +: 7]};
+                        veri_r  = {{24{okunan_obek_i[secilen_byte_ns*8 + 7]}} , okunan_obek_i[secilen_byte_ns*8 +: 7]};
                      end                     
                     `MEM_LH  : begin 
-                        veri_r  = {{16{okunan_obek_i[secilen_byte*8 + 15]}} , okunan_obek_i[secilen_byte*8 +: 15]};
+                        veri_r  = {{16{okunan_obek_i[secilen_byte_ns*8 + 15]}} , okunan_obek_i[secilen_byte_ns*8 +: 15]};
                      end
                     `MEM_LW  : begin  
-                        veri_r  = okunan_obek_i[secilen_byte*8 +: 31];
+                        veri_r  = okunan_obek_i[secilen_byte_ns*8 +: 31];
                      end
                     `MEM_LBU :  begin 
-                        veri_r = { {24{1'b0}}, okunan_obek_i[secilen_byte*8 +: 7]};
+                        veri_r = { {24{1'b0}}, okunan_obek_i[secilen_byte_ns*8 +: 7]};
                      end                      
                     `MEM_LHU : begin 
-                        veri_r = { {16{1'b0}}, okunan_obek_i[secilen_byte*8 +: 15]}; 
+                        veri_r = { {16{1'b0}}, okunan_obek_i[secilen_byte_ns*8 +: 15]}; 
                      end
                  endcase
                  
@@ -235,7 +238,7 @@ end
 
 always @(posedge clk_i) begin
     if(rst_i) begin
-        
+        secilen_byte_r  <= secilen_byte_ns;
         durum_r <= durum_ns;
     end
     else begin
