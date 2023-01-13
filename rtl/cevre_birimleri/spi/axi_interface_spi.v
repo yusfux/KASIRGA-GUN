@@ -52,7 +52,7 @@ module axi_interface_spi(
 	 
     );
 	 
-	// SPI cikislarinin atamalari 113. satirda
+	// SPI cikislarinin atamalari 116. satirda
 	
 	// OUTPUTS
 	reg s_axi_arready_o_r      = 1'b0;
@@ -110,16 +110,19 @@ module axi_interface_spi(
 	assign r_adress_check = s_axi_arvalid_i & ((s_axi_araddr_i & ~SPI_MASK_ADDR) == SPI_BASE_ADDR) & read_en; 
 	assign w_adress_check = s_axi_awvalid_i &   s_axi_wvalid_i &  ((s_axi_awaddr_i & ~SPI_MASK_ADDR) == SPI_BASE_ADDR) & write_en;
     
+    reg [3:0] read_size_i_r   = 4'd0;
+    reg [3:0] s_axi_wstrb_i_r = 4'd0;
+    
     // SPI OUTPUTS ///////////////////////////////////////////////
     assign 	 adres_bit_o     	 = read_state ? reg_addres_r : write_state ? reg_addres_w : 5'd0;
 	assign   islem_o         	 = write_state;
 	assign   islem_gecerli_o 	 = read_state | write_state;
 	
-	assign   read_type_o[1]  	 = read_size_i[3]; 
-	assign   read_type_o[0]  	 = read_size_i[1]; 
+	assign   read_type_o[1]  	 = read_size_i_r[3]; 
+	assign   read_type_o[0]  	 = read_size_i_r[1]; 
 	
-	assign   write_type_o[1]     = s_axi_wstrb_i[3];
-	assign   write_type_o[0]     = s_axi_wstrb_i[1];
+	assign   write_type_o[1]     = s_axi_wstrb_i_r[3];
+	assign   write_type_o[0]     = s_axi_wstrb_i_r[1];
 	//////////////////////////////////////////////////////////////
 	always @* begin
 	
@@ -187,7 +190,9 @@ module axi_interface_spi(
 	      read_state        <= 1'b0;                    
 	      write_state       <= 1'b0;                    
           s_axi_araddr_i_r  <= 5'd0;
-		  s_axi_awaddr_i_r  <= 5'd0;                                                           
+		  s_axi_awaddr_i_r  <= 5'd0; 
+		  read_size_i_r     <= 4'd0;
+		  s_axi_wstrb_i_r   <= 4'd0;                                                          
 	   end    
 	    
 	   else begin
@@ -202,7 +207,10 @@ module axi_interface_spi(
           read_state 		 <= read_state_next;
           write_state 		 <= write_state_next;
 		  s_axi_araddr_i_r   <= s_axi_araddr_i[4:0];
-		  s_axi_awaddr_i_r   <= s_axi_awaddr_i[4:0];  	    
+		  s_axi_awaddr_i_r   <= s_axi_awaddr_i[4:0];  	 
+		  read_size_i_r      <= read_size_i;
+		  s_axi_wstrb_i_r    <= s_axi_wstrb_i;
+		     
       end
 	end
 	
