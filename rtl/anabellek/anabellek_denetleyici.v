@@ -2,9 +2,7 @@
 
     module anabellek_denetleyici(
             input         clk_i,
-            input         rst_i,                      // active low reset
-    
-            input         durdur_i,
+            input         rst_i,                      // active low reset   
     
            //GETIR asamasindan gelecek sinyaller   
             input         getir_asamasi_istek_i,
@@ -26,10 +24,9 @@
             output        iomem_valid_o,
             output [3:0]  wr_strb_o,
             
-           //onbellek denetleyiciye gidecek sinyaller
+           //onbellek denetleyicilere gidecek sinyaller
             output         anabellek_musait_o,        //bu sinyal bellege yazma islemi bittiginde 1 olacagi icin ayrica yazilan_veri_hazir_o sinyali yok
             output [127:0] okunan_veri_obegi_o,
-            
             output         bellek_asamasina_veri_hazir_o,
             output         getir_asamasina_veri_hazir_o
     );
@@ -79,7 +76,6 @@
         getir_asamasina_veri_hazir_ns  = 1'b0;
         bellek_asamasina_veri_hazir_ns = 1'b0;
         
-        if(!durdur_i) begin
             case(durum)
                 MUSAIT: begin
                     iomem_valid_ns      = 1'b0;
@@ -166,7 +162,6 @@
                     end
                 end
             endcase
-        end
     end
 
     always @(posedge clk_i) begin
@@ -184,7 +179,7 @@
             getir_asamasina_veri_hazir_r  <= 1'b0;
             bellek_asamasina_veri_hazir_r <= 1'b0;
         end
-        else begin
+        else  begin
             durum                         <= durum_next          ;
             anabellek_musait_r            <= anabellek_musait_ns ;
             okunan_veri_obegi_r           <= okunan_veri_obegi_ns;
@@ -209,5 +204,5 @@
     assign bellek_asamasina_veri_hazir_o = bellek_asamasina_veri_hazir_r;
     assign getir_asamasina_veri_hazir_o  = getir_asamasina_veri_hazir_r;
     
-endmodule
     
+endmodule
