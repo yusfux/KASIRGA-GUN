@@ -83,7 +83,7 @@ module axi_interface_uart(
 	// REGISTERS
 	reg [31:0] uart_ctrl  = 32'd0; 
     reg [3:0] uart_status = 4'b1010;
-    reg [7:0] uart_rdata  = 8'd0;
+    //reg [7:0] uart_rdata  = 8'd0; ihtiyac duyulmadi
     reg [7:0] uart_wdata  = 8'd0;
     
     assign tx_o = uart_wdata;
@@ -211,7 +211,6 @@ module axi_interface_uart(
 		end
 	end
 	
-	
 	always @* begin
 	
         s_axi_arready_o_next = s_axi_arready_o_r;
@@ -249,7 +248,13 @@ module axi_interface_uart(
             case(reg_addres_r) 
                 state_uart_ctrl   : begin
                     s_axi_rvalid_o_next = 1'b1;
-                    s_axi_rdata_o_next = uart_ctrl;
+                    s_axi_rdata_o_next[7:0] = uart_ctrl[7:0];
+                        if(read_word)begin
+                            s_axi_rdata_o_next[31:8] = uart_ctrl[31:8];
+                        end
+                        else if(read_half) begin
+                            s_axi_rdata_o_next[15:8] = uart_ctrl[15:8];
+                        end
                 end
                
                 state_uart_status : begin
@@ -268,34 +273,22 @@ module axi_interface_uart(
                                 s_axi_rdata_o_next[15:8] = rx_buffer[rx_buffer_read_idx+1'b1];
                                 s_axi_rdata_o_next[23:16] = rx_buffer[rx_buffer_read_idx+2'b10];
                                 s_axi_rdata_o_next[31:24] = rx_buffer[rx_buffer_read_idx+2'b11];
-                                if(rx_buffer_read_idx==5'd28) begin
-                                    rx_buffer_read_idx_next = 5'd0;
-                                    rx_buffer_write_idx_next = 5'd0;
+                                rx_buffer_read_idx_next = rx_buffer_read_idx + 3'b100;
+                                if(rx_buffer_read_idx+3'b100 == rx_buffer_write_idx) begin
                                     us3 = 1'b1; // rx_buffer bosaltildi
-                                end
-                                else begin
-                                    rx_buffer_read_idx_next = rx_buffer_read_idx + 3'b100;
                                 end   
                             end 
                             else if(read_half)begin // half word okunacak
                                 s_axi_rdata_o_next[15:8] = rx_buffer[rx_buffer_read_idx+1'b1];
-                                if(rx_buffer_read_idx==5'd30) begin
-                                    rx_buffer_read_idx_next = 5'd0;
-                                    rx_buffer_write_idx_next = 5'd0;
-                                    us3 = 1'b1; // rx_buffer bosaltildi
-                                end
-                                else begin
-                                    rx_buffer_read_idx_next = rx_buffer_read_idx + 2'b10;
+                                rx_buffer_read_idx_next = rx_buffer_read_idx + 2'b10;
+                                if(rx_buffer_read_idx_next == rx_buffer_write_idx) begin
+                                    us3 = 1'b1; // rx_buffer bosaltildi;
                                 end
                             end
                             else if(read_byte)begin // bayt okunacak
-                                if(rx_buffer_read_idx==5'd31) begin
-                                    rx_buffer_read_idx_next = 5'd0;
-                                    rx_buffer_write_idx_next = 5'd0;
+                                rx_buffer_read_idx_next = rx_buffer_read_idx + 1'b1;
+                                if(rx_buffer_read_idx_next == rx_buffer_write_idx) begin
                                     us3 = 1'b1; // rx_buffer bosaltildi
-                                end
-                                else begin
-                                    rx_buffer_read_idx_next = rx_buffer_read_idx + 1'b1;
                                 end
                             end            
                     end
@@ -306,7 +299,7 @@ module axi_interface_uart(
                 end
                 
                 default : begin
-                    //s_axi_rdata_o_next = 32'd0;
+                    // simdilik bos
                 end
             endcase
         end
@@ -316,7 +309,6 @@ module axi_interface_uart(
         end
         
         if(write_state && s_axi_bready_i)begin
-        //s_axi_bvalid_o_next = 1'b1; // BU DUZENLENECEK
         write_state_next = 1'b0;
         
         s_axi_awready_o_next = 1'b0; 
@@ -339,43 +331,33 @@ module axi_interface_uart(
                 end
                 
                 state_uart_wdata  : begin // only write
-    
+                    
                     if(!uart_status[0]) begin // tx_is_not_full
                         us1 = 1'b0; // tx_is_not_empty
-                        stall_o_r_next = 1'b0;
-                        
+                        stall_o_r_next = 1'b0; 
                         tx_buf_data = s_axi_wdata_i;
-                        //s_axi_bresp_o_r_next=1'b1;
+                        
                         if(write_word) begin 
-                            if(tx_buffer_read_idx==5'd28) begin
+                            tx_buffer_read_idx_next = tx_buffer_read_idx + 3'b100;
+                            if(tx_buffer_read_idx_next==tx_buffer_write_idx) begin
                                 us0 = 1'b1; // tx_full
-                                tx_buffer_read_idx_next = 5'd31;
-                            end
-                            else begin
-                                tx_buffer_read_idx_next = tx_buffer_read_idx + 3'b100;
                             end
                         end
                         else if(write_half) begin
-                              if(tx_buffer_read_idx==5'd30) begin
+                            tx_buffer_read_idx_next = tx_buffer_read_idx + 2'b10;
+                              if(tx_buffer_read_idx_next==tx_buffer_write_idx) begin
                                 us0 = 1'b1; // tx_full
-                                tx_buffer_read_idx_next = 5'd31;
-                              end
-                              else begin
-                                tx_buffer_read_idx_next = tx_buffer_read_idx + 2'b10;
                               end
                         end
                         else if(write_byte) begin
-                            
-                            if(tx_buffer_read_idx==5'd31) begin
+                            tx_buffer_read_idx_next = tx_buffer_read_idx + 1'b1;
+                            if(tx_buffer_read_idx_next==tx_buffer_write_idx) begin
                                 us0 = 1'b1; // tx_full
-                                tx_buffer_read_idx_next = 5'd31;
-                            end
-                            else begin
-                                tx_buffer_read_idx_next = tx_buffer_read_idx + 1'b1;
                             end
                         end
                     end
                     else begin // tx buffer doluydu
+                        s_axi_bvalid_o_next = 1'b0;
                         s_axi_bresp_o_r_next=1'b0;
                         stall_o_r_next = 1'b1;
                     end
@@ -457,7 +439,7 @@ module axi_interface_uart(
 	       uart_ctrl <= 32'd0;                      
 	                                                         
 	       uart_wdata <= 8'd0;                    
-	       uart_rdata <= 8'd0;                    
+	       // uart_rdata <= 8'd0;                    
 	                                                         
 	       for(j=0 ; j<32 ; j=j+1) begin                     
 	           tx_buffer[tx_buffer_read_idx] <= 8'd0; 
@@ -503,13 +485,13 @@ module axi_interface_uart(
             
             
             uart_wdata <= uart_wdata_next;
-            uart_rdata <= uart_rdata_next;
+            // uart_rdata <= uart_rdata_next;
             
             uart_ctrl <= uart_ctrl_next;
             
-            if(tx_buffer_write_condition) begin
+            if(tx_buffer_write_condition && !uart_status[0]/*tx_is_not_full*/) begin
                 if(s_axi_wstrb_i[0]) begin
-                    tx_buffer[tx_buffer_read_idx]             <= tx_buf_data[7:0];
+                    tx_buffer[tx_buffer_read_idx]              <= tx_buf_data[7:0];
                 end 
                 if(s_axi_wstrb_i[1]) begin
                     tx_buffer[tx_buffer_read_idx+1'b1]         <= tx_buf_data[15:8];
