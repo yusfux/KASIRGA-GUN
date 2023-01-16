@@ -1,7 +1,7 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
 // Company: 
-// Engineer: 
+// Engineer: Yusuf Aydın
 // 
 // Create Date: 25.12.2022 21:48:47
 // Design Name: 
@@ -20,6 +20,8 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
+//TODO: stall sinyalini buraya da input olarak vermek lazim, stall geldigi durumda herhangi bir sekilde
+//valid counter uzerinde islem yapilmamali
 module register_file(
         input clk_i, rst_i,
         
@@ -49,10 +51,13 @@ module register_file(
         output [31:0] reg_rs2_data_o,
         //-------------------------------------------------------------------------------
 
-        //we need to stall the "fetch stage" due to the "read after write" hazard
-        //until that register gets ready to read, 
-        //input stall,
+        //------------------signals to "control status register file"--------------------
+        output [31:0] reg_csr_data_o,
+        //-------------------------------------------------------------------------------
+
+        //------------------------signals to "pipeline controller"-----------------------
         output stall_register_file_o
+        //-------------------------------------------------------------------------------
     );
 
     reg [31:0] register [0:31];
@@ -62,11 +67,13 @@ module register_file(
 
     reg [31:0] reg_rs1_data_r;
     reg [31:0] reg_rs2_data_r;
+    reg [31:0] reg_csr_data_r;
 
+    //TODO: burasi normalde kaldirilmasi lazim, li ile tum reglere 0 atanmali program baslarken
     integer i;
     initial begin
         for(i = 0; i < 32; i = i + 1) begin
-            register[i]     = i;
+            register[i]          = i;
             reg_valid_counter[i] = 2'b0;
         end
     end
@@ -77,42 +84,50 @@ module register_file(
         reg_is_ready_rs1_r = 1'b0;
         reg_is_ready_rs2_r = 1'b0;
 
-        if(reg_read_rs1_i && reg_valid_counter[reg_rs1_i] == 2'b00) begin         
-                reg_rs1_data_r     = register[reg_rs1_i];
-                reg_is_ready_rs1_r = 1'b1;
-        end
-
-        if(reg_read_rs2_i && reg_valid_counter[reg_rs2_i] == 2'b00) begin
-                reg_rs2_data_r = register[reg_rs2_i];
-                reg_is_ready_rs2_r = 1'b1;
-        end
-    end
-
-    //what will happen when reg_write_wb_i and reg_write_csr_i try to write the same register
-    //burada kesin boku yedik test lazim
-    //TODO: inst x5, x0, x5 gibi bir durumda ayni registeri okuyup yazacagi icin negedgede valid = 01 oluyor ve bu nedenle okuyamiyor
-    always @(negedge clk_i) begin
-        if(reg_write_wb_i) begin
-            register[reg_rd_wb_i]          <= reg_rd_data_wb_i;
-            reg_valid_counter[reg_rd_wb_i] <= reg_valid_counter[reg_rd_wb_i] - 2'b01;
-        end
+        //TODO: need to find more proper way to get rid of inst xA, xA, xB kind of situations
         if(reg_write_csr_i) begin
-            register[reg_rd_i] <= reg_rd_data_csr_i;
+            reg_rs1_data_r = reg_rd_data_csr_i;
         end
-        if(reg_write_i) begin
-            reg_valid_counter[reg_rd_i] <= reg_valid_counter[reg_rd_i] + 2'b01;
+        else if(reg_read_rs1_i && ((reg_valid_counter[reg_rs1_i] == 2'b00) || (reg_valid_counter[reg_rs1_i] == 2'b01 && (reg_rs1_i == reg_rd_i) && reg_write_i))) begin
+            reg_rs1_data_r     = register[reg_rs1_i];
+            reg_is_ready_rs1_r = 1'b1;
         end
 
-        register[0] <= 1'b0;
+        if(reg_read_rs2_i && ((reg_valid_counter[reg_rs2_i] == 2'b00) || (reg_valid_counter[reg_rs2_i] == 2'b01 && (reg_rs2_i == reg_rd_i) && reg_write_i))) begin
+            reg_rs2_data_r = register[reg_rs2_i];
+            reg_is_ready_rs2_r = 1'b1;
+        end
+        
+        //TODO: bu ne? wire yapilabilir mi?
+        reg_csr_data_r = register[reg_rs1_i];
     end
 
-    always @(posedge clk_i, negedge rst_i) begin
+    //burada kesin boku yedik test lazim
+    always @(negedge clk_i, rst_i) begin
         if(!rst_i) begin
-        end 
+            for(i = 0; i < 32; i = i + 1) begin
+                register[i]          <= 5'b00000;
+                reg_valid_counter[i] <= 2'b00;
+            end
+        end
+        else begin
+            if(reg_write_wb_i && (reg_rd_wb_i != 5'b00000)) begin
+                register[reg_rd_wb_i]          <= reg_rd_data_wb_i;
+                reg_valid_counter[reg_rd_wb_i] <= reg_valid_counter[reg_rd_wb_i] - 2'b01;
+            end
+
+            if(reg_write_i && (reg_rd_i != 5'b00000)) begin
+                reg_valid_counter[reg_rd_i] <= reg_valid_counter[reg_rd_i] + 2'b01;
+            end
+
+            //TODO: need to find more proper way to hard wire x0 to zero
+            register[0] <= 5'b00000;
+        end
     end
 
     assign reg_rs1_data_o        = reg_rs1_data_r;
     assign reg_rs2_data_o        = reg_rs2_data_r;
+    assign reg_csr_data_o        = reg_csr_data_r;
     assign stall_register_file_o = ((reg_read_rs1_i && ~reg_is_ready_rs1_r) || (reg_read_rs2_i && ~reg_is_ready_rs2_r));
 
 endmodule

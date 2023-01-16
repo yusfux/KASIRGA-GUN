@@ -1,7 +1,7 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
 // Company: 
-// Engineer: 
+// Engineer: Yusuf Aydın
 // 
 // Create Date: 02.01.2023 14:21:03
 // Design Name: 
@@ -32,6 +32,14 @@
 `define MSTATUS_MIE  3
 `define PRIV_MACHINE 2'b11
 
+//                                          ==============================================================================
+//                                          ==============================================================================
+//                                          ======                                                                  ======
+//                                          == BU MODUL TEKNOFESTTE KULLANILMAYACAGI ICIN NE YAZIK KI SU AN ICIN ASKIDA ==
+//                                          ======                                                                  ======
+//                                          ==============================================================================
+//                                          ==============================================================================
+
 module cont_stat_register_file (
         input clk_i, rst_i,
 
@@ -56,6 +64,9 @@ module cont_stat_register_file (
         input  [11:0] adress_csr_i,
         input  [31:0] data_csr_write_i,
         input  [31:0] data_csr_write_imm_i,
+        //-----------------------------------------------------------------------------------------
+
+        //------------------------------signals to 'register file'---------------------------------
         output [31:0] data_csr_read_o,
         //-----------------------------------------------------------------------------------------
 
@@ -210,7 +221,6 @@ module cont_stat_register_file (
     //TODO: mstatusa implicit read yaptigimiz icin sadece okurken maskeliyor olmamiz ise yaramiyor olabilir
     //TODO: MEPC never written by the implementation, though it may be explicitly written by software??
     //TODO: MCAUSE never written by the implementation, though it may be explicitly written by software??
-    //TODO: MTVAL never written by the implementation, though it may be explicitly written by software??
     //TODO: SRET should raise an illegal instruction exception, if supervisor mode is not supported
     always @(*) begin
         mstatus_ns   = mstatus_r;
@@ -356,6 +366,7 @@ module cont_stat_register_file (
         //  -interrupt gelmis olabilir | interrupt gelmis olamaz cunku interrupt gelecek bir durumumuz yok :(
         //  -exception gelmis olabilir
         //  -exception'dan return ediliyor olabilir
+        //TODO: mepc'e interrupted instruction pc yaziliyorsa neden mret ile tekrar bu pc degerine donuyoruz?
         if(en_exception_i) begin
             mstatus_ns[`MSTATUS_MPIE] = mstatus_r[`MSTATUS_MIE];
             mstatus_ns[`MSTATUS_MIE]  = 1'b0;
@@ -366,7 +377,6 @@ module cont_stat_register_file (
             en_excep_program_counter_r = 1'b1;
             excep_program_counter_r    = {mtvec_r[31:2], 2'b00};
 
-            //TODO: why there is priority order in page 40 priv-spec, for multiple hart systems?
             case(exception_cause_i)
                 `EXCEP_INSTR_MISALIGNED:        begin
                     mcause_ns = {1'b0, 27'b0, 4'b0000};
@@ -385,7 +395,7 @@ module cont_stat_register_file (
                 end
                 `EXCEP_ENV_CALL:                begin
                     mcause_ns = {1'b0, 27'b0, 4'b1011};
-                    mepc_ns   = exception_program_counter_i;
+                    //mepc_ns   = exception_program_counter_i; | TODO: neden ekstra olarak belirtilmis specte??
                 end
             endcase
         end
@@ -395,7 +405,7 @@ module cont_stat_register_file (
             mstatus_ns[`MSTATUS_MPP]  = `PRIV_MACHINE;
 
             en_excep_program_counter_r = 1'b1;
-            excep_program_counter_r    = {mepc_r[31:1], 1'b0};  //IALIGN = 16
+            excep_program_counter_r    = {mepc_r[31:1], 1'b0};  //IALIGN = 16 TODO: neden exceptiona sebep olan buyruga donuyoruz?
         end
 
     end

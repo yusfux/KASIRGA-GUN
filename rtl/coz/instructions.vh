@@ -131,6 +131,7 @@
 //-------------------------------------------------------------------------------------
 
 `define SYSTEM 1110011
+`define PRIV   000
 `define CSRRW  001
 `define CSRRS  010
 `define CSRRC  011
@@ -167,7 +168,7 @@
 `define MCYCLEH    12'hB80
 `define MINSTRETH  12'hB82
 
-`define CYCLE    12'hC00
-`define INSTRET  12'hC02
-`define CYCLEH   12'hC80
-`define INSTRETH 12'hC82
+`define CYCLE      12'hC00
+`define INSTRET    12'hC02
+`define CYCLEH     12'hC80
+`define INSTRETH   12'hC82

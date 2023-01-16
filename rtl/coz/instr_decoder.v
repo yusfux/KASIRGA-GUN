@@ -1,7 +1,7 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
 // Company: 
-// Engineer: 
+// Engineer: Yusuf Aydın
 // 
 // Create Date: 24.12.2022 18:18:16
 // Design Name: 
@@ -42,6 +42,7 @@ module instr_decoder (
         output [2:0] op_mem_o,
 
         output [31:0] immediate_o,
+        output [31:0] csr_immediate_o,  //we need this to use ADDI instr with csr writes
 
         output mem_read_o,
         output mem_write_o,
@@ -89,14 +90,14 @@ module instr_decoder (
     wire [31:0] imm_u_w  = {    instruction_i[31],   instruction_i[30:20], instruction_i[19:12], 12'b0};
     wire [31:0] imm_j_w  = {{12{instruction_i[31]}}, instruction_i[19:12], instruction_i[20],    instruction_i[30:25], instruction_i[24:21], 1'b0};
     wire [31:0] shamt_w  = {{27{instruction_i[24]}}, instruction_i[24:20]};
-    wire [31:0] zimm_w   = {{27{1'b0}}, instruction_i[19:15]};
+    wire [31:0] zimm_w   = {{27{1'b0}},              instruction_i[19:15]};
 
 
     //csr signals
     reg en_csr_read_r;
     reg en_csr_write_r;
-    reg  en_mret_instruction_r;
-    reg  [2:0]  op_csr_r;
+    reg en_mret_instruction_r;
+    reg [2:0]  op_csr_r;
 
     //enable
     reg en_alu_r;
@@ -123,9 +124,16 @@ module instr_decoder (
 
     //immediate
     reg [31:0] immediate_r;
+    reg [31:0] csr_immediate_r;
 
-    //TODO: need to implement illegal_instruction signals for every possible instruction,
-    //also need to implement CSR's, and machine mode instructions i believe
+    //exceptions
+    reg exception_illegal_instruction_r;
+    reg exception_breakpoint_r;
+    reg exception_env_call_from_M_mode_r;
+
+    //TODO: The behavior upon decoding a reserved instruction is unspecified.
+    //we ignore HINT's altogather and execute HINT's as a regular computational instruction since
+    //they do not change any architectural state
     always @(*) begin
         en_csr_read_r       = 1'b0;
         en_csr_write_r      = 1'b0;
@@ -149,7 +157,7 @@ module instr_decoder (
         reg_read_rs2_r      = 1'b0;
         reg_write_r         = 1'b0;
 
-        immediate_r         = 32'b0; 
+        immediate_r         = 32'h0000_0000; 
 
         case(op_code_w)
 
@@ -179,6 +187,9 @@ module instr_decoder (
                     reg_read_rs1_r = 1'b1;
                     reg_write_r    = 1'b1;
                     immediate_r    = imm_i_w;
+                end
+                else begin
+                    exception_illegal_instruction_r = 1'b1;
                 end
             end
 
@@ -406,16 +417,16 @@ module instr_decoder (
             end //-----------------------------------------------------
 
             //TODO: asagidaki korkunc yeri duzenlesem iyi olacak
-            7'b`AI: begin //----------------------------------------------
+            7'b`AI: begin //-------------------------------------------
                 en_ai_unit_r = 1'b1;
                 case({funct7_w, funct3_w})
-                    {funct7_w[6], 10'b`CONV_LD_X}: begin
+                    {funct7_w[6],9'b`CONV_LD_X}: begin
                         op_ai_r = `AI_CONV_LD_X;
                         if(funct7_w[6] == 1'b1)
                             reg_read_rs2_r = 1'b1;
                         reg_read_rs1_r = 1'b1;
                     end
-                    {funct7_w[6], 10'b`CONV_LD_W}: begin
+                    {funct7_w[6], 9'b`CONV_LD_W}: begin
                         op_ai_r = `AI_CONV_LD_W;
                         if(funct7_w[6] == 1'b1)
                             reg_read_rs2_r = 1'b1;
@@ -438,107 +449,167 @@ module instr_decoder (
                 endcase
             end //-----------------------------------------------------
 
-            7'b`SYSTEM: begin
-                //need to implement fence, fence.i, ecall, ebreak, mret. not sure about fence.i though
-                //any side effect that may occur when csr read is illegal inst exception
+            7'b`SYSTEM: begin //---------------------------------------
+                //TODO: any side effect that may occur when csr read is illegal inst exception
+                //we are using ADDI instruction to write registers from CSR's with: ADDI rd, data_csr, 0
                 case (funct3_w)
                     3'b`CSRRW:  begin
+                        en_alu_r       = 1'b1;
+                        op_alu_r       = `ALU_ADDI;
+                        reg_write_r    = 1'b1;
+                        immediate_r    = 32'b0;
+
                         op_csr_r = `OP_CSR_CSRRW;
                         en_csr_write_r = 1'b1;
                         en_csr_read_r  = 1'b1;
                         reg_read_rs1_r = 1'b1;
-                        if(rd_w == 5'b0)
+                        if(rd_w == 5'b0) begin
+                            reg_write_r    = 1'b0;
                             en_csr_read_r  = 1'b0;
+                        end
                     end
                     3'b`CSRRS:  begin
+                        en_alu_r       = 1'b1;
+                        op_alu_r       = `ALU_ADDI;
+                        reg_write_r    = 1'b1;
+                        immediate_r    = 32'b0;
+
                         op_csr_r = `OP_CSR_CSRRS;
                         en_csr_write_r = 1'b1;
                         en_csr_read_r  = 1'b1;
                         reg_read_rs1_r = 1'b1;
                         if(rs1_w == 5'b0) begin
+                            reg_write_r     = 1'b0;
                             en_csr_write_r  = 1'b0;
                             reg_read_rs1_r  = 1'b0;
                         end
                     end
                     3'b`CSRRC:  begin
+                        en_alu_r       = 1'b1;
+                        op_alu_r       = `ALU_ADDI;
+                        reg_write_r    = 1'b1;
+                        immediate_r    = 32'b0;
+
                         op_csr_r = `OP_CSR_CSRRC;
                         en_csr_write_r = 1'b1;
                         en_csr_read_r  = 1'b1;
                         reg_read_rs1_r = 1'b1;
                         if(rs1_w == 5'b0) begin
+                            reg_write_r     = 1'b0;
                             en_csr_write_r  = 1'b0;
                             reg_read_rs1_r  = 1'b0;
                         end
                     end
                     3'b`CSRRWI: begin
-                        immediate_r = zimm_w;
+                        en_alu_r       = 1'b1;
+                        op_alu_r       = `ALU_ADDI;
+                        reg_write_r    = 1'b1;
+                        immediate_r    = 32'b0;
 
                         op_csr_r = `OP_CSR_CSRRWI;
+                        csr_immediate_r = zimm_w;
                         en_csr_write_r = 1'b1;
                         en_csr_read_r  = 1'b1;
-                        if(rd_w == 5'b0)
+                        if(rd_w == 5'b0) begin
+                            reg_write_r    = 1'b0;
                             en_csr_read_r  = 1'b0;
+                        end
                     end
                     3'b`CSRRSI: begin
-                        immediate_r = zimm_w;
+                        en_alu_r       = 1'b1;
+                        op_alu_r       = `ALU_ADDI;
+                        reg_write_r    = 1'b1;
+                        immediate_r    = 32'b0;
 
                         op_csr_r = `OP_CSR_CSRRSI;
+                        csr_immediate_r = zimm_w;
                         en_csr_write_r = 1'b1;
                         en_csr_read_r  = 1'b1;
                         if(zimm_w == 32'b0)
                             en_csr_write_r  = 1'b0;
                     end
                     3'b`CSRRCI: begin
-                        immediate_r = zimm_w;
+                        en_alu_r       = 1'b1;
+                        op_alu_r       = `ALU_ADDI;
+                        reg_write_r    = 1'b1;
+                        immediate_r    = 32'b0;
 
                         op_csr_r = `OP_CSR_CSRRCI;
+                        csr_immediate_r = zimm_w;
                         en_csr_write_r = 1'b1;
                         en_csr_read_r  = 1'b1;
                         if(zimm_w == 32'b0)
                             en_csr_write_r  = 1'b0;
                     end
+                    
+                    //TODO: boyle boktan bir cozme sekli olamaz, duzeltilmeli
+                    //ecall, ebreak and mret will generate exceptions and perform no other operation
+                    3'b`PRIV: begin
+                        if     (instruction_i == 32'b0011000_00010_00000_000_00000_1110011) begin    //mret
+                            en_mret_instruction_r = 1'b1;
+                        end
+                        else if(instruction_i == 32'b00000_0000000_00000_000_00000_1110011) begin    //ecall
+                            exception_env_call_from_M_mode_r = 1'b1;
+                        end
+                        else if(instruction_i == 32'b00000_0000001_00000_000_00000_1110011) begin    //ebreak
+                            exception_breakpoint_r = 1'b1;
+                        end
+                    end
                 endcase 
+            end //-----------------------------------------------------
 
-                //TODO: bu sekilde yapmak dogru mu? zaten sadece MRET implement ettigimiz icin yalnizca bir iki fielda bakip
-                //baska bir buyruk gelmeyecegini varsayabilir miyiz?
-                //if(funct3_w == 3'b000) begin
-                //    if(r)
-                //end
+            //TODO: can we implement fence instructions as NOP since our processor is in-order?
+            7'b0001111: begin
+                if(funct3_w == 000) begin //fence
+                    reg_read_rs1_r = 1'b0; 
+                    reg_read_rs2_r = 1'b0; 
+                    reg_write_r    = 1'b0;
+                    mem_read_r     = 1'b0;
+                    mem_write_r    = 1'b0;
+                end
+            end
+
+            default: begin
+                exception_illegal_instruction_r = 1'b1;
             end
         endcase
     end
 
-    assign en_csr_read_o         = en_csr_read_r;
-    assign en_csr_write_o        = en_csr_write_r;
-    assign en_mret_instruction_o = en_mret_instruction_r;
-    assign adress_csr_o          = adress_csr_w;
-    assign op_csr_o              = op_csr_r;
-    assign adress_csr_o          = adress_csr_w;
+    assign en_csr_read_o                    = en_csr_read_r;
+    assign en_csr_write_o                   = en_csr_write_r;
+    assign en_mret_instruction_o            = en_mret_instruction_r;
+    assign adress_csr_o                     = adress_csr_w;
+    assign op_csr_o                         = op_csr_r;
+    assign adress_csr_o                     = adress_csr_w;
 
-    assign en_alu_o            = en_alu_r;
-    assign en_branching_unit_o = en_branching_unit_r;
-    assign en_ai_unit_o        = en_ai_unit_r;
-    assign en_crypto_unit_o    = en_crypto_unit_r;
-    assign en_mem_o            = en_mem_r;
+    assign en_alu_o                         = en_alu_r;
+    assign en_branching_unit_o              = en_branching_unit_r;
+    assign en_ai_unit_o                     = en_ai_unit_r;
+    assign en_crypto_unit_o                 = en_crypto_unit_r;
+    assign en_mem_o                         = en_mem_r;
 
-    assign op_alu_o       = op_alu_r;
-    assign op_ai_o        = op_ai_r;
-    assign op_crypto_o    = op_crypto_r;
-    assign op_branching_o = op_branching_r;
-    assign op_mem_o       = op_mem_r;
+    assign op_alu_o                         = op_alu_r;
+    assign op_ai_o                          = op_ai_r;
+    assign op_crypto_o                      = op_crypto_r;
+    assign op_branching_o                   = op_branching_r;
+    assign op_mem_o                         = op_mem_r;
 
-    assign mem_read_o  = mem_read_r;
-    assign mem_write_o = mem_write_r;
+    assign mem_read_o                       = mem_read_r;
+    assign mem_write_o                      = mem_write_r;
 
-    assign reg_read_rs1_o = reg_read_rs1_r;
-    assign reg_read_rs2_o = reg_read_rs2_r;
-    assign reg_write_o    = reg_write_r;
+    assign reg_read_rs1_o                   = reg_read_rs1_r;
+    assign reg_read_rs2_o                   = reg_read_rs2_r;
+    assign reg_write_o                      = reg_write_r;
 
-    assign immediate_o = immediate_r;
-    assign reg_rs1_o   = rs1_w;
-    assign reg_rs2_o   = rs2_w;
-    assign reg_rd_o    = rd_w;
+    assign immediate_o                      = immediate_r;
+    assign reg_rs1_o                        = rs1_w;
+    assign reg_rs2_o                        = rs2_w;
+    assign reg_rd_o                         = rd_w;
+
+    assign exception_illegal_instruction_o  = exception_illegal_instruction_r;
+    assign exception_breakpoint_o           = exception_breakpoint_r;
+    assign exception_env_call_from_M_mode_o = exception_env_call_from_M_mode_r;
 
     //ahmet hakan'in ozel istegi
-    assign enable_rs2_conv_o = reg_read_rs2_r;
+    assign enable_rs2_conv_o                = reg_read_rs2_r;
 endmodule
