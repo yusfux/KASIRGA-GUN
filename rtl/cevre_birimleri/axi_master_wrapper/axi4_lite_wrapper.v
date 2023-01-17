@@ -12,7 +12,8 @@ module axi4_lite_wrapper(
 	 output             pwm1_o,
      output             pwm2_o,
      output             stall_o,
-     output             okunan_gecerli_o
+     output             okunan_gecerli_o,
+     input              giris_cikis_aktif_i
 	 
     );
     
@@ -89,7 +90,9 @@ module axi4_lite_wrapper(
 	     .okunan_veri_o(okunan_veri_o),
 	     .data_i(data_i),
 	     .read_size_o(read_size_w),
-	     .okunan_veri_gecerli_o(okunan_gecerli_o)
+	     .okunan_veri_gecerli_o(okunan_gecerli_o),
+	     
+	     .giris_cikis_aktif_i(giris_cikis_aktif_i)
          
     );
     
