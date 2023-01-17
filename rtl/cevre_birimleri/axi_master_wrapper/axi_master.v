@@ -1,5 +1,5 @@
 `timescale 1ns / 1ps
-
+`include "operations.vh"
 // her islem 2 cevrim sürüyor
 
 module axi_master(
@@ -50,12 +50,12 @@ module axi_master(
 // LB, LH, LW, SB, SH, SW
 	
 	
-	localparam LB = 3'b001;
-	localparam LH = 3'b010;
-	localparam LW = 3'b011;
-	localparam SB = 3'b100;
-	localparam SH = 3'b101;
-	localparam SW = 3'b110;
+//	localparam LB = 3'b001;
+//	localparam LH = 3'b010;
+//	localparam LW = 3'b011;
+//	localparam SB = 3'b100;
+//	localparam SH = 3'b101;
+//	localparam SW = 3'b110;
 	
     assign okunan_veri_o = axi_rdata_i;
 	
@@ -141,25 +141,25 @@ module axi_master(
 	end
 	
         case (buyruk_turu_i)
-            LB : begin
+            `MEM_LB : begin
                 axi_araddr_r = address_i;
                 axi_arvalid_r_next = 1'b1;
                 read_size_o_r = 4'b0001;
             end
             
-            LH : begin
+            `MEM_LH : begin
                 axi_araddr_r = address_i;
                 axi_arvalid_r_next = 1'b1;
                 read_size_o_r = 4'b0011;
             end
             
-            LW : begin
+            `MEM_LW : begin
                 axi_araddr_r = address_i;
                 axi_arvalid_r_next = 1'b1;
                 read_size_o_r = 4'b1111;
             end
             
-            SB : begin
+            `MEM_SB : begin
                 axi_awaddr_r = address_i;
                 axi_awvalid_r_next = 1'b1;
                 axi_wdata_r = data_i;
@@ -168,7 +168,7 @@ module axi_master(
 
             end
             
-            SH : begin
+            `MEM_SH : begin
                 axi_awaddr_r = address_i;
                 axi_awvalid_r_next = 1'b1;
                 axi_wdata_r = data_i;
@@ -177,7 +177,7 @@ module axi_master(
                 
             end
             
-            SW : begin
+            `MEM_SW : begin
                 axi_awaddr_r = address_i;
                 axi_awvalid_r_next = 1'b1;
                 axi_wdata_r = data_i;
