@@ -42,7 +42,8 @@ module axi_master(
 	 output   [31:0]     okunan_veri_o,
 	 output              okunan_veri_gecerli_o,
 	 input    [31:0]     data_i,
-	 output   [3:0]      read_size_o
+	 output   [3:0]      read_size_o,
+	 input               giris_cikis_aktif_i
      
 
     );
@@ -140,6 +141,7 @@ module axi_master(
 	   okunan_veri_gecerli_o_r = 1'b0;
 	end
 	
+	if(giris_cikis_aktif_i) begin
         case (buyruk_turu_i)
             `MEM_LB : begin
                 axi_araddr_r = address_i;
@@ -191,6 +193,7 @@ module axi_master(
                 axi_wvalid_r_next = 1'b0;
             end
         endcase
+    end
 	end
 	
 	
