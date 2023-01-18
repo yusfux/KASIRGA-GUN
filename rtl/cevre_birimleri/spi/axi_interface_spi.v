@@ -87,18 +87,11 @@ module axi_interface_spi(
 	reg s_axi_bresp_o_r_next = 1'b0;
 	reg s_axi_rresp_o_r_next = 1'b0;
 	
-	reg read_state       = 1'b0;
-	reg read_state_next  = 1'b0;
-	reg write_state      = 1'b0;
-	reg write_state_next = 1'b0;
-	
-	reg  [4:0]  s_axi_araddr_i_r;
 	wire [4:0]	reg_addres_r;
-	assign reg_addres_r = s_axi_araddr_i_r[4:0];
+	assign reg_addres_r = s_axi_araddr_i[4:0];
 	
-	reg  [4:0]  s_axi_awaddr_i_r;
 	wire [4:0]	reg_addres_w;
-	assign reg_addres_w = s_axi_awaddr_i_r[4:0];
+	assign reg_addres_w = s_axi_awaddr_i[4:0];
 	
 	// AXI HANDHSHAKE
 	wire write_en;
@@ -110,38 +103,31 @@ module axi_interface_spi(
 	assign r_adress_check = s_axi_arvalid_i & ((s_axi_araddr_i & ~SPI_MASK_ADDR) == SPI_BASE_ADDR) & read_en; 
 	assign w_adress_check = s_axi_awvalid_i &   s_axi_wvalid_i &  ((s_axi_awaddr_i & ~SPI_MASK_ADDR) == SPI_BASE_ADDR) & write_en;
     
-    reg [3:0] read_size_i_r   = 4'd0;
-    reg [3:0] s_axi_wstrb_i_r = 4'd0;
     
     // SPI OUTPUTS ///////////////////////////////////////////////
-    assign 	 adres_bit_o     	 = read_state ? reg_addres_r : write_state ? reg_addres_w : 5'd0;
-	assign   islem_o         	 = write_state;
-	assign   islem_gecerli_o 	 = read_state | write_state;
+    assign 	 adres_bit_o     	 = r_adress_check ? reg_addres_r : w_adress_check ? reg_addres_w : 5'd0;
+	assign   islem_o         	 = r_adress_check;
+	assign   islem_gecerli_o 	 = r_adress_check | w_adress_check;
 	
-	assign   read_type_o[1]  	 = read_size_i_r[3]; 
-	assign   read_type_o[0]  	 = read_size_i_r[1]; 
+	assign   read_type_o[1]  	 = read_size_i[3]; 
+	assign   read_type_o[0]  	 = read_size_i[1]; 
 	
-	assign   write_type_o[1]     = s_axi_wstrb_i_r[3];
-	assign   write_type_o[0]     = s_axi_wstrb_i_r[1];
+	assign   write_type_o[1]     = s_axi_wstrb_i[3];
+	assign   write_type_o[0]     = s_axi_wstrb_i[1];
 	//////////////////////////////////////////////////////////////
 	always @* begin
 	
-      s_axi_arready_o_next 	    = s_axi_arready_o_r;
+      s_axi_arready_o_next 	    = 1'b1;
       s_axi_rdata_o_next 		= s_axi_rdata_o_r;
-      s_axi_awready_o_next 	    = s_axi_awready_o_r;
-      s_axi_wready_o_next 		= s_axi_wready_o_r;
+      s_axi_awready_o_next 	    = 1'b1;
+      s_axi_wready_o_next 		= 1'b1;
       s_axi_bvalid_o_next 		= 1'b0;
       s_axi_rvalid_o_next 		= 1'b0;
-      read_state_next 			= 1'b0;
-      write_state_next 			= 1'b0;
       s_axi_bresp_o_r_next 	    = 1'b0;
       s_axi_rresp_o_r_next 	    = 1'b0;
       
-		if(read_state && s_axi_rready_i) begin
-         s_axi_arready_o_next = 1'b0;
-         read_state_next      = 1'b0;
-         s_axi_rresp_o_r_next = 1'b1;
-			
+		if(r_adress_check && s_axi_rready_i) begin
+		
 			if(islem_bitti_i) begin
 				s_axi_rvalid_o_next = 1'b1;
 			end
@@ -150,28 +136,16 @@ module axi_interface_spi(
 			end
 			
       end
-      else if(r_adress_check) begin
-         s_axi_arready_o_next = 1'b1;
-         read_state_next      = 1'b1;
-      end
+
+      if(w_adress_check && s_axi_bready_i)begin
         
-      if(write_state && s_axi_bready_i)begin
-        
-         write_state_next     = 1'b0;
-         s_axi_awready_o_next = 1'b0; 
-         s_axi_wready_o_next  = 1'b0;	  
-         
+
 			if(islem_bitti_i) begin
 				s_axi_bvalid_o_next = 1'b1;
 			end
 			else begin
 				// islem yapilamadi, temsili ekledim, stall ya da exception
 			end
-      end
-      else if(w_adress_check) begin
-         s_axi_awready_o_next = 1'b1; 
-         s_axi_wready_o_next  = 1'b1;
-         write_state_next     = 1'b1;
       end
         
         
@@ -186,13 +160,7 @@ module axi_interface_spi(
 	      s_axi_bvalid_o_r  <= 1'b0;         
 	      s_axi_rvalid_o_r  <= 1'b0;         
 	      s_axi_bresp_o_r   <= 1'b0; 
-		  s_axi_rresp_o_r   <= 1'b0;
-	      read_state        <= 1'b0;                    
-	      write_state       <= 1'b0;                    
-          s_axi_araddr_i_r  <= 5'd0;
-		  s_axi_awaddr_i_r  <= 5'd0; 
-		  read_size_i_r     <= 4'd0;
-		  s_axi_wstrb_i_r   <= 4'd0;                                                          
+		  s_axi_rresp_o_r   <= 1'b0;                                                                      
 	   end    
 	    
 	   else begin
@@ -204,13 +172,6 @@ module axi_interface_spi(
           s_axi_rvalid_o_r   <= s_axi_rvalid_o_next; 
           s_axi_bresp_o_r    <= s_axi_bresp_o_r_next;
 		  s_axi_rresp_o_r    <= s_axi_rresp_o_r_next; 	
-          read_state 		 <= read_state_next;
-          write_state 		 <= write_state_next;
-		  s_axi_araddr_i_r   <= s_axi_araddr_i[4:0];
-		  s_axi_awaddr_i_r   <= s_axi_awaddr_i[4:0];  	 
-		  read_size_i_r      <= read_size_i;
-		  s_axi_wstrb_i_r    <= s_axi_wstrb_i;
-		     
       end
 	end
 	
