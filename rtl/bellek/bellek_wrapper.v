@@ -36,7 +36,10 @@ module bellek_wrapper(
     input                   rx_i,
     output                  tx_o,
 	output                  pwm1_o,
-    output                  pwm2_o
+    output                  pwm2_o,
+    output                  gc_veri_gecerli_o,
+    output      [31:0]      gc_okunan_veri_o // gc_veri_gecerli_o 1 ise yazmaca yazilmasi icin
+    
 );
     //*********ONBELLEK DENETLEYICI modulu wirelari****/
     wire [127:0]    obek_okunan_o;       
@@ -149,14 +152,14 @@ module bellek_wrapper(
          .axi_aresetn_i(rst_i),
          .address_i(bellek_adresi_i),
 	     .buyruk_turu_i(load_save_buyrugu_i),
-	     .okunan_veri_o(gc_okunan_veri_w),
+	     .okunan_veri_o(gc_okunan_veri_o),
 	     .data_i(bellek_veri_i),
 	     .tx_o(tx_o),
 	     .rx_i(rx_i),
 	     .pwm1_o(pwm1_o),
          .pwm2_o(pwm2_o),
          .stall_o(gc_stall_w),
-         .okunan_gecerli_o(gc_veri_gecerli_w),
+         .okunan_gecerli_o(gc_veri_gecerli_o),
          .giris_cikis_aktif_i(giris_cikis_aktif_w)
     );
     
@@ -208,7 +211,7 @@ module bellek_wrapper(
     //GERIYAZ ASMASINA GIDECEK SINYALLER
     assign yazmaca_yaz_o          = yazmaca_yaz_r;
 	assign hedef_yazmaci_o        = hedef_yazmaci_r;
-	assign hedef_yazmac_verisi_o  = gc_veri_gecerli_w ? gc_okunan_veri_w : hedef_yazmac_verisi_r;
+	assign hedef_yazmac_verisi_o  = hedef_yazmac_verisi_r;
 	assign bellek_veri_hazir_o    = bellek_veri_hazir_r;
     //ANABELLEK DENETLEYICIYE GIDECEK SINYALLER
     assign bellek_asamasi_istek_o = anabellek_istek_o;
