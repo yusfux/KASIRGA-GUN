@@ -13,6 +13,7 @@ module bellek_wrapper(
 	output                  yazmaca_yaz_o,
 	output     [4:0]        hedef_yazmaci_o,
 	output                  bellek_veri_hazir_o,
+	output     [31:0]	bellek_veri_o,
 	// \--------------------- YURUT-BELLEK ----------------------------------------/		
 	input      [31:0]       bellek_adresi_i,
 	input      [31:0]       bellek_veri_i, // bellege yazilacak olan veri
