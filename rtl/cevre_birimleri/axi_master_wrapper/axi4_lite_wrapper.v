@@ -54,12 +54,12 @@ module axi4_lite_wrapper(
      wire s_axi_bvalid_o_pwm;
      wire s_axi_bresp_o_pwm;
      
-     assign axi_arready_w    = s_axi_arready_o_uart ^  s_axi_arready_o_pwm;
+     assign axi_arready_w    = s_axi_arready_o_uart ||  s_axi_arready_o_pwm;
      assign axi_rvalid_w     = s_axi_rvalid_o_uart  ^  s_axi_rvalid_o_pwm;
      assign axi_rdata_w      = s_axi_rvalid_o_uart ? s_axi_rdata_o_uart : s_axi_rvalid_o_pwm ? s_axi_rdata_o_pwm : 32'd0;
      assign axi_rresp_w      = s_axi_rresp_o_uart   ^ s_axi_rresp_o_pwm;
-     assign axi_awready_w    = s_axi_awready_o_uart ^  s_axi_awready_o_pwm;
-     assign axi_wready_w     = s_axi_wready_o_uart  ^  s_axi_wready_o_pwm;
+     assign axi_awready_w    = s_axi_awready_o_uart ||  s_axi_awready_o_pwm;
+     assign axi_wready_w     = s_axi_wready_o_uart  ||  s_axi_wready_o_pwm;
      assign axi_bvalid_w     = s_axi_bvalid_o_uart  ^  s_axi_bvalid_o_pwm;
      assign axi_bresp_w      = s_axi_bresp_o_uart   ^  s_axi_bresp_o_pwm;
      
