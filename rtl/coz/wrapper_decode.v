@@ -24,8 +24,9 @@ module wrapper_decode(
         input clk_i, rst_i,
 
         //FROM FETCH STAGE - POSEDGE
-        input instruction_i,
-        input program_counter_i,
+        input [31:0] instruction_i,
+        input [31:0] program_counter_i,
+        input branch_taken_i,
 
         //FROM WRITE-BACK STAGE - COMBINATIONAL
         input        reg_write_wb_i,
@@ -41,9 +42,9 @@ module wrapper_decode(
         input [31:0] exception_program_counter_i,
 
         //TO PIPELINE CONTROLLER - COMBINATIONAL
+        output [31:0] program_counter_decode_stage_o,
         output en_stall_decode_stage_o,
         output en_flush_mret_instruction_o,
-        output program_counter_decode_stage_o,
         output exception_illegal_instruction_o,
         output exception_breakpoint_o,
         output exception_env_call_from_M_mode_o,
@@ -63,14 +64,17 @@ module wrapper_decode(
         output reg [2:0] op_crypto_o,
         output reg [2:0] op_branching_o,
         output reg [2:0] op_mem_o,
-        output reg [31:0] immediate_o,
         output reg mem_read_o,
         output reg mem_write_o,
         output reg enable_rs2_conv_o,
         output reg reg_write_o,
         output reg [4:0] reg_rd_o,
+        output reg [31:0] immediate_o,
+        output reg [31:0] reg_rs1_data_o,
+        output reg [31:0] reg_rs2_data_o,
 
-        output reg [31:0] program_counter_o
+        output reg [31:0] program_counter_o,
+        output reg        branch_taken_o
 
     );
 
@@ -83,25 +87,25 @@ module wrapper_decode(
 
 
     //INSTRUCTION DECODER
-    reg en_alu_r;
-    reg en_branching_unit_r;
-    reg en_ai_unit_r;
-    reg en_crypto_unit_r;
-    reg en_mem_r;
+    wire en_alu_w;
+    wire en_branching_unit_w;
+    wire en_ai_unit_w;
+    wire en_crypto_unit_w;
+    wire en_mem_w;
 
-    reg [5:0] op_alu_r;
-    reg [2:0] op_ai_r;
-    reg [2:0] op_crypto_r;
-    reg [2:0] op_branching_r;
-    reg [2:0] op_mem_r;
+    wire [5:0] op_alu_w;
+    wire [2:0] op_ai_w;
+    wire [2:0] op_crypto_w;
+    wire [2:0] op_branching_w;
+    wire [2:0] op_mem_w;
 
-    reg [31:0] immediate_r;
-    reg [31:0] csr_immediate_r;
+    wire [31:0] immediate_w;
+    wire [31:0] csr_immediate_w;
 
-    reg mem_read_r;
-    reg mem_write_r;
+    wire mem_read_w;
+    wire mem_write_w;
     
-    reg enable_rs2_conv_r;
+    wire enable_rs2_conv_w;
 
     wire en_csr_read_w;
     wire en_csr_write_w;
@@ -109,31 +113,32 @@ module wrapper_decode(
     wire [11:0] adress_csr_w;
     wire [2:0]  op_csr_w;
 
-    reg exception_illegal_instr_decode_w;
-    reg exception_breakpoint_w;
-    reg exception_env_call_from_M_mode_w;
+    wire exception_illegal_instr_decode_w;
+    wire exception_breakpoint_w;
+    wire exception_env_call_from_M_mode_w;
 
+    wire reg_write_csr_w;
     wire reg_read_rs1_w;
     wire reg_read_rs2_w;
     wire reg_write_w;
 
-    wire reg_rs1_w;
-    wire reg_rs2_w;
-    wire reg_rd_w;
+    wire [4:0] reg_rs1_w;
+    wire [4:0] reg_rs2_w;
+    wire [4:0] reg_rd_w;
 
 
     //REGISTER FILE
-    reg [31:0] reg_rs1_data_r;
-    reg [31:0] reg_rs2_data_r;
+    wire [31:0] reg_rs1_data_w;
+    wire [31:0] reg_rs2_data_w;
 
     wire [31:0] reg_csr_data_w;
 
-    reg stall_register_file_r;
+    wire stall_register_file_w;
 
 
     //CONTROL & STATUS REGISTER FILE
-    reg         en_excep_program_counter_r;
-    reg  [31:0] excep_program_counter_r;
+    wire        en_excep_program_counter_w;
+    wire [31:0] excep_program_counter_w;
     wire [31:0] data_csr_read_w;
 
 
@@ -147,21 +152,21 @@ module wrapper_decode(
     instr_decoder instruction_decoder(
         .instruction_i(expanded_instruction_w),
 
-        .en_alu_o(en_alu_r),
-        .en_branching_unit_o(en_branching_unit_r),
-        .en_ai_unit_o(en_ai_unit_r),
-        .en_crypto_unit_o(en_crypto_unit_r),
-        .en_mem_o(en_mem_r),
-        .op_alu_o(op_alu_r),
-        .op_ai_o(op_ai_r),
-        .op_crypto_o(op_crypto_r),
-        .op_branching_o(op_branching_r),
-        .op_mem_o(op_mem_r),
-        .immediate_o(immediate_r),
-        .csr_immediate_o(csr_immediate_r),
-        .mem_read_o(mem_read_r),
-        .mem_write_o(mem_write_r),
-        .enable_rs2_conv_o(enable_rs2_conv_r),
+        .en_alu_o(en_alu_w),
+        .en_branching_unit_o(en_branching_unit_w),
+        .en_ai_unit_o(en_ai_unit_w),
+        .en_crypto_unit_o(en_crypto_unit_w),
+        .en_mem_o(en_mem_w),
+        .op_alu_o(op_alu_w),
+        .op_ai_o(op_ai_w),
+        .op_crypto_o(op_crypto_w),
+        .op_branching_o(op_branching_w),
+        .op_mem_o(op_mem_w),
+        .immediate_o(immediate_w),
+        .csr_immediate_o(csr_immediate_w),
+        .mem_read_o(mem_read_w),
+        .mem_write_o(mem_write_w),
+        .enable_rs2_conv_o(enable_rs2_conv_w),
         .en_csr_read_o(en_csr_read_w),
         .en_csr_write_o(en_csr_write_w),
         .en_mret_instruction_o(en_mret_instruction_w),
@@ -170,6 +175,7 @@ module wrapper_decode(
         .exception_illegal_instruction_o(exception_illegal_instr_decode_w),
         .exception_breakpoint_o(exception_breakpoint_w),
         .exception_env_call_from_M_mode_o(exception_env_call_from_M_mode_w),
+        .reg_write_csr_o(reg_write_csr_w),
         .reg_read_rs1_o(reg_read_rs1_w),
         .reg_read_rs2_o(reg_read_rs2_w),
         .reg_write_o(reg_write_w),
@@ -188,12 +194,12 @@ module wrapper_decode(
         .reg_rs2_i(reg_rs2_w),
         .reg_write_i(reg_write_w),
         .reg_rd_i(reg_rd_w),
-        .reg_write_csr_i(reg_read_rs1_w),
+        .reg_write_csr_i(reg_write_csr_w),
         .reg_rd_data_csr_i(data_csr_read_w),
         
-        .reg_rs1_data_o(reg_rs1_data_r),
-        .reg_rs2_data_o(reg_rs2_data_r),
-        .stall_register_file_o(stall_register_file_r)
+        .reg_rs1_data_o(reg_rs1_data_w),
+        .reg_rs2_data_o(reg_rs2_data_w),
+        .stall_register_file_o(stall_register_file_w)
     );
 
     cont_stat_register_file control_status_register_file(
@@ -210,14 +216,17 @@ module wrapper_decode(
         .en_csr_write_i(reg_read_rs1_w),
         .adress_csr_i(adress_csr_w),
 
-        .data_csr_write_o(reg_csr_data_w),
-        .en_excep_program_counter_o(en_excep_program_counter_r),
-        .excep_program_counter_o(excep_program_counter_r)
+        .data_csr_read_o(reg_csr_data_w),
+        .en_excep_program_counter_o(en_excep_program_counter_w),
+        .excep_program_counter_o(excep_program_counter_w)
     );
 
 
+    //TODO: reset ile ilgili herhangi bir sey yapmamiza gerek var mi? reset geldiginde unspecified bir sonuc donmesi gerekmez mi?
     always @(posedge clk_i) begin
-        if(stall_decode_stage_i) begin
+        if(stall_decode_stage_i || en_stall_decode_stage_o) begin
+            //NO INPUT TAKEN
+
             //NOP AS OUTPUT
             en_alu_o            <= 1'b0;
             en_branching_unit_o <= 1'b0;
@@ -227,9 +236,13 @@ module wrapper_decode(
             mem_read_o          <= 1'b0;
             mem_write_o         <= 1'b0;
             enable_rs2_conv_o   <= 1'b0;
-            //reg_write_o         <= 1'b0;
+            reg_write_o         <= 1'b0;
         end
         else if(flush_decode_stage_i) begin
+            //REGULAR INPUTS
+            instruction_r     <= instruction_i;
+            program_counter_r <= program_counter_i;
+
             //OUTPUT AS NOP
             en_alu_o            <= 1'b0;
             en_branching_unit_o <= 1'b0;
@@ -239,39 +252,41 @@ module wrapper_decode(
             mem_read_o          <= 1'b0;
             mem_write_o         <= 1'b0;
             enable_rs2_conv_o   <= 1'b0;
-            //reg_write_o         <= 1'b0;
+            reg_write_o         <= 1'b0;
             
-            //REGULAR INPUTS
-            instruction_r     <= instruction_i;
-            program_counter_r <= program_counter_i;   
         end
         else begin
-        //OUTPUT SIGNALS
-            en_alu_o            <= en_alu_r;
-            en_branching_unit_o <= en_branching_unit_r;
-            en_ai_unit_o        <= en_ai_unit_r;
-            en_crypto_unit_o    <= en_crypto_unit_r;
-            en_mem_o            <= en_mem_r;
-            op_alu_o            <= op_alu_r;
-            op_ai_o             <= op_ai_r;
-            op_crypto_o         <= op_crypto_r;
-            op_branching_o      <= op_branching_r;
-            op_mem_o            <= op_mem_r;
-            immediate_o         <= immediate_r;
-            mem_read_o          <= mem_read_r;
-            mem_write_o         <= mem_write_r;
-            enable_rs2_conv_o   <= enable_rs2_conv_r;
-            //reg_write_o         <= reg_write_r;
-            //reg_rd_o            <= reg_rd_r;
-            program_counter_o   <= program_counter_i;
-            
-            //INPUT SIGNALS
+            //REGULAR INPUTS
             instruction_r       <= instruction_i;
             program_counter_r   <= program_counter_i;
+
+            //OUTPUT SIGNALS
+            en_alu_o            <= en_alu_w;
+            en_branching_unit_o <= en_branching_unit_w;
+            en_ai_unit_o        <= en_ai_unit_w;
+            en_crypto_unit_o    <= en_crypto_unit_w;
+            en_mem_o            <= en_mem_w;
+            op_alu_o            <= op_alu_w;
+            op_ai_o             <= op_ai_w;
+            op_crypto_o         <= op_crypto_w;
+            op_branching_o      <= op_branching_w;
+            op_mem_o            <= op_mem_w;
+            mem_read_o          <= mem_read_w;
+            mem_write_o         <= mem_write_w;
+            enable_rs2_conv_o   <= enable_rs2_conv_w;
+            reg_write_o         <= reg_write_w;
+            reg_rd_o            <= reg_rd_w;
+            immediate_o         <= immediate_w;
+            reg_rs1_data_o      <= reg_rs1_data_w;
+            reg_rs2_data_o      <= reg_rs2_data_w;
+
+            program_counter_o   <= program_counter_i;
+            branch_taken_o      <= branch_taken_i;
+            
         end
     end
 
-    assign en_stall_decode_stage_o          = stall_register_file_r;
+    assign en_stall_decode_stage_o          = stall_register_file_w;
     assign en_flush_mret_instruction_o      = en_mret_instruction_w;
     assign program_counter_decode_stage_o   = program_counter_r;
     assign exception_illegal_instruction_o  = exception_illegal_inst_expander_w || exception_illegal_instr_decode_w;

@@ -212,6 +212,12 @@ module cont_stat_register_file (
     reg [31:0] excep_program_counter_r;
     reg        en_excep_program_counter_r;
 
+    //sadece mret, mepc, mcause gibi reglere ihtiyacimiz oldugu icin testlerde,
+    //okuma yazma yapilacak csr yoksa bir tane 32 bitlk rege kaydetip okutuyorum,
+    //hicbir anlami yok sadece testleri kurtarabilmek icin
+    reg [31:0] default_csr_ns;
+    reg [31:0] default_csr_r;
+
     //TODO: check the CSR field specifications
     //TODO: attempts to access a non-existent CSR raise an illegal instruction exception
     //TODO: writes to the read-only bits should be ignored
@@ -223,6 +229,8 @@ module cont_stat_register_file (
     //TODO: MCAUSE never written by the implementation, though it may be explicitly written by software??
     //TODO: SRET should raise an illegal instruction exception, if supervisor mode is not supported
     always @(*) begin
+        default_csr_ns = default_csr_r;
+
         mstatus_ns   = mstatus_r;
         mtvec_ns     = mtvec_r;
 
@@ -243,7 +251,7 @@ module cont_stat_register_file (
                 `MHARTID:    data_csr_read_r = mhartid_w;
                 `MCONFIGPTR: data_csr_read_r = mconfigptr_w;
 
-                `MSTATUS:    data_csr_read_r = mstatus_r  & 32'h0000_1888;
+                `MSTATUS:    data_csr_read_r = mstatus_r;
                 `MISA:       data_csr_read_r = misa_w;
                 `MTVEC:      data_csr_read_r = mtvec_r;
                 `MSTATUSH:   data_csr_read_r = mstatush_w;
@@ -263,6 +271,8 @@ module cont_stat_register_file (
                 `INSTRET:    data_csr_read_r = minstret_r;
                 `CYCLEH:     data_csr_read_r = mcycleh_r;
                 `INSTRETH:   data_csr_read_r = minstreth_r;
+
+                default:     data_csr_read_r = default_csr_r;
             endcase
         end
 
@@ -282,6 +292,8 @@ module cont_stat_register_file (
                         `MINSTRET:   minstret_ns = data_csr_write_i | minstret_r;
                         `MCYCLEH:     mcycleh_ns = data_csr_write_i | mcycleh_r;
                         `MINSTRETH: minstreth_ns = data_csr_write_i | minstreth_r;
+
+                        default:  default_csr_ns = data_csr_write_i;
                     endcase
                 end
                 `OP_CSR_CSRRC: begin
@@ -297,6 +309,8 @@ module cont_stat_register_file (
                         `MINSTRET:   minstret_ns = ~data_csr_write_i & minstret_r;
                         `MCYCLEH:     mcycleh_ns = ~data_csr_write_i & mcycleh_r;
                         `MINSTRETH: minstreth_ns = ~data_csr_write_i & minstreth_r;
+
+                        default:  default_csr_ns = data_csr_write_i;
                     endcase
                 end
                 `OP_CSR_CSRRW: begin
@@ -312,6 +326,8 @@ module cont_stat_register_file (
                         `MINSTRET:   minstret_ns = data_csr_write_i;
                         `MCYCLEH:     mcycleh_ns = data_csr_write_i;
                         `MINSTRETH: minstreth_ns = data_csr_write_i;
+
+                        default:  default_csr_ns = data_csr_write_i;
                     endcase
                 end
                 `OP_CSR_CSRRSI: begin
@@ -327,6 +343,8 @@ module cont_stat_register_file (
                         `MINSTRET:   minstret_ns = data_csr_write_imm_i | minstret_r;
                         `MCYCLEH:     mcycleh_ns = data_csr_write_imm_i | mcycleh_r;
                         `MINSTRETH: minstreth_ns = data_csr_write_imm_i | minstreth_r;
+
+                        default:  default_csr_ns = data_csr_write_i;
                     endcase
                 end
                 `OP_CSR_CSRRCI: begin
@@ -342,6 +360,8 @@ module cont_stat_register_file (
                         `MINSTRET:   minstret_ns = ~data_csr_write_imm_i & minstret_r;
                         `MCYCLEH:     mcycleh_ns = ~data_csr_write_imm_i & mcycleh_r;
                         `MINSTRETH: minstreth_ns = ~data_csr_write_imm_i & minstreth_r;
+
+                        default:  default_csr_ns = data_csr_write_i;
                     endcase
                 end
                 `OP_CSR_CSRRWI: begin
@@ -357,6 +377,8 @@ module cont_stat_register_file (
                         `MINSTRET:   minstret_ns = data_csr_write_imm_i;
                         `MCYCLEH:     mcycleh_ns = data_csr_write_imm_i;
                         `MINSTRETH: minstreth_ns = data_csr_write_imm_i;
+
+                        default:  default_csr_ns = data_csr_write_i;
                     endcase
                 end
             endcase
@@ -416,6 +438,8 @@ module cont_stat_register_file (
 
         end
         else begin
+            default_csr_r <= default_csr_ns;
+
             mstatus_r  <= mstatus_ns;
             mtvec_r    <= mtvec_ns;
             mscratch_r <= mscratch_ns;

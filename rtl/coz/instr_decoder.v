@@ -66,6 +66,7 @@ module instr_decoder (
         //-------------------------------------------------------------------------------
 
         //--------------------------signals to "register file"---------------------------
+        output reg_write_csr_o,
         output reg_read_rs1_o,
         output reg_read_rs2_o,
         output reg_write_o,
@@ -118,13 +119,13 @@ module instr_decoder (
     reg mem_write_r;
 
     //registers read-write
+    reg reg_write_csr_r;
     reg reg_read_rs1_r;
     reg reg_read_rs2_r;
     reg reg_write_r;
 
     //immediate
     reg [31:0] immediate_r;
-    reg [31:0] csr_immediate_r;
 
     //exceptions
     reg exception_illegal_instruction_r;
@@ -135,8 +136,10 @@ module instr_decoder (
     //we ignore HINT's altogather and execute HINT's as a regular computational instruction since
     //they do not change any architectural state
     always @(*) begin
-        en_csr_read_r       = 1'b0;
-        en_csr_write_r      = 1'b0;
+        en_csr_read_r         = 1'b0;
+        en_csr_write_r        = 1'b0;
+        en_mret_instruction_r = 1'b0;
+        op_csr_r              = 3'b000;
 
         en_alu_r            = 1'b0;
         en_branching_unit_r = 1'b0;
@@ -153,11 +156,16 @@ module instr_decoder (
         mem_read_r          = 1'b0;
         mem_write_r         = 1'b0;
 
+        reg_write_csr_r     = 1'b0;
         reg_read_rs1_r      = 1'b0;
         reg_read_rs2_r      = 1'b0;
         reg_write_r         = 1'b0;
 
-        immediate_r         = 32'h0000_0000; 
+        immediate_r         = 32'h0000_0000;
+
+        exception_illegal_instruction_r  = 1'b0;
+        exception_breakpoint_r           = 1'b0;
+        exception_env_call_from_M_mode_r = 1'b0;
 
         case(op_code_w)
 
@@ -462,7 +470,7 @@ module instr_decoder (
                         op_csr_r = `OP_CSR_CSRRW;
                         en_csr_write_r = 1'b1;
                         en_csr_read_r  = 1'b1;
-                        reg_read_rs1_r = 1'b1;
+                        reg_write_csr_r = 1'b1;
                         if(rd_w == 5'b0) begin
                             reg_write_r    = 1'b0;
                             en_csr_read_r  = 1'b0;
@@ -477,11 +485,11 @@ module instr_decoder (
                         op_csr_r = `OP_CSR_CSRRS;
                         en_csr_write_r = 1'b1;
                         en_csr_read_r  = 1'b1;
-                        reg_read_rs1_r = 1'b1;
+                        reg_write_csr_r = 1'b1;
                         if(rs1_w == 5'b0) begin
                             reg_write_r     = 1'b0;
                             en_csr_write_r  = 1'b0;
-                            reg_read_rs1_r  = 1'b0;
+                            reg_write_csr_r  = 1'b0;
                         end
                     end
                     3'b`CSRRC:  begin
@@ -493,11 +501,11 @@ module instr_decoder (
                         op_csr_r = `OP_CSR_CSRRC;
                         en_csr_write_r = 1'b1;
                         en_csr_read_r  = 1'b1;
-                        reg_read_rs1_r = 1'b1;
+                        reg_write_csr_r = 1'b1;
                         if(rs1_w == 5'b0) begin
                             reg_write_r     = 1'b0;
                             en_csr_write_r  = 1'b0;
-                            reg_read_rs1_r  = 1'b0;
+                            reg_write_csr_r  = 1'b0;
                         end
                     end
                     3'b`CSRRWI: begin
@@ -507,7 +515,6 @@ module instr_decoder (
                         immediate_r    = 32'b0;
 
                         op_csr_r = `OP_CSR_CSRRWI;
-                        csr_immediate_r = zimm_w;
                         en_csr_write_r = 1'b1;
                         en_csr_read_r  = 1'b1;
                         if(rd_w == 5'b0) begin
@@ -522,7 +529,6 @@ module instr_decoder (
                         immediate_r    = 32'b0;
 
                         op_csr_r = `OP_CSR_CSRRSI;
-                        csr_immediate_r = zimm_w;
                         en_csr_write_r = 1'b1;
                         en_csr_read_r  = 1'b1;
                         if(zimm_w == 32'b0)
@@ -535,7 +541,6 @@ module instr_decoder (
                         immediate_r    = 32'b0;
 
                         op_csr_r = `OP_CSR_CSRRCI;
-                        csr_immediate_r = zimm_w;
                         en_csr_write_r = 1'b1;
                         en_csr_read_r  = 1'b1;
                         if(zimm_w == 32'b0)
@@ -597,11 +602,13 @@ module instr_decoder (
     assign mem_read_o                       = mem_read_r;
     assign mem_write_o                      = mem_write_r;
 
+    assign reg_write_csr_o                  = reg_write_csr_r;
     assign reg_read_rs1_o                   = reg_read_rs1_r;
     assign reg_read_rs2_o                   = reg_read_rs2_r;
     assign reg_write_o                      = reg_write_r;
 
     assign immediate_o                      = immediate_r;
+    assign csr_immediate_o                  = zimm_w;
     assign reg_rs1_o                        = rs1_w;
     assign reg_rs2_o                        = rs2_w;
     assign reg_rd_o                         = rd_w;

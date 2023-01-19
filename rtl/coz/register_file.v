@@ -85,10 +85,7 @@ module register_file(
         reg_is_ready_rs2_r = 1'b0;
 
         //TODO: need to find more proper way to get rid of inst xA, xA, xB kind of situations
-        if(reg_write_csr_i) begin
-            reg_rs1_data_r = reg_rd_data_csr_i;
-        end
-        else if(reg_read_rs1_i && ((reg_valid_counter[reg_rs1_i] == 2'b00) || (reg_valid_counter[reg_rs1_i] == 2'b01 && (reg_rs1_i == reg_rd_i) && reg_write_i))) begin
+        if(reg_read_rs1_i && ((reg_valid_counter[reg_rs1_i] == 2'b00) || (reg_valid_counter[reg_rs1_i] == 2'b01 && (reg_rs1_i == reg_rd_i) && reg_write_i))) begin
             reg_rs1_data_r     = register[reg_rs1_i];
             reg_is_ready_rs1_r = 1'b1;
         end
@@ -98,12 +95,17 @@ module register_file(
             reg_is_ready_rs2_r = 1'b1;
         end
         
+        //sanirim bu addi buyrugunu csrlardaki veriyi rege yazmak icindi ama unuttum bakmak lazim
+        if(reg_write_csr_i) begin
+            reg_rs1_data_r = reg_rd_data_csr_i;
+        end
+
         //TODO: bu ne? wire yapilabilir mi?
         reg_csr_data_r = register[reg_rs1_i];
     end
 
     //burada kesin boku yedik test lazim
-    always @(negedge clk_i, rst_i) begin
+    always @(negedge clk_i, negedge rst_i) begin
         if(!rst_i) begin
             for(i = 0; i < 32; i = i + 1) begin
                 register[i]          <= 5'b00000;

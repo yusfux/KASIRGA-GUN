@@ -7,13 +7,11 @@
 //TODO: bellek ve yurutten ayni anda durdur sinyali geldigi durumda aslinda birbirlerini durdurmamalari iyi olabilir,
 //cunku carpma veya bolme gibi cok cevrimde yapilacak islemlerde bellegin hala calisir olmasi daha avantajli bir durum
 module pipeline_controller (
-        input en_stall_fetch_stage_i,
         input en_stall_decode_stage_i,
         input en_stall_execute_stage_i,
         input en_stall_memory_stage_i,
 
         input en_flush_branch_misprediction_i,
-        input en_flush_mret_instruction_i,
 
         input [31:0] program_counter_fetch_stage_i,
         input [31:0] program_counter_decode_stage_i,
@@ -28,9 +26,9 @@ module pipeline_controller (
         input exception_store_adress_misaligned_i,
         input exception_env_call_from_M_mode_i,
 
-        input interrupt_machine_software_i,
-        input interrupt_machine_timer_i,
-        input interrupt_machine_external_i,
+        //input interrupt_machine_software_i,
+        //input interrupt_machine_timer_i,
+        //input interrupt_machine_external_i,
 
         output en_exception_o,
         output [31:0] exception_program_counter_o,
@@ -41,7 +39,6 @@ module pipeline_controller (
         output stall_fetch_stage_o,
         output stall_decode_stage_o,
         output stall_execute_stage_o,
-        output stall_memory_stage_o,
 
         output flush_fetch_stage_o,
         output flush_decode_stage_o,
@@ -59,8 +56,6 @@ module pipeline_controller (
     reg stall_fetch_stage_r;
     reg stall_decode_stage_r;
     reg stall_execute_stage_r;
-    reg stall_memory_stage_r;
-    reg stall_writeback_stage_r;
 
     reg flush_fetch_stage_r;
     reg flush_decode_stage_r;
@@ -73,11 +68,10 @@ module pipeline_controller (
         exception_cause_r           = 3'b000;
         //interrupt_cause_r;
 
+        //ne olursa olsun boru hattina veya geriyaza stall inputu gelemez.
         stall_fetch_stage_r         = 1'b0;
         stall_decode_stage_r        = 1'b0;
         stall_execute_stage_r       = 1'b0;
-        stall_memory_stage_r        = 1'b0;
-        stall_writeback_stage_r     = 1'b0;
 
         flush_fetch_stage_r         = 1'b0;
         flush_decode_stage_r        = 1'b0;
@@ -138,9 +132,10 @@ module pipeline_controller (
         if(en_flush_branch_misprediction_i) begin
             flush_decode_stage_r  = 1'b1;
             flush_execute_stage_r = 1'b1;
-        end else if(en_flush_mret_instruction_i) begin  //TODO: eger mret geldigi cevrimde program sayaci dogru instruct getirebiliyorsa 
-                                                        //flusha gerek yok
-        end
+        end 
+        //else if(en_flush_mret_instruction_i) begin  
+        //TODO: eger mret geldigi cevrimde program sayaci dogru instruct getirebiliyorsa flusha gerek yok
+        //end
 
         //stall gelen botu hatti asamasi, saat vurusunda stall gelmisse eger bir sonraki asamaya
         //nop buyrugu vererek, mimari durumunu korur(girdilerden gelen verileri yok sayarak registerdaki verileri tutar)
@@ -165,13 +160,11 @@ module pipeline_controller (
     assign exception_adress_o          = exception_adress_r;
     assign en_exception_o              = en_exception_r;
     assign exception_cause_o           = exception_cause_r;
-    assign interrupt_cause_o           = interrupt_cause_r;
+    //assign interrupt_cause_o           = interrupt_cause_r;
 
     assign stall_fetch_stage_o         = stall_fetch_stage_r;
     assign stall_decode_stage_o        = stall_decode_stage_r;
     assign stall_execute_stage_o       = stall_execute_stage_r;
-    assign stall_memory_stage_o        = stall_memory_stage_r;
-    assign stall_writeback_stage_o     = stall_writeback_stage_r;
 
     assign flush_fetch_stage_o         = flush_fetch_stage_r;
     assign flush_decode_stage_o        = flush_decode_stage_r;
