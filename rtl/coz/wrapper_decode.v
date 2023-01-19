@@ -224,8 +224,7 @@ module wrapper_decode(
 
     //TODO: reset ile ilgili herhangi bir sey yapmamiza gerek var mi? reset geldiginde unspecified bir sonuc donmesi gerekmez mi?
     always @(posedge clk_i) begin
-        if(stall_decode_stage_i || en_stall_decode_stage_o) begin
-            //NO INPUT TAKEN
+        if(stall_decode_stage_i || en_stall_decode_stage_o || flush_decode_stage_i) begin
 
             //NOP AS OUTPUT
             en_alu_o            <= 1'b0;
@@ -238,27 +237,7 @@ module wrapper_decode(
             enable_rs2_conv_o   <= 1'b0;
             reg_write_o         <= 1'b0;
         end
-        else if(flush_decode_stage_i) begin
-            //REGULAR INPUTS
-            instruction_r     <= instruction_i;
-            program_counter_r <= program_counter_i;
-
-            //OUTPUT AS NOP
-            en_alu_o            <= 1'b0;
-            en_branching_unit_o <= 1'b0;
-            en_ai_unit_o        <= 1'b0;
-            en_crypto_unit_o    <= 1'b0;
-            en_mem_o            <= 1'b0;
-            mem_read_o          <= 1'b0;
-            mem_write_o         <= 1'b0;
-            enable_rs2_conv_o   <= 1'b0;
-            reg_write_o         <= 1'b0;
-            
-        end
         else begin
-            //REGULAR INPUTS
-            instruction_r       <= instruction_i;
-            program_counter_r   <= program_counter_i;
 
             //OUTPUT SIGNALS
             en_alu_o            <= en_alu_w;
