@@ -13,6 +13,7 @@ module bellek_wrapper(
 	output                  yazmaca_yaz_o,
 	output     [4:0]        hedef_yazmaci_o,
 	output                  bellek_veri_hazir_o,
+	output     [31:0]	bellek_veri_o,
 	// \--------------------- YURUT-BELLEK ----------------------------------------/		
 	input      [31:0]       bellek_adresi_i,
 	input      [31:0]       bellek_veri_i, // bellege yazilacak olan veri
@@ -21,17 +22,25 @@ module bellek_wrapper(
     input                   bellekten_oku_i,
     input                   bellege_yaz_i,
     // \--------------------- BELLEK-ANABELLEK DENETLEYICI-------------------------/
-    input                    anabellek_musait_i,        
-    input       [127:0]      okunan_veri_obegi_i,
-    input                    bellek_asamasina_veri_hazir_i,
+    input                   anabellek_musait_i,        
+    input       [127:0]     okunan_veri_obegi_i,
+    input                   bellek_asamasina_veri_hazir_i,
     
-    output                   bellek_asamasi_istek_o,
-    output      [31:0]       bellek_adres_o,             // obegin baslangic adresi yani hep 32'bx0000 seklinde
-    output                   bellek_oku_o,
-    output                   bellek_yaz_o,
-    output      [127:0]      yazilacak_veri_obegi_o,
+    output                  bellek_asamasi_istek_o,
+    output      [31:0]      bellek_adres_o,             // obegin baslangic adresi yani hep 32'bx0000 seklinde
+    output                  bellek_oku_o,
+    output                  bellek_yaz_o,
+    output      [127:0]     yazilacak_veri_obegi_o,
    //\---------------------------------------------------------/
-    output                   durdur_o
+    output                  durdur_o,
+    // giris_cikis
+    input                   rx_i,
+    output                  tx_o,
+	output                  pwm1_o,
+    output                  pwm2_o,
+    output                  gc_veri_gecerli_o,
+    output      [31:0]      gc_okunan_veri_o // gc_veri_gecerli_o 1 ise yazmaca yazilmasi icin
+    
 );
     //*********ONBELLEK DENETLEYICI modulu wirelari****/
     wire [127:0]    obek_okunan_o;       
@@ -52,7 +61,7 @@ module bellek_wrapper(
     
     wire            denetleyici_musait;
         // geriyaza verilecekler
-    wire  [31:0]  veri_o; 
+    wire [31:0]  veri_o; 
     wire          veri_hazir_o; 
 
    //*********ONBELLEK modulu wirelari****/
@@ -62,12 +71,20 @@ module bellek_wrapper(
     wire            adres_bulundu_o;   
     wire            obek_kirli_o;   
     
+    //*****Adres duzenleme ve axi*********/
+    wire            bellege_yaz_w;
+    wire            bellekten_oku_w;
+    wire            giris_cikis_aktif_w;
+    wire  [31:0]    gc_okunan_veri_w;
+    wire            gc_stall_w;
+    wire            gc_veri_gecerli_w;
+    
     veri_onbellek_denetleyici   onbellek_denetleyici(
         .clk_i(clk_i),
         .rst_i(rst_i),          
                   
-        .bellek_oku_i(bellekten_oku_i),   
-        .bellek_yaz_i(bellege_yaz_i),   
+        .bellek_oku_i(bellekten_oku_w),   
+        .bellek_yaz_i(bellege_yaz_w),   
         .adres_i(bellek_adresi_i),        
         .veri_i(bellek_veri_i),         
         .buyruk_turu_i(load_save_buyrugu_i),  
@@ -121,6 +138,33 @@ module bellek_wrapper(
         .adres_bulundu_o(adres_bulundu_o),          
         .obek_kirli_o(obek_kirli_o)
     );
+    
+    adres_duzenleyici adres_duz(
+         .bellege_yaz_i(bellege_yaz_i),
+         .bellekten_oku_i(bellekten_oku_i),
+         .bellek_adresi30_i(bellek_adresi_i[30]), //bellek_adresi[30]
+         .bellege_yaz_o(bellege_yaz_w),
+         .bellekten_oku_o(bellekten_oku_w),
+         .giris_cikis_aktif_o(giris_cikis_aktif_w)
+    );
+    
+    axi4_lite_wrapper giris_cikis(
+         .axi_aclk_i(clk_i),
+         .axi_aresetn_i(rst_i),
+         .address_i(bellek_adresi_i),
+	     .buyruk_turu_i(load_save_buyrugu_i),
+	     .okunan_veri_o(gc_okunan_veri_o),
+	     .data_i(bellek_veri_i),
+	     .tx_o(tx_o),
+	     .rx_i(rx_i),
+	     .pwm1_o(pwm1_o),
+         .pwm2_o(pwm2_o),
+         .stall_o(gc_stall_w),
+         .okunan_gecerli_o(gc_veri_gecerli_o),
+         .giris_cikis_aktif_i(giris_cikis_aktif_w)
+    );
+    
+    
     reg        yazmaca_yaz_r;
     reg [4:0]  hedef_yazmaci_r;
     reg [31:0] hedef_yazmac_verisi_r;
@@ -128,13 +172,11 @@ module bellek_wrapper(
     reg        yazmaca_yaz_ns;
     reg [4:0]  hedef_yazmaci_ns;
     reg [31:0] hedef_yazmac_verisi_ns;
-    reg        bellek_veri_hazir_ns;
     
     always @* begin //clk ile bellek asamasina gelen sinyaller icin
             yazmaca_yaz_ns         = yazmaca_yaz_i;
             hedef_yazmaci_ns       = hedef_yazmaci_i;
             hedef_yazmac_verisi_ns = hedef_yazmac_verisi_i;
-            bellek_veri_hazir_ns   = 1'b1;
     end
     
     always @(posedge clk_i) begin
@@ -142,41 +184,32 @@ module bellek_wrapper(
             yazmaca_yaz_r         = 1'b0;
             hedef_yazmaci_r       = 5'd0;
             hedef_yazmac_verisi_r = 32'd0;
-            bellek_veri_hazir_r   = 1'b0;        
         end
         else begin
-            if(!denetleyici_musait && (bellekten_oku_i || bellege_yaz_i))begin
+		if((!denetleyici_musait && (bellekten_oku_i || bellege_yaz_i)) || gc_stall_w)begin
                 yazmaca_yaz_r         <= 1'b0;        // SOR: 1 mi olmali?
-                hedef_yazmaci_r       <= 5'd0;      
-                hedef_yazmac_verisi_r <= 32'd0;
-                bellek_veri_hazir_r   <= 1'b1;
             end
             else begin
                 yazmaca_yaz_r         <= yazmaca_yaz_ns;
                 hedef_yazmaci_r       <= hedef_yazmaci_ns;
-                hedef_yazmac_verisi_r <= hedef_yazmac_verisi_ns;
-                bellek_veri_hazir_r   <= 1'b1;          
-                  
-                if(bellekten_oku_i || bellege_yaz_i)begin
-                    hedef_yazmac_verisi_r <= veri_o;
-                    bellek_veri_hazir_r   <= veri_hazir_o;
-                end
+                hedef_yazmac_verisi_r <= hedef_yazmac_verisi_ns;       
             end
         end
     end
     
     //GERIYAZ ASMASINA GIDECEK SINYALLER
     assign yazmaca_yaz_o          = yazmaca_yaz_r;
-	assign hedef_yazmaci_o        = hedef_yazmaci_r;
-	assign hedef_yazmac_verisi_o  = hedef_yazmac_verisi_r;
-	assign bellek_veri_hazir_o    = bellek_veri_hazir_r;
+    assign hedef_yazmaci_o        = hedef_yazmaci_r;
+    assign hedef_yazmac_verisi_o  = hedef_yazmac_verisi_r;
     //ANABELLEK DENETLEYICIYE GIDECEK SINYALLER
     assign bellek_asamasi_istek_o = anabellek_istek_o;
     assign bellek_adres_o         = anabellek_adres_o;
     assign bellek_oku_o           = anabellek_oku_o;
     assign bellek_yaz_o           = anabellek_yaz_o;
     assign yazilacak_veri_obegi_o = anabellek_kirli_obek_o;
-	
-	assign durdur_o = ~denetleyici_musait && (bellekten_oku_i || bellege_yaz_i);
+    assign bellek_veri_hazir_o    = veri_hazir_o;
+    assign bellek_veri_o          = veri_o;	
+    
+    assign durdur_o = (~denetleyici_musait && (bellekten_oku_i || bellege_yaz_i)) || gc_stall_w;
 	
 endmodule

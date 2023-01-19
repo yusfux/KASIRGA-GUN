@@ -11,7 +11,9 @@ module axi4_lite_wrapper(
 	 input              rx_i,
 	 output             pwm1_o,
      output             pwm2_o,
-     output             stall_o
+     output             stall_o,
+     output             okunan_gecerli_o,
+     input              giris_cikis_aktif_i
 	 
     );
     
@@ -22,7 +24,7 @@ module axi4_lite_wrapper(
      wire              axi_rvalid_w;
 	 wire   [31:0]     axi_rdata_w; 
 	 wire              axi_rresp_w; 
-     (* keep = "true" *) wire   [31:0]     axi_awaddr_w;
+     wire   [31:0]     axi_awaddr_w;
      wire              axi_awready_w;
      wire              axi_awvalid_w;
      wire   [31:0]     axi_wdata_w;
@@ -43,22 +45,21 @@ module axi4_lite_wrapper(
 	 wire s_axi_bvalid_o_uart;
 	 wire s_axi_bresp_o_uart;
 	 
-      (* keep = "true" *)    wire s_axi_arready_o_pwm;
-      (* keep = "true" *)    wire s_axi_rvalid_o_pwm;
-      (* keep = "true" *)    wire [31:0] s_axi_rdata_o_pwm;
-      (* keep = "true" *)    wire s_axi_rresp_o_pwm;
-      (* keep = "true" *)    wire s_axi_awready_o_pwm;
-      (* keep = "true" *)    wire s_axi_wready_o_pwm;
-      (* keep = "true" *)    wire s_axi_bvalid_o_pwm;
-      (* keep = "true" *)    wire s_axi_bresp_o_pwm;
+     wire s_axi_arready_o_pwm;
+     wire s_axi_rvalid_o_pwm;
+     wire [31:0] s_axi_rdata_o_pwm;
+     wire s_axi_rresp_o_pwm;
+     wire s_axi_awready_o_pwm;
+     wire s_axi_wready_o_pwm;
+     wire s_axi_bvalid_o_pwm;
+     wire s_axi_bresp_o_pwm;
      
-     assign axi_arready_w    = s_axi_arready_o_uart ^  s_axi_arready_o_pwm;
+     assign axi_arready_w    = s_axi_arready_o_uart ||  s_axi_arready_o_pwm;
      assign axi_rvalid_w     = s_axi_rvalid_o_uart  ^  s_axi_rvalid_o_pwm;
-     // alttaki satiri kontrol et
      assign axi_rdata_w      = s_axi_rvalid_o_uart ? s_axi_rdata_o_uart : s_axi_rvalid_o_pwm ? s_axi_rdata_o_pwm : 32'd0;
      assign axi_rresp_w      = s_axi_rresp_o_uart   ^ s_axi_rresp_o_pwm;
-     assign axi_awready_w    = s_axi_awready_o_uart ^  s_axi_awready_o_pwm;
-     assign axi_wready_w     = s_axi_wready_o_uart  ^  s_axi_wready_o_pwm;
+     assign axi_awready_w    = s_axi_awready_o_uart ||  s_axi_awready_o_pwm;
+     assign axi_wready_w     = s_axi_wready_o_uart  ||  s_axi_wready_o_pwm;
      assign axi_bvalid_w     = s_axi_bvalid_o_uart  ^  s_axi_bvalid_o_pwm;
      assign axi_bresp_w      = s_axi_bresp_o_uart   ^  s_axi_bresp_o_pwm;
      
@@ -88,7 +89,10 @@ module axi4_lite_wrapper(
 	     .buyruk_turu_i(buyruk_turu_i),
 	     .okunan_veri_o(okunan_veri_o),
 	     .data_i(data_i),
-	     .read_size_o(read_size_w)
+	     .read_size_o(read_size_w),
+	     .okunan_veri_gecerli_o(okunan_gecerli_o),
+	     
+	     .giris_cikis_aktif_i(giris_cikis_aktif_i)
          
     );
     

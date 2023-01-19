@@ -46,9 +46,16 @@ module axi4_lite_slave_pwm(
 	wire  [31:0] pwm1_threshold1_w;
 	wire  [31:0] pwm1_threshold2_w;
 	wire  [11:0] pwm1_step_w;
+	
+	wire  [1:0]  pwm2_mode_w;
+	wire  [31:0] pwm2_period_w;
+	wire  [31:0] pwm2_threshold1_w;
+	wire  [31:0] pwm2_threshold2_w;
+	wire  [11:0] pwm2_step_w;
+	
 	wire  pwm1_w;
 	wire  pwm2_w;
-	assign pwm2_w = 1'b0;
+
     assign pwm1_o = pwm1_w;
     assign pwm2_o = pwm2_w;
     
@@ -72,16 +79,24 @@ module axi4_lite_slave_pwm(
         .s_axi_bready_i(s_axi_bready_i),
         .s_axi_bvalid_o(s_axi_bvalid_o),
 		.s_axi_bresp_o(s_axi_bresp_o),
+	    .read_size_i(read_size_i),
+	    
 		.pwm1_mode_o(pwm1_mode_w),
         .pwm1_period_o(pwm1_period_w),
 	    .pwm1_threshold1_o(pwm1_threshold1_w),
 	    .pwm1_threshold2_o(pwm1_threshold2_w),
 	    .pwm1_step_o(pwm1_step_w),
 	    .pwm1_i(pwm1_w),
-	    .read_size_i(read_size_i)
+	    
+	    .pwm2_mode_o(pwm2_mode_w),
+        .pwm2_period_o(pwm2_period_w),
+	    .pwm2_threshold1_o(pwm2_threshold1_w),
+	    .pwm2_threshold2_o(pwm2_threshold2_w),
+	    .pwm2_step_o(pwm2_step_w),
+	    .pwm2_i(pwm2_w)
     );
     
-    pwm1 pwm_connection(
+    pwm1 pwm_connection1(
         .clk_i(s_axi_aclk_i),
         .rst_i(s_axi_aresetn_i),
         .pwm1_mode_i(pwm1_mode_w),
@@ -90,6 +105,17 @@ module axi4_lite_slave_pwm(
 	    .pwm1_threshold2_i(pwm1_threshold2_w),
 	    .pwm1_step_i(pwm1_step_w),
 	    .pwm1_o(pwm1_w)
+	); 
+	
+	pwm2 pwm_connection2(
+        .clk_i(s_axi_aclk_i),
+        .rst_i(s_axi_aresetn_i),
+        .pwm2_mode_i(pwm2_mode_w),
+        .pwm2_period_i(pwm2_period_w),
+	    .pwm2_threshold1_i(pwm2_threshold1_w),
+	    .pwm2_threshold2_i(pwm2_threshold2_w),
+	    .pwm2_step_i(pwm2_step_w),
+	    .pwm2_o(pwm2_w)
 	);
 	
 	
