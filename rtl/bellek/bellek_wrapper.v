@@ -198,7 +198,7 @@ module bellek_wrapper(
     assign bellek_veri_hazir_o    = veri_hazir_o;
     assign bellek_veri_o          = veri_o;	
     
-    assign durdur_o = (~denetleyici_musait && (bellekten_oku_i || bellege_yaz_i)) || gc_stall_w;
+	assign durdur_o = (~denetleyici_musait && (bellekten_oku_w || bellege_yaz_w)) || gc_stall_w;
 
 	
 endmodule
