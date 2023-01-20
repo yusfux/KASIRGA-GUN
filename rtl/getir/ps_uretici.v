@@ -1,8 +1,3 @@
-
-/*
-
-*/
-
 `timescale 1ns / 1ps
 module ps_uretici(
     input         clk_i,
@@ -12,6 +7,15 @@ module ps_uretici(
 
     input         ps_atlat_aktif_i,
     input  [31:0] ps_atlanacak_adres_i,
+
+    input         dallanma_hata_i,
+    input  [31:0] guncelle_hedef_adresi_i,
+
+    input         jal_gecerli_i,
+    input  [31:0] jal_adres_i,
+
+    input         mret_gecerli_i,
+    input  [31:0] mret_ps_i,
     
     output [31:0] ps_ongorucu_o,
     output [31:0] ps_o
@@ -26,10 +30,20 @@ always @(*) begin
         ps_o_ns = 0;
     end
     else begin
-        ps_o_ns = ps_o_r + 4;
-
-        if(ps_atlat_aktif_i) begin
+        if(dallanma_hata_i) begin
+            ps_o_ns = guncelle_hedef_adresi_i;
+        end
+        else if(mret_gecerli_i) begin
+            ps_o_ns = mret_ps_i;
+        end
+        else if(jal_gecerli_i) begin
+            ps_o_ns = jal_adres_i;
+        end
+        else if(ps_atlat_aktif_i) begin
             ps_o_ns = ps_atlanacak_adres_i;
+        end
+        else begin
+            ps_o_ns = ps_o_r + 4;
         end
     end
 end

@@ -24,7 +24,10 @@ module getir(
     input         dallanma_hata_i,
 
     input         jal_gecerli_i,
-    input [31:0]  jal_adres_i
+    input [31:0]  jal_adres_i,
+
+    input         mret_gecerli_i,
+    input [31:0]  mret_ps_i
 
 );
 
@@ -55,13 +58,21 @@ wire         buyruk_hazir_w;
 ps_uretici ps_uretici(
     .clk_i(clk_i),
     .rst_i(rst_i),
+
     .ps_durdur_i(ps_durdur),
+
     .ps_atlat_aktif_i(ongoru_gecerli_o),
     .ps_atlanacak_adres_i(atlanan_ps),
     .ps_ongorucu_o(ps_ongorucu),
-    //.ps_o(ps_o)
+
+    .guncelle_hedef_adresi_i(guncelle_hedef_adresi_i),
+    .dallanma_hata_i(dallanma_hata_i),
+
     .jal_gecerli_i(jal_gecerli_i),
-    .jal_adres_i(jal_adres_i)
+    .jal_adres_i(jal_adres_i),
+    
+    .mret_gecerli_i(mret_gecerli_i),
+    .mret_ps_i(mret_ps_i)
 );
 
 buyruk_kuyrugu buyruk_kuyrugu(
