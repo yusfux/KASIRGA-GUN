@@ -13,7 +13,7 @@ module bellek_wrapper(
 	output                  yazmaca_yaz_o,
 	output     [4:0]        hedef_yazmaci_o,
 	output                  bellek_veri_hazir_o,
-	output     [31:0]	bellek_veri_o,
+	output     [31:0]	    bellek_veri_o,
 	// \--------------------- YURUT-BELLEK ----------------------------------------/		
 	input      [31:0]       bellek_adresi_i,
 	input      [31:0]       bellek_veri_i, // bellege yazilacak olan veri
@@ -40,17 +40,11 @@ module bellek_wrapper(
     output                  pwm2_o,
     output                  gc_veri_gecerli_o,
     output      [31:0]      gc_okunan_veri_o // gc_veri_gecerli_o 1 ise yazmaca yazilmasi icin
-    
+   
 );
-    //*********ONBELLEK DENETLEYICI modulu wirelari****/
+    //***ONBELLEK DENETLEYICI modulu wirelari**/
     wire [127:0]    obek_okunan_o;       
     wire            onbellek_obek_yaz_o;
-                           
-    wire [31:0]     onbellek_adres_o;
-    wire [31:0]     onbellek_veri_o;
-    wire            bellek_oku;        
-    wire            bellek_yaz;        
-    wire [2:0]      buyruk_turu_o;       
                            
                            
     wire            anabellek_yaz_o;     
@@ -61,17 +55,17 @@ module bellek_wrapper(
     
     wire            denetleyici_musait;
         // geriyaza verilecekler
-    wire [31:0]  veri_o; 
-    wire          veri_hazir_o; 
+    wire [31:0]     veri_o; 
+    wire            veri_hazir_o; 
 
-   //*********ONBELLEK modulu wirelari****/
+   //***ONBELLEK modulu wirelari**/
     wire [127:0]    veri_obegi_o;    
     wire [31:0]     okunan_veri_o;     
     wire [31:0]     kirli_obek_adresi_o;
     wire            adres_bulundu_o;   
     wire            obek_kirli_o;   
     
-    //*****Adres duzenleme ve axi*********/
+    //*Adres duzenleme ve axi***/
     wire            bellege_yaz_w;
     wire            bellekten_oku_w;
     wire            giris_cikis_aktif_w;
@@ -84,9 +78,8 @@ module bellek_wrapper(
         .rst_i(rst_i),          
                   
         .bellek_oku_i(bellekten_oku_w),   
-        .bellek_yaz_i(bellege_yaz_w),   
-        .adres_i(bellek_adresi_i),        
-        .veri_i(bellek_veri_i),         
+        .bellek_yaz_i(bellege_yaz_w),  
+        .adres_i(bellek_adresi_i),      
         .buyruk_turu_i(load_save_buyrugu_i),  
                  
         .adres_bulundu_i(adres_bulundu_o),
@@ -97,12 +90,7 @@ module bellek_wrapper(
                         
         .obek_okunan_o(obek_okunan_o),          
         .onbellek_obek_yaz_o(onbellek_obek_yaz_o),    
-                   
-        .onbellek_adres_o(onbellek_adres_o),       
-        .onbellek_veri_o(onbellek_veri_o),        
-        .bellek_oku_o(bellek_oku),           
-        .bellek_yaz_o(bellek_yaz),           
-        .buyruk_turu_o(buyruk_turu_o), 
+
               
         .anabellek_musait_i(anabellek_musait_i), 
         .anabellek_hazir_i(bellek_asamasina_veri_hazir_i),  
@@ -119,27 +107,27 @@ module bellek_wrapper(
                 
         .denetim_hazir_o(denetleyici_musait)  
     );
-    
+
     veri_onbellek   onbellek(
-        .clk_i(clk_i),                    
-        .rst_i(rst_i),                    
+         .clk_i(clk_i),                    
+         .rst_i(rst_i),                    
                                               
-        .veri_obegi_i(obek_okunan_o),             
-        .adres_i(onbellek_adres_o),                  
-        .veri_i(onbellek_veri_o),                   
-        .bellekten_oku_i(bellek_oku),          
-        .bellege_yaz_i(bellek_yaz),            
-        .anabellekten_obek_geldi_i(onbellek_obek_yaz_o),
-        .buyruk_turu_i(buyruk_turu_o),        
+         .veri_obegi_i(obek_okunan_o),             
+         .adres_i(bellek_adresi_i),                  
+         .veri_i(bellek_veri_i),                   
+         .bellekten_oku_i(bellekten_oku_i),          
+         .bellege_yaz_i(bellege_yaz_i),            
+         .anabellekten_obek_geldi_i(bellek_asamasina_veri_hazir_i),
+         .buyruk_turu_i(load_save_buyrugu_i),        
                                 
-        .veri_obegi_o(veri_obegi_o),            
-        .okunan_veri_o(okunan_veri_o),            
-        .kirli_obek_adresi_o(kirli_obek_adresi_o),      
-        .adres_bulundu_o(adres_bulundu_o),          
-        .obek_kirli_o(obek_kirli_o)
+         .veri_obegi_o(veri_obegi_o),            
+         .okunan_veri_o(okunan_veri_o),            
+         .kirli_obek_adresi_o(kirli_obek_adresi_o),      
+         .adres_bulundu_o(adres_bulundu_o),          
+         .obek_kirli_o(obek_kirli_o)
     );
-    
-    adres_duzenleyici adres_duz(
+   
+   adres_duzenleyici adres_duz(
          .bellege_yaz_i(bellege_yaz_i),
          .bellekten_oku_i(bellekten_oku_i),
          .bellek_adresi30_i(bellek_adresi_i[30]), //bellek_adresi[30]
@@ -152,19 +140,19 @@ module bellek_wrapper(
          .axi_aclk_i(clk_i),
          .axi_aresetn_i(rst_i),
          .address_i(bellek_adresi_i),
-	     .buyruk_turu_i(load_save_buyrugu_i),
-	     .okunan_veri_o(gc_okunan_veri_o),
-	     .data_i(bellek_veri_i),
-	     .tx_o(tx_o),
-	     .rx_i(rx_i),
-	     .pwm1_o(pwm1_o),
+	      .buyruk_turu_i(load_save_buyrugu_i),
+	      .okunan_veri_o(gc_okunan_veri_o),
+	      .data_i(bellek_veri_i),
+	      .tx_o(tx_o),
+	      .rx_i(rx_i),
+	      .pwm1_o(pwm1_o),
          .pwm2_o(pwm2_o),
          .stall_o(gc_stall_w),
          .okunan_gecerli_o(gc_veri_gecerli_o),
          .giris_cikis_aktif_i(giris_cikis_aktif_w)
     );
     
-    
+   
     reg        yazmaca_yaz_r;
     reg [4:0]  hedef_yazmaci_r;
     reg [31:0] hedef_yazmac_verisi_r;
@@ -211,5 +199,6 @@ module bellek_wrapper(
     assign bellek_veri_o          = veri_o;	
     
     assign durdur_o = (~denetleyici_musait && (bellekten_oku_i || bellege_yaz_i)) || gc_stall_w;
+
 	
 endmodule
