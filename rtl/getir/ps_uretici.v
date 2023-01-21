@@ -20,12 +20,14 @@ module ps_uretici(
     output [31:0] ps_ongorucu_o,
     output [31:0] ps_o
 
-    );
+);
 
 reg [31:0] ps_o_r  = 0;
 reg [31:0] ps_o_ns = 0;
 
 always @(*) begin
+    ps_o_ns = ps_o_r;
+    
     if(!rst_i) begin
         ps_o_ns = 0;
     end
@@ -42,7 +44,7 @@ always @(*) begin
         else if(ps_atlat_aktif_i) begin
             ps_o_ns = ps_atlanacak_adres_i;
         end
-        else begin
+        else if(!ps_durdur_i) begin
             ps_o_ns = ps_o_r + 4;
         end
     end
@@ -53,9 +55,7 @@ always @(posedge clk_i) begin
         ps_o_r <= 0;
     end
     else begin
-        if(!ps_durdur_i) begin
-            ps_o_r <= ps_o_ns;
-        end
+        ps_o_r <= ps_o_ns;
     end
 end
 

@@ -5,11 +5,11 @@ module buyruk_kuyrugu(
     input         rst_i,
 
     input         kuyruk_aktif_i,
+    input         ps_atladi_i,
 
     input  [31:0] buyruk_i,               // Yeni gelen buyruk
 
     output [31:0] buyruk_o,               // Islenecek buyruk
-    output        buyruk_sikisik_o, // Islenecek buyruk sikisik ise degeri 1
     output        buyruk_hazir_o,         // Cikisa verilen buyruk hazir
 
     output        ps_durdur_o
@@ -29,7 +29,6 @@ reg  [15:0] kuyruk_r = 0;
 reg  [15:0] kuyruk_ns;
 
 reg  [31:0] buyruk_o_cmb;
-reg  [15:0] buyruk_sikisik_o_cmb;
 reg         buyruk_hazir_cmb;
 
 reg         ps_durdur_o_cmb;
@@ -42,51 +41,77 @@ always @(*) begin
     kuyruk_ns = kuyruk_r;
     buyruk_hazir_cmb = 0;
     buyruk_o_cmb = 0;
-    buyruk_sikisik_o_cmb = 0;
     ps_durdur_o_cmb = 0;
 
-    case (durum_r)
-    DURUM_BOS: begin
+    if(ps_atladi_i) begin
         if(buyruk_i_birinci_kisim == BUYRUK_TAM) begin
             buyruk_o_cmb = buyruk_i;
+            buyruk_hazir_cmb = 1;
         end
         else begin
             buyruk_o_cmb[15:0] = buyruk_i[15:0];
-            buyruk_sikisik_o_cmb = 1;
             kuyruk_ns = buyruk_i[31:16];
             if(buyruk_i_ikinci_kisim == BUYRUK_TAM) begin
                 durum_ns = DURUM_YARIM;
+                buyruk_hazir_cmb = 1;
+            end
+            else begin
+                if(kuyruk_aktif_i) begin
+                    ps_durdur_o_cmb = 1;
+                    buyruk_hazir_cmb = 1;
+                end
+                durum_ns = DURUM_SIKISTIRILMIS;
+                buyruk_hazir_cmb = 1;
+            end
+        end
+    end
+    else begin
+        case (durum_r)
+        DURUM_BOS: begin
+            if(buyruk_i_birinci_kisim == BUYRUK_TAM) begin
+                buyruk_o_cmb = buyruk_i;
+                buyruk_hazir_cmb = 1;
+            end
+            else begin
+                buyruk_o_cmb[15:0] = buyruk_i[15:0];
+                kuyruk_ns = buyruk_i[31:16];
+                if(buyruk_i_ikinci_kisim == BUYRUK_TAM) begin
+                    durum_ns = DURUM_YARIM;
+                    buyruk_hazir_cmb = 1;
+                end
+                else begin
+                    if(kuyruk_aktif_i) begin
+                        ps_durdur_o_cmb = 1;
+                        buyruk_hazir_cmb = 1;
+                    end
+                    durum_ns = DURUM_SIKISTIRILMIS;
+                    buyruk_hazir_cmb = 1;
+                end
+            end
+        end
+        DURUM_YARIM: begin
+            buyruk_o_cmb = {buyruk_i[15:0], kuyruk_r};
+            kuyruk_ns = buyruk_i[31:16];
+            if(buyruk_i_ikinci_kisim == BUYRUK_TAM) begin
+                durum_ns = DURUM_YARIM;
+                buyruk_hazir_cmb = 1;
             end
             else begin
                 if(kuyruk_aktif_i) begin
                     ps_durdur_o_cmb = 1;
                 end
                 durum_ns = DURUM_SIKISTIRILMIS;
+                buyruk_hazir_cmb = 1;
             end
         end
-    end
-    DURUM_YARIM: begin
-        buyruk_o_cmb = {buyruk_i[15:0], kuyruk_r};
-        kuyruk_ns = buyruk_i[31:16];
-        if(buyruk_i_ikinci_kisim == BUYRUK_TAM) begin
-            durum_ns = DURUM_YARIM;
+        DURUM_SIKISTIRILMIS: begin
+            buyruk_o_cmb = {16'b0, kuyruk_r};
+            kuyruk_ns = 0;
+            durum_ns = DURUM_BOS;
+            buyruk_hazir_cmb = 1;
         end
-        else begin
-            if(kuyruk_aktif_i) begin
-                ps_durdur_o_cmb = 1;
-            end
-            durum_ns = DURUM_SIKISTIRILMIS;
-        end
+        endcase
     end
-    DURUM_SIKISTIRILMIS: begin
-        buyruk_o_cmb = {16'b0, kuyruk_r};
-        kuyruk_ns = 0;
-        buyruk_sikisik_o_cmb = 1;
-        durum_ns = DURUM_BOS;
-    end
-    endcase
-
-    buyruk_hazir_cmb = 1;
 end
 
 always @(posedge clk_i) begin
@@ -103,7 +128,6 @@ always @(posedge clk_i) begin
 end
 
 assign buyruk_o               = buyruk_o_cmb;
-assign buyruk_sikisik_o       = buyruk_sikisik_o_cmb;
 assign buyruk_hazir_o         = buyruk_hazir_cmb;
 assign ps_durdur_o            = ps_durdur_o_cmb;
 assign buyruk_i_birinci_kisim = buyruk_i[1:0];
