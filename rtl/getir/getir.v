@@ -159,6 +159,6 @@ always @(posedge clk_i) begin
 end
 
 assign ps_o = ps_ongorucu_w;
-assign buyruk_o = kuyruk_gelen_buyruk_w;
+assign buyruk_o = kuyruk_buyruk_hazir_w ? kuyruk_gelen_buyruk_w : 32'h0000_0013;
 
 endmodule
