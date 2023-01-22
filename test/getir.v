@@ -43,7 +43,8 @@ reg          kuyruk_aktif_r;
 
 wire [31:0]  atlanan_ps_w;
 
-wire [31:0]  ps_ongorucu_w;
+wire [31:0]  ps_r_w;
+wire [31:0]  ps_ns_w;
 
 wire [31:0]  buyruk_w;
 wire         adres_bulundu_w;
@@ -53,8 +54,6 @@ wire         onbellege_obek_yaz_w;
 wire [31:0]  bellek_gelen_buyruk_w;
 wire         bellek_buyruk_hazir_w;
 
-wire [31:0]  ps_test;
-
 ps_uretici ps_uretici(
     .clk_i(clk_i),
     .rst_i(rst_i),
@@ -63,8 +62,8 @@ ps_uretici ps_uretici(
 
     .ps_atlat_aktif_i(ongoru_gecerli_o),
     .ps_atlanacak_adres_i(atlanan_ps_w),
-    .ps_ongorucu_o(ps_ongorucu_w),
-    .ps_o(ps_test),
+    .ps_ongorucu_o(ps_r_w),
+    .ps_o(ps_ns_w),
 
     .guncelle_hedef_adresi_i(guncelle_hedef_adresi_i),
     .dallanma_hata_i(dallanma_hata_i),
@@ -110,7 +109,7 @@ dallanma_ongoru_blogu dallanma_ongoru_blogu(
     .guncelle_ps_i(guncelle_ps_i),
     .guncelle_hedef_adresi_i(guncelle_hedef_adresi_i),
 
-    .ps_i(ps_ongorucu_w),
+    .ps_i(ps_r_w),
 
     .dallanma_hata_i(dallanma_hata_i),
 
@@ -124,7 +123,7 @@ buyruk_onbellegi_denetleyici buyruk_onbellegi_denetleyici(
 
     .durdur_i(durdur_i),
 
-    .adres_i(ps_test),
+    .adres_i(ps_ns_w),
     .adres_bulundu_i(adres_bulundu_w),
     .buyruk_i(buyruk_w),
     .veri_obegi_o(veri_obegi_w),
@@ -146,7 +145,7 @@ buyruk_onbellegi buyruk_onbellegi(
     .clk_i(clk_i),
     .rst_i(rst_i),
 
-    .adres_i(ps_test),
+    .adres_i(ps_ns_w),
     .buyruk_obegi_i(veri_obegi_w),
     .anabellekten_obek_geldi_i(onbellege_obek_yaz_w),
     .buyruk_o(buyruk_w),
@@ -161,7 +160,7 @@ always @(posedge clk_i) begin
     
 end
 
-assign ps_o = ps_ongorucu_w;
+assign ps_o = ps_r_w;
 assign buyruk_o = kuyruk_buyruk_hazir_w ? kuyruk_gelen_buyruk_w : 32'h0000_0013;
 
 endmodule
