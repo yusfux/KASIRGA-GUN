@@ -65,7 +65,7 @@ always @(*) begin
             end
         end
     end
-    else begin
+    else if(kuyruk_aktif_i) begin
         case (durum_r)
         DURUM_BOS: begin
             if(buyruk_i_birinci_kisim == BUYRUK_TAM) begin

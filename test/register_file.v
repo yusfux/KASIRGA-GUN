@@ -113,12 +113,12 @@ module register_file(
             end
         end
         else begin
-            if(reg_write_wb_i && (reg_rd_wb_i != 5'b00000)) begin
+            if(reg_write_wb_i && !reg_write_i && (reg_rd_wb_i != 5'b00000)) begin
                 register[reg_rd_wb_i]          <= reg_rd_data_wb_i;
                 reg_valid_counter[reg_rd_wb_i] <= reg_valid_counter[reg_rd_wb_i] - 2'b01;
             end
 
-            if(reg_write_i && (reg_rd_i != 5'b00000)) begin
+            if(reg_write_i && !reg_write_wb_i && (reg_rd_i != 5'b00000)) begin
                 reg_valid_counter[reg_rd_i] <= reg_valid_counter[reg_rd_i] + 2'b01;
             end
 

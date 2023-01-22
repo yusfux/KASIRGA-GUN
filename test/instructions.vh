@@ -164,7 +164,7 @@
 `define MTVAL2     12'h34B
 
 `define MCYCLE     12'hB00
-`define MINSTRET   12'hB00
+`define MINSTRET   12'hB02
 `define MCYCLEH    12'hB80
 `define MINSTRETH  12'hB82
 

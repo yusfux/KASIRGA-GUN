@@ -157,10 +157,19 @@ always @(*) begin
 end
 
 always @(posedge clk_i) begin
-    
+    if(!durdur_i && kuyruk_buyruk_hazir_w) begin
+        ps_r <= ps_r_w;
+        buyruk_r <= kuyruk_gelen_buyruk_w;
+    end
+    else if(!durdur_i && !kuyruk_buyruk_hazir_w) begin
+        buyruk_r <= 32'h0000_0013;
+    end
 end
 
-assign ps_o = ps_r_w;
-assign buyruk_o = kuyruk_buyruk_hazir_w ? kuyruk_gelen_buyruk_w : 32'h0000_0013;
+reg [31:0] ps_r;
+reg [31:0] buyruk_r;
+
+assign ps_o = ps_r;
+assign buyruk_o = buyruk_r;
 
 endmodule

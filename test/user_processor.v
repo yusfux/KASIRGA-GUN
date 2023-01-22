@@ -56,7 +56,7 @@ module user_processor(
     wire      [31:0]       exception_program_counter_o_w;  
     assign  yurut_flush_o_w = dallanma_hata_o_w || jal_r_adres_gecerli_o_w; // dallanma biriminden ya da jal/jalr -> COZ
 	  
-    // BUYRUK ONBELLEK - ANABELLEK DENETLEYÝCÝ
+    // BUYRUK ONBELLEK - ANABELLEK DENETLEYï¿½Cï¿½
     wire                   getir_asamasi_istek_o_w;
     wire      [31:0]       getir_adres_o_w;
     wire                   getir_oku_o_w;
@@ -397,8 +397,8 @@ module user_processor(
     );
   
     assign uart_tx_o = tx_o_w;
-    assign pwm1_o_w = pwm0_o;
-    assign pwm2_o_w = pwm1_o;
+    assign pwm0_o = pwm1_o_w;
+    assign pwm1_o = pwm2_o_w;
     assign spi_cs_o = 0;  // ayarlanmali   
     assign spi_sck_o = 0; // ayarlanmali   
     assign spi_mosi_o = 0;// ayarlanmali   
