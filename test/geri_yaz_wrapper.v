@@ -15,7 +15,9 @@ module geri_yaz_wrapper(
         output [31:0] yazmac_veri_o     
     );
     
-    assign yazmac_veri_o = gc_veri_gecerli_i ? gc_okunan_veri_i : (bellek_veri_hazir_i && yazmaca_yaz_i) ? bellek_veri_i :  hedef_yazmac_verisi_i;
+    //assign yazmac_veri_o = gc_veri_gecerli_i ? gc_okunan_veri_i : (bellek_veri_hazir_i && yazmaca_yaz_i) ? bellek_veri_i :  hedef_yazmac_verisi_i;
+    assign yazmac_veri_o = hedef_yazmac_verisi_i;
+
     assign yazmaca_yaz_o = yazmaca_yaz_i;
     assign hedef_yazmaci_o = hedef_yazmaci_i;
     
