@@ -14,6 +14,7 @@ module buyruk_onbellegi_denetleyici(
     
     output  [127:0]     veri_obegi_o,
     output              onbellege_obek_yaz_o, 
+    output  [31:0]      onbellek_yaz_adres_o,
     
     // anabellek denetleyici sinyalleri
     
@@ -48,7 +49,8 @@ module buyruk_onbellegi_denetleyici(
     
     reg [1:0] veri_araligi_r;
     reg [1:0] veri_araligi_ns;
-    
+    reg [31:0]adres_r;
+    reg [31:0]adres_ns;
 
       
     always @(*) begin
@@ -59,6 +61,7 @@ module buyruk_onbellegi_denetleyici(
         onbellege_obek_yaz_r = 1'b0; 
         buyruk_hazir_r       = 1'b0; 
         veri_araligi_ns       = veri_araligi_r;
+        adres_ns            = adres_r;
             
         if(!durdur_i)begin   
             case(durum_r)
@@ -74,7 +77,8 @@ module buyruk_onbellegi_denetleyici(
                         if(anabellek_musait_i) begin
                             anabellek_adres_r = {adres_i[31:4], 4'b0000};
                             buyruk_hazir_r    = 1'b0;
-                            veri_araligi_ns = adres_i[3:2];
+                            veri_araligi_ns   = adres_i[3:2];
+                            adres_ns          = adres_i;
                             durum_ns          = ANABELLEK_OKU ;                     
                         end
                     end
@@ -135,6 +139,7 @@ module buyruk_onbellegi_denetleyici(
        else begin
            durum_r        <= durum_ns;
            veri_araligi_r <= veri_araligi_ns;
+           adres_r        <= adres_ns;
        end
    end
     
@@ -146,5 +151,6 @@ assign anabellek_yaz_o      = 1'b0;
 assign anabellek_oku_o      = 1'b1;
 assign buyruk_o             = buyruk_r;
 assign buyruk_hazir_o       = buyruk_hazir_r;
+assign onbellek_yaz_adres_o = adres_r;
 
 endmodule

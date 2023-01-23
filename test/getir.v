@@ -39,8 +39,6 @@ wire [31:0]  kuyruk_gelen_buyruk_w;
 
 wire         ongoru_aktif_w;
 
-reg          kuyruk_aktif_r;
-
 wire [31:0]  atlanan_ps_w;
 
 wire [31:0]  ps_r_w;
@@ -50,6 +48,8 @@ wire [31:0]  buyruk_w;
 wire         adres_bulundu_w;
 wire [127:0] veri_obegi_w;
 wire         onbellege_obek_yaz_w;
+wire [31:0]  onbellek_yaz_adres_w;
+wire         ps_uretici_durdur_w;
 
 wire [31:0]  bellek_gelen_buyruk_w;
 wire         bellek_buyruk_hazir_w;
@@ -58,7 +58,7 @@ ps_uretici ps_uretici(
     .clk_i(clk_i),
     .rst_i(rst_i),
 
-    .ps_durdur_i(ps_durdur_w | durdur_i | !bellek_buyruk_hazir_w),
+    .ps_durdur_i(ps_uretici_durdur_w),
 
     .ps_atlat_aktif_i(ongoru_gecerli_o),
     .ps_atlanacak_adres_i(atlanan_ps_w),
@@ -128,6 +128,7 @@ buyruk_onbellegi_denetleyici buyruk_onbellegi_denetleyici(
     .buyruk_i(buyruk_w),
     .veri_obegi_o(veri_obegi_w),
     .onbellege_obek_yaz_o(onbellege_obek_yaz_w),
+    .onbellek_yaz_adres_o(onbellek_yaz_adres_w),
 
     .anabellek_musait_i(anabellek_musait_i),
     .getir_asamasina_veri_hazir_i(getir_asamasina_veri_hazir_i),
@@ -148,6 +149,7 @@ buyruk_onbellegi buyruk_onbellegi(
     .adres_i(ps_ns_w),
     .buyruk_obegi_i(veri_obegi_w),
     .anabellekten_obek_geldi_i(onbellege_obek_yaz_w),
+    .onbellek_yaz_adres_i(onbellek_yaz_adres_w),
     .buyruk_o(buyruk_w),
     .adres_bulundu_o(adres_bulundu_w)
 );
@@ -157,11 +159,11 @@ always @(*) begin
 end
 
 always @(posedge clk_i) begin
-    if(!durdur_i && kuyruk_buyruk_hazir_w) begin
+    if(!durdur_i && kuyruk_buyruk_hazir_w && !dallanma_hata_i) begin
         ps_r <= ps_r_w;
         buyruk_r <= kuyruk_gelen_buyruk_w;
     end
-    else if(!durdur_i && !kuyruk_buyruk_hazir_w) begin
+    else if((!durdur_i && !kuyruk_buyruk_hazir_w) || dallanma_hata_i) begin
         buyruk_r <= 32'h0000_0013;
     end
 end
@@ -171,5 +173,6 @@ reg [31:0] buyruk_r;
 
 assign ps_o = ps_r;
 assign buyruk_o = buyruk_r;
+assign ps_uretici_durdur_w = ps_durdur_w | durdur_i | !bellek_buyruk_hazir_w;
 
 endmodule

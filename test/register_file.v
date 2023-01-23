@@ -68,6 +68,8 @@ module register_file(
     reg [31:0] reg_rs1_data_r;
     reg [31:0] reg_rs2_data_r;
     reg [31:0] reg_csr_data_r;
+    wire       hazard_rs1;
+    wire       hazard_rs2;
 
     //TODO: burasi normalde kaldirilmasi lazim, li ile tum reglere 0 atanmali program baslarken
     integer i;
@@ -79,18 +81,18 @@ module register_file(
     end
 
     always @(*) begin
-        reg_rs1_data_r     = 31'b0;
-        reg_rs2_data_r     = 31'b0;
+        reg_rs1_data_r     = 32'b0;
+        reg_rs2_data_r     = 32'b0;
         reg_is_ready_rs1_r = 1'b0;
         reg_is_ready_rs2_r = 1'b0;
 
         //TODO: need to find more proper way to get rid of inst xA, xA, xB kind of situations
-        if(reg_read_rs1_i && ((reg_valid_counter[reg_rs1_i] == 2'b00) || (reg_valid_counter[reg_rs1_i] == 2'b01 && (reg_rs1_i == reg_rd_i) && reg_write_i))) begin
+        if(reg_read_rs1_i && reg_valid_counter[reg_rs1_i] == 2'b00) begin
             reg_rs1_data_r     = register[reg_rs1_i];
             reg_is_ready_rs1_r = 1'b1;
         end
 
-        if(reg_read_rs2_i && ((reg_valid_counter[reg_rs2_i] == 2'b00) || (reg_valid_counter[reg_rs2_i] == 2'b01 && (reg_rs2_i == reg_rd_i) && reg_write_i))) begin
+        if(reg_read_rs2_i && reg_valid_counter[reg_rs2_i] == 2'b00) begin
             reg_rs2_data_r = register[reg_rs2_i];
             reg_is_ready_rs2_r = 1'b1;
         end
@@ -105,7 +107,7 @@ module register_file(
     end
 
     //burada kesin boku yedik test lazim
-    always @(negedge clk_i, negedge rst_i) begin
+    always @(posedge clk_i) begin
         if(!rst_i) begin
             for(i = 0; i < 32; i = i + 1) begin
                 register[i]          <= 5'b00000;
@@ -113,13 +115,19 @@ module register_file(
             end
         end
         else begin
-            if(reg_write_wb_i && !reg_write_i && (reg_rd_wb_i != 5'b00000)) begin
-                register[reg_rd_wb_i]          <= reg_rd_data_wb_i;
-                reg_valid_counter[reg_rd_wb_i] <= reg_valid_counter[reg_rd_wb_i] - 2'b01;
-            end
 
-            if(reg_write_i && !reg_write_wb_i && (reg_rd_i != 5'b00000)) begin
-                reg_valid_counter[reg_rd_i] <= reg_valid_counter[reg_rd_i] + 2'b01;
+            if (reg_write_wb_i && reg_write_i && reg_rd_wb_i == reg_rd_i && reg_valid_counter[reg_rd_wb_i] != 2'd1) begin
+                register[reg_rd_wb_i]          <= reg_rd_data_wb_i;
+            end
+            else begin
+                if(reg_write_wb_i && (reg_rd_wb_i != 5'b00000)) begin
+                    register[reg_rd_wb_i]          <= reg_rd_data_wb_i;
+                    reg_valid_counter[reg_rd_wb_i] <= reg_valid_counter[reg_rd_wb_i] - 2'b01;
+                end
+
+                if(reg_write_i && (reg_rd_i != 5'b00000) && !stall_register_file_o) begin
+                    reg_valid_counter[reg_rd_i] <= reg_valid_counter[reg_rd_i] + 2'b01;
+                end
             end
 
             //TODO: need to find more proper way to hard wire x0 to zero

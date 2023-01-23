@@ -129,7 +129,7 @@ teknofest_ram #(
   .NB_COL(4),
   .COL_WIDTH(8),
   .RAM_DEPTH(RAM_DEPTH),
-  .INIT_FILE("C:/Users/hasan/Desktop/Projects/Vivado/KASIRGA-GUN-Teknofest/test1.hex")  //Yüklenecek program?n yolu
+  .INIT_FILE("/home/yusf/Development/kasirga/KASIRGA-GUN-TEST/add_test.hex")  //Yüklenecek program?n yolu
 ) main_memory
 (
   .clk_i           (clk_i ),

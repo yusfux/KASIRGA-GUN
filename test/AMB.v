@@ -74,7 +74,7 @@ always @(*) begin
                
                `ALU_AUIPC   :   sonuc_r_next     =   adres_i + (anlik_i[19:0]<<12);   
                
-               `ALU_LUI     :   sonuc_r_next     =   anlik_i[19:0] << 12;
+               `ALU_LUI     :   sonuc_r_next     =   anlik_i;
                          
                `ALU_JAL     : begin  
                          sonuc_r_next     =   adres_i + 4; 

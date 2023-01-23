@@ -148,7 +148,7 @@ module wrapper_decode(
     );
 
     instr_decoder instruction_decoder(
-        .instruction_i(expanded_instruction_w),
+        .instruction_i(flush_decode_stage_i ? 32'h00000013 : expanded_instruction_w),
 
         .en_alu_o(en_alu_w),
         .en_branching_unit_o(en_branching_unit_w),

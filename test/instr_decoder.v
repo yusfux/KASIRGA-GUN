@@ -90,7 +90,8 @@ module instr_decoder (
     wire [31:0] imm_b_w  = {{20{instruction_i[31]}}, instruction_i[7],     instruction_i[30:25], instruction_i[11:8], 1'b0};
     wire [31:0] imm_u_w  = {    instruction_i[31],   instruction_i[30:20], instruction_i[19:12], 12'b0};
     wire [31:0] imm_j_w  = {{12{instruction_i[31]}}, instruction_i[19:12], instruction_i[20],    instruction_i[30:25], instruction_i[24:21], 1'b0};
-    wire [31:0] shamt_w  = {{27{instruction_i[24]}}, instruction_i[24:20]};
+    //SANIRIM ZERO EXTENDED
+    wire [31:0] shamt_w  = {{27{1'b0}}, instruction_i[24:20]};
     wire [31:0] zimm_w   = {{27{1'b0}},              instruction_i[19:15]};
 
 
