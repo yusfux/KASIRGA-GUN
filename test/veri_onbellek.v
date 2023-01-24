@@ -34,14 +34,14 @@ reg                    obek_kirli_r = 1'd0;
 reg     [31:0]         kirli_obek_adresi_r = 32'd0;
 
 // onbellek icin 
-reg     [127:0]  onbellek        [20:0]; // boyutu degistir
-reg     [19:0]   etiket_buffer   [20:0];
-reg              kirli_buffer    [20:0];
-reg              gecerli_buffer  [20:0];
+reg     [127:0]  onbellek        [127:0]; // boyutu degistir
+reg     [19:0]   etiket_buffer   [127:0];
+reg              kirli_buffer    [127:0];
+reg              gecerli_buffer  [127:0];
 
 integer i;
 initial begin
-    for(i=0 ; i<=20 ; i=i+1) begin
+    for(i=0 ; i<=127 ; i=i+1) begin
         onbellek[i] = 128'd0;
         etiket_buffer[i] = 20'd0;
         kirli_buffer[i] = 1'b0;
@@ -60,8 +60,8 @@ assign      etiket         =  adres_i[31:12];
 // function 
 always @(posedge clk_i) begin
     
-    if(rst_i != 1'b1) begin
-         for(i=0 ; i<=20 ; i=i+1) begin                                
+    if(!rst_i) begin
+         for(i=0 ; i<=127 ; i=i+1) begin                                
              onbellek[i] <= 128'd0;         
              etiket_buffer[i] <= 20'd0;     
              kirli_buffer[i]  <= 1'b0;        
@@ -74,14 +74,19 @@ always @(posedge clk_i) begin
          kirli_obek_adresi_r <= 32'd0;                
     end 
     else begin        
+        if(anabellekten_obek_geldi_i) begin
+            onbellek[onbellek_adres] <= veri_obegi_i;
+            kirli_buffer[onbellek_adres] <= 1'b0;  
+            etiket_buffer[onbellek_adres] <= etiket; // obek geldiginde ilk else if e girmemeli
+            gecerli_buffer[onbellek_adres] <= 1'b1; // s?radaki sefer geldiginde buraya girmemeli   
+        end
+
         if(bellekten_oku_i) begin
             
             if(gecerli_buffer[onbellek_adres] == 1'b0) begin
                 
                 obek_kirli_r <= 1'b0;
                 adres_bulundu_r <= 1'b0;
-                etiket_buffer[onbellek_adres] <= etiket; // obek geldiginde ilk else if e girmemeli
-                gecerli_buffer[onbellek_adres] <= 1'b1; // s?radaki sefer geldiginde buraya girmemeli   
             end 
             
             else if(etiket_buffer[onbellek_adres] != etiket) begin
@@ -98,20 +103,14 @@ always @(posedge clk_i) begin
                     etiket_buffer[onbellek_adres] <= etiket; 
                  end   
             end
-            
-            else if(anabellekten_obek_geldi_i) begin
-                    
-                   onbellek[onbellek_adres] <= veri_obegi_i;
-                   kirli_buffer[onbellek_adres] <= 1'b0;  
-            end
     
             else begin
                    case(buyruk_turu_i)
                         `MEM_LB  : begin
-                            okunan_veri_r <= {{24{onbellek[onbellek_adres][secilen_byte * 8 + 8]}},onbellek[onbellek_adres][(secilen_byte*8) +: 7]};
+                            okunan_veri_r <= {{24{onbellek[onbellek_adres][secilen_byte * 8 + 7]}},onbellek[onbellek_adres][(secilen_byte*8) +: 8]};
                          end                     
                         `MEM_LH  : begin 
-                            okunan_veri_r <= {{16{onbellek[onbellek_adres][secilen_byte * 8 +16]}},onbellek[onbellek_adres][(secilen_byte * 8) +:15]};
+                            okunan_veri_r <= {{16{onbellek[onbellek_adres][secilen_byte * 8 + 15]}},onbellek[onbellek_adres][(secilen_byte * 8) +: 16]};
                          end
                         `MEM_LW  : begin  
                             okunan_veri_r <= onbellek[onbellek_adres][(secilen_byte * 8) +: 32];
