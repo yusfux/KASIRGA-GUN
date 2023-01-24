@@ -39,8 +39,9 @@ module bellek_wrapper(
 	output                  pwm1_o,
     output                  pwm2_o,
     output                  gc_veri_gecerli_o,
-    output      [31:0]      gc_okunan_veri_o // gc_veri_gecerli_o 1 ise yazmaca yazilmasi icin
-   
+    output      [31:0]      gc_okunan_veri_o, // gc_veri_gecerli_o 1 ise yazmaca yazilmasi icin
+
+    output reg bellekten_oku_o
 );
     //***ONBELLEK DENETLEYICI modulu wirelari**/
     wire [127:0]    obek_okunan_o;       
@@ -72,6 +73,11 @@ module bellek_wrapper(
     wire  [31:0]    gc_okunan_veri_w;
     wire            gc_stall_w;
     wire            gc_veri_gecerli_w;
+
+    reg             bellek_veri_hazir_r;
+
+	reg     [31:0]	bellek_veri_r;
+
     
     veri_onbellek_denetleyici   onbellek_denetleyici(
         .clk_i(clk_i),
@@ -174,13 +180,16 @@ module bellek_wrapper(
             hedef_yazmac_verisi_r = 32'd0;
         end
         else begin
-		if((!denetleyici_musait && (bellekten_oku_i || bellege_yaz_i)) || gc_stall_w)begin
+		    if((!denetleyici_musait && (bellekten_oku_i || bellege_yaz_i)) || gc_stall_w)begin
                 yazmaca_yaz_r         <= 1'b0;        // SOR: 1 mi olmali?
             end
             else begin
                 yazmaca_yaz_r         <= yazmaca_yaz_ns;
                 hedef_yazmaci_r       <= hedef_yazmaci_ns;
-                hedef_yazmac_verisi_r <= hedef_yazmac_verisi_ns;       
+                hedef_yazmac_verisi_r <= hedef_yazmac_verisi_ns;     
+                bellekten_oku_o       <= bellekten_oku_i;  
+                bellek_veri_hazir_r   <= veri_hazir_o;
+                bellek_veri_r         <= veri_o;
             end
         end
     end
@@ -195,8 +204,8 @@ module bellek_wrapper(
     assign bellek_oku_o           = anabellek_oku_o;
     assign bellek_yaz_o           = anabellek_yaz_o;
     assign yazilacak_veri_obegi_o = anabellek_kirli_obek_o;
-    assign bellek_veri_hazir_o    = veri_hazir_o;
-    assign bellek_veri_o          = veri_o;	
+    assign bellek_veri_hazir_o    = bellek_veri_hazir_r;
+    assign bellek_veri_o          = bellek_veri_r;	
     
 	assign durdur_o = (~denetleyici_musait && (bellekten_oku_w || bellege_yaz_w)) || gc_stall_w;
 

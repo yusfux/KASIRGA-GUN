@@ -51,7 +51,7 @@ parameter [31:0] RAM_BASE_ADDR = 32'h4000_0000;
 parameter [31:0] RAM_MASK_ADDR = 32'h000f_ffff;
 parameter [31:0] CHIP_IO_BASE_ADDR = SPI_BASE_ADDR + SPI_MASK_ADDR;
 parameter [31:0] CHIP_IO_MASK_ADDR = RAM_BASE_ADDR + RAM_MASK_ADDR;
-parameter RAM_DEPTH = 1024;
+parameter RAM_DEPTH = 4096;
 
 (* mark_debug = "yes" *) wire        iomem_valid;
 (* mark_debug = "yes" *) wire        iomem_ready;
@@ -129,7 +129,7 @@ teknofest_ram #(
   .NB_COL(4),
   .COL_WIDTH(8),
   .RAM_DEPTH(RAM_DEPTH),
-  .INIT_FILE("/home/yusf/Development/kasirga/KASIRGA-GUN-TEST/add_test.hex")  //Yüklenecek program?n yolu
+  .INIT_FILE("/home/yusf/Development/kasirga/KASIRGA-GUN-TEST/lw_test.hex")  //Yüklenecek program?n yolu
 ) main_memory
 (
   .clk_i           (clk_i ),

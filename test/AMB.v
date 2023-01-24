@@ -72,7 +72,7 @@ always @(*) begin
                
                `ALU_REMU    :   sonuc_r_next     =   $unsigned(yazmac_degeri1_i) % $unsigned(yazmac_degeri2_i); 
                
-               `ALU_AUIPC   :   sonuc_r_next     =   adres_i + (anlik_i[19:0]<<12);   
+               `ALU_AUIPC   :   sonuc_r_next     =   adres_i + anlik_i;
                
                `ALU_LUI     :   sonuc_r_next     =   anlik_i;
                          
@@ -139,7 +139,7 @@ if(!rst_i) begin // rst_i 0 ise reset
     
 end
 
-else begin
+else if (!durdur_i) begin
     AMB_hazir_r        <=    AMB_hazir_r_next;
     sonuc_r            <=    sonuc_r_next;
 end

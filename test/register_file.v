@@ -23,6 +23,8 @@
 //TODO: stall sinyalini buraya da input olarak vermek lazim, stall geldigi durumda herhangi bir sekilde
 //valid counter uzerinde islem yapilmamali
 module register_file(
+        input stall_register_file_i,
+
         input clk_i, rst_i,
         
         //----------------------signals from "instruction decoder"-----------------------
@@ -125,7 +127,7 @@ module register_file(
                     reg_valid_counter[reg_rd_wb_i] <= reg_valid_counter[reg_rd_wb_i] - 2'b01;
                 end
 
-                if(reg_write_i && (reg_rd_i != 5'b00000) && !stall_register_file_o) begin
+                if(reg_write_i && (reg_rd_i != 5'b00000) && !stall_register_file_o && !stall_register_file_i) begin
                     reg_valid_counter[reg_rd_i] <= reg_valid_counter[reg_rd_i] + 2'b01;
                 end
             end

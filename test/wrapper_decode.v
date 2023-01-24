@@ -183,6 +183,7 @@ module wrapper_decode(
     );
 
     register_file register_file(
+        .stall_register_file_i(stall_decode_stage_i || flush_decode_stage_i),
         .clk_i(clk_i),
         .rst_i(rst_i),
 
@@ -228,8 +229,7 @@ module wrapper_decode(
 
     //TODO: reset ile ilgili herhangi bir sey yapmamiza gerek var mi? reset geldiginde unspecified bir sonuc donmesi gerekmez mi?
     always @(posedge clk_i) begin
-        if(en_stall_decode_stage_o || flush_decode_stage_i) begin
-
+        if(!stall_decode_stage_i && (en_stall_decode_stage_o || flush_decode_stage_i)) begin
             //NOP AS OUTPUT
             en_alu_o            <= 1'b0;
             en_branching_unit_o <= 1'b0;

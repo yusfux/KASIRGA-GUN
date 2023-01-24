@@ -124,6 +124,7 @@ buyruk_onbellegi_denetleyici buyruk_onbellegi_denetleyici(
     .durdur_i(durdur_i),
 
     .adres_i(ps_ns_w),
+    .adres_kontrol_i(ps_r_w),
     .adres_bulundu_i(adres_bulundu_w),
     .buyruk_i(buyruk_w),
     .veri_obegi_o(veri_obegi_w),

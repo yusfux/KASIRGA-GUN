@@ -6,7 +6,8 @@ module buyruk_onbellegi_denetleyici(
     input               rst_i,// active low reset
     
     input               durdur_i,
-    input   [31:0]      adres_i,                    
+    input   [31:0]      adres_i,
+    input   [31:0]      adres_kontrol_i,      
   
     // onbellek sinyalleri
     input               adres_bulundu_i,
@@ -109,21 +110,24 @@ module buyruk_onbellegi_denetleyici(
                         end
             
                 end
-                ONBELLEK_YAZ : begin 
-                    if(veri_araligi_r == 2'b00)begin
-                        buyruk_r = okunan_obek_i[31:0];
+                ONBELLEK_YAZ : begin
+                    if(adres_kontrol_i == adres_r) begin
+                        if(veri_araligi_r == 2'b00)begin
+                            buyruk_r = okunan_obek_i[31:0];
+                        end
+                        else if(veri_araligi_r == 2'b01)begin
+                            buyruk_r = okunan_obek_i[63:32];
+                        end
+                        else if(veri_araligi_r == 2'b10)begin
+                            buyruk_r = okunan_obek_i[95:64];
+                        end
+                        else if(veri_araligi_r == 2'b11)begin
+                            buyruk_r = okunan_obek_i[127:96];
+                        end
+                        
+                        buyruk_hazir_r = 1'b1;
                     end
-                    else if(veri_araligi_r == 2'b01)begin
-                        buyruk_r = okunan_obek_i[63:32];
-                    end
-                    else if(veri_araligi_r == 2'b10)begin
-                        buyruk_r = okunan_obek_i[95:64];
-                    end
-                    else if(veri_araligi_r == 2'b11)begin
-                        buyruk_r = okunan_obek_i[127:96];
-                    end
-                    
-                    buyruk_hazir_r = 1'b1;
+
                     durum_ns = ONBELLEK_OKU;
                     
                 end

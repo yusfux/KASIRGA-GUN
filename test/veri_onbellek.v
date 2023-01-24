@@ -173,6 +173,9 @@ always @(posedge clk_i) begin
                 adres_bulundu_r <= 1;
                 
             end
+        end
+        else begin
+            adres_bulundu_r <= 0;
         end      
     end
 end

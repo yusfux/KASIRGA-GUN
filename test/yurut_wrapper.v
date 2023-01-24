@@ -199,7 +199,7 @@ module yurut_wrapper(
 
 
 	always @(posedge clk_i) begin
-	    if(bosalt_i || yz_stall_o || durdur_i || (!rst_i)) begin
+	    if(bosalt_i || yz_stall_o || (!rst_i)) begin
             hedef_yazmaci_r <= 5'd0;
             yazmaca_yaz_r <= 1'b0;
             load_save_buyrugu_r <= 3'd0;
@@ -207,7 +207,7 @@ module yurut_wrapper(
             bellekten_oku_r <= 1'b0;
             yazmac_degeri2_r <= 32'd0;
 		end
-		else begin
+		else if (!durdur_i) begin
             hedef_yazmaci_r <= hedef_yazmaci_i;
             yazmaca_yaz_r <= yazmaca_yaz_i;
             load_save_buyrugu_r <= load_save_buyrugu_i;

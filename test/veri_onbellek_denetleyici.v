@@ -118,12 +118,6 @@ always @(*) begin
    anabellek_kirli_obek_r = 128'd0;
    anabellek_adres_r = 32'd0;
    denetim_hazir_r = 1'b0; 
- 
-    if(bellek_oku_i != 1'b1 && bellek_yaz_i != 1'b1) begin
-        veri_r = adres_i;
-        veri_hazir_r = 1'b1;
-    end
-    else begin
     
     case(durum_r) 
           
@@ -229,9 +223,8 @@ always @(*) begin
             veri_hazir_r = 1'b1;
             denetim_hazir_r = 1'b1;                     
           end  
-    endcase 
-    end
-    end      
+    endcase
+end      
 
 
 always @(posedge clk_i) begin

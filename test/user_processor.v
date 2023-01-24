@@ -139,6 +139,8 @@ module user_processor(
     wire                   bellek_oku_o_w;
     wire                   bellek_yaz_o_w;
     wire      [127:0]      yazilacak_veri_obegi_o_w;
+
+    wire bellekten_oku_w;
 	 
     getir getir_pipeline (
         .clk_i(clk),
@@ -380,10 +382,12 @@ module user_processor(
         .pwm1_o(pwm1_o_w),
         .pwm2_o(pwm2_o_w),
         .gc_veri_gecerli_o(gc_veri_gecerli_o_w),
-        .gc_okunan_veri_o(gc_okunan_veri_o_w) // gc_veri_gecerli_o 1 ise yazmaca yazilmasi icin
+        .gc_okunan_veri_o(gc_okunan_veri_o_w), // gc_veri_gecerli_o 1 ise yazmaca yazilmasi icin
+        .bellekten_oku_o(bellekten_oku_w)
     );
     
     geri_yaz_wrapper pipeline_geri_yaz(
+        .bellekten_oku_i(bellekten_oku_w),
         .yazmaca_yaz_i(yazmaca_yaz_bellek_o_w),
         .hedef_yazmaci_i(hedef_yazmaci_bellek_o_w),
         .yazmaca_yaz_o(gy_yazmaca_yaz_o_w),
