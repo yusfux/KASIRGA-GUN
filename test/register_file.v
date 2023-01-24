@@ -77,7 +77,7 @@ module register_file(
     integer i;
     initial begin
         for(i = 0; i < 32; i = i + 1) begin
-            register[i]          = i;
+            register[i]          = 32'b0;
             reg_valid_counter[i] = 2'b0;
         end
     end
