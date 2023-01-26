@@ -162,7 +162,6 @@ module bellek_wrapper(
     reg        yazmaca_yaz_r;
     reg [4:0]  hedef_yazmaci_r;
     reg [31:0] hedef_yazmac_verisi_r;
-    reg        bellek_veri_hazir_r;
     reg        yazmaca_yaz_ns;
     reg [4:0]  hedef_yazmaci_ns;
     reg [31:0] hedef_yazmac_verisi_ns;

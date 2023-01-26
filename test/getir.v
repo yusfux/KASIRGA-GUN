@@ -161,20 +161,22 @@ always @(*) begin
     
 end
 
+reg [31:0] ps_r;
+reg [31:0] buyruk_r;
+
 always @(posedge clk_i) begin
-    if(!durdur_i && kuyruk_buyruk_hazir_w && !dallanma_hata_i) begin
+    if(!durdur_i && kuyruk_buyruk_hazir_w && !dallanma_hata_i && !jal_gecerli_i) begin
         ps_r <= ps_r_w;
         buyruk_r <= kuyruk_gelen_buyruk_w;
         ongoru_gecerli_o_r <= ongoru_gecerli_o_w;
     end
-    else if((!durdur_i && !kuyruk_buyruk_hazir_w) || dallanma_hata_i) begin
+    else if((!durdur_i && !kuyruk_buyruk_hazir_w) || dallanma_hata_i || jal_gecerli_i) begin
         buyruk_r <= 32'h0000_0013;
         ongoru_gecerli_o_r <= 1'b0;
     end
 end
 
-reg [31:0] ps_r;
-reg [31:0] buyruk_r;
+
 
 assign ps_o = ps_r;
 assign buyruk_o = buyruk_r;

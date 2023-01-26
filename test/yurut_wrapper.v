@@ -111,6 +111,7 @@ module yurut_wrapper(
 	wire    [31:0]      AMB_sonuc;      // AMB den ??kan sonu?, adres veya yazamaca yazilacak deger 
 	wire                esit_mi;        // ky1 ky2 ye e?it mi
 	wire                buyuk_mu;       // ky1 ky2 den b?y?k m? 
+	wire                buyuk_mu_unsigned;       // ky1 ky2 den b?y?k m? 
 	wire    [31:0]      atlanilmis_adres;
 	wire                AMB_hazir;
     
@@ -131,6 +132,7 @@ module yurut_wrapper(
 		.jal_r_adres_gecerli_o(jal_r_adres_gecerli_o),
 		.esit_mi_o(esit_mi),
 		.buyuk_mu_o(buyuk_mu),
+		.buyuk_mu_o_unsigned(buyuk_mu_unsigned),
 		.durdur_i(durdur_i)
 	);
 
@@ -142,6 +144,7 @@ module yurut_wrapper(
 		.dallanma_ongorusu_i(dallanma_ongorusu_i),
 		.esit_mi_i(esit_mi),
 		.buyuk_mu_i(buyuk_mu),
+		.buyuk_mu_i_unsigned(buyuk_mu_unsigned),
 		.ps_i(ps_i),
 		.br_i(anlik_i),
 		// 		OUTPUTS

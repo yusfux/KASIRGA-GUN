@@ -44,6 +44,7 @@ module dallanma_birimi(
     input               dallanma_ongorusu_i,
     input               esit_mi_i,
     input               buyuk_mu_i,
+    input               buyuk_mu_i_unsigned,
 	input  [31:0]       ps_i,
 	input  [31:0]       br_i,
     output              guncelle_gecerli_o,
@@ -105,28 +106,6 @@ module dallanma_birimi(
                 end
                  
                 `BRA_BLT : begin
-                    if(!buyuk_mu_i) begin
-                        guncelle_atladi_o_r = 1'b1;
-						guncelle_hedef_adresi_o_r = ps_i + br_i;
-					end
-                    else begin
-                        guncelle_atladi_o_r = 1'b0;
-						guncelle_hedef_adresi_o_r = ps_i;
-					end
-                end
-                
-                `BRA_BGE : begin
-                    if(buyuk_mu_i) begin
-                        guncelle_atladi_o_r = 1'b1;
-						guncelle_hedef_adresi_o_r = ps_i + br_i;
-					end
-                    else begin
-                        guncelle_atladi_o_r = 1'b0;
-						guncelle_hedef_adresi_o_r = ps_i;
-					end
-                end
-                
-                `BRA_BLTU : begin
                     if(!buyuk_mu_i || esit_mi_i) begin
                         guncelle_atladi_o_r = 1'b1;
 						guncelle_hedef_adresi_o_r = ps_i + br_i;
@@ -137,8 +116,30 @@ module dallanma_birimi(
 					end
                 end
                 
-                `BRA_BGEU : begin
+                `BRA_BGE : begin
                     if(buyuk_mu_i || esit_mi_i) begin
+                        guncelle_atladi_o_r = 1'b1;
+						guncelle_hedef_adresi_o_r = ps_i + br_i;
+					end
+                    else begin
+                        guncelle_atladi_o_r = 1'b0;
+						guncelle_hedef_adresi_o_r = ps_i;
+					end
+                end
+                
+                `BRA_BLTU : begin
+                    if(!buyuk_mu_i_unsigned || esit_mi_i) begin
+                        guncelle_atladi_o_r = 1'b1;
+						guncelle_hedef_adresi_o_r = ps_i + br_i;
+					end
+                    else begin
+                        guncelle_atladi_o_r = 1'b0;
+						guncelle_hedef_adresi_o_r = ps_i;
+					end
+                end
+                
+                `BRA_BGEU : begin
+                    if(buyuk_mu_i_unsigned || esit_mi_i) begin
                         guncelle_atladi_o_r = 1'b1;
 						guncelle_hedef_adresi_o_r = ps_i + br_i;
 					end

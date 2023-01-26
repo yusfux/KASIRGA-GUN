@@ -131,7 +131,7 @@ module pipeline_controller (
         //getir asamasini flushlamaya gerek yok 
         if(en_flush_branch_misprediction_i) begin
             flush_decode_stage_r  = 1'b1;
-            flush_execute_stage_r = 1'b1;
+            //flush_execute_stage_r = 1'b1;
         end 
         //else if(en_flush_mret_instruction_i) begin  
         //TODO: eger mret geldigi cevrimde program sayaci dogru instruct getirebiliyorsa flusha gerek yok

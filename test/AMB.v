@@ -25,7 +25,8 @@ module AMB(
     output      [31:0]      jal_r_adres_o,            //jal ve jalr buyru?u i?in  
     output                  jal_r_adres_gecerli_o,          
     output                  esit_mi_o,  
-    output                  buyuk_mu_o         
+    output                  buyuk_mu_o,         
+    output                  buyuk_mu_o_unsigned         
 );
 
 reg     [63:0]  sonuc_r               =    64'd0    ;
@@ -35,8 +36,10 @@ reg             AMB_hazir_r           =    1'b0     ;
 reg             AMB_hazir_r_next      =    1'b0     ;  
 reg             jal_r_adres_gecerli_r =    1'b0      ;  
 
+// hasana dallanma birimindeki yanlisiliklari da soylemeyi unutma
 assign esit_mi_o   =  AMB_aktif_i ? (yazmac_degeri1_i == yazmac_degeri2_i) : 0;
-assign buyuk_mu_o  =  AMB_aktif_i ?(yazmac_degeri1_i > yazmac_degeri2_i) : 0;
+assign buyuk_mu_o  =  AMB_aktif_i ? ($signed(yazmac_degeri1_i) > $signed(yazmac_degeri2_i)) : 0;
+assign buyuk_mu_o_unsigned  =  AMB_aktif_i ? ($unsigned(yazmac_degeri1_i) > $unsigned(yazmac_degeri2_i)) : 0;
      
 always @(*) begin
    /* durdur_i gelirse icerideki degerler korunmali,
@@ -56,18 +59,18 @@ always @(*) begin
                
                `ALU_ADDI    :   sonuc_r_next     =   yazmac_degeri1_i + anlik_i;
                
-               `ALU_MUL     :   sonuc_r_next     =   yazmac_degeri1_i * yazmac_degeri2_i; 
+               `ALU_MUL     :   sonuc_r_next     =   $signed(yazmac_degeri1_i) * $signed(yazmac_degeri2_i); 
           
                `ALU_MULH    :   sonuc_r_next     =   ($signed(yazmac_degeri1_i) * $signed(yazmac_degeri2_i)) >> 32;
                           
-               `ALU_MULHSU  :   sonuc_r_next     =   ($signed(yazmac_degeri1_i) * $unsigned(yazmac_degeri2_i)) >> 32;
+               `ALU_MULHSU  :   sonuc_r_next     =   ({{6'd32{yazmac_degeri1_i[31]}},yazmac_degeri1_i} *  {{6'd32{1'b0}},yazmac_degeri2_i}) >> 32;
                           
-               `ALU_MULHU   :   sonuc_r_next     =   ($unsigned(yazmac_degeri1_i) * $unsigned(yazmac_degeri2_i)) >> 32; 
-          
-               `ALU_DIV     :   sonuc_r_next     =   yazmac_degeri1_i / yazmac_degeri2_i;
+               `ALU_MULHU   :   sonuc_r_next     =   ($unsigned(yazmac_degeri1_i) * $unsigned(yazmac_degeri2_i)) >> 32;
+                               
+               `ALU_DIV     :   sonuc_r_next     =   $signed(yazmac_degeri1_i) / $signed(yazmac_degeri2_i);
                
-               `ALU_DIVU    :   sonuc_r_next     =   $unsigned(yazmac_degeri1_i) / $unsigned(yazmac_degeri2_i);   
-               
+               `ALU_DIVU    :   sonuc_r_next     =   $unsigned(yazmac_degeri1_i) / $unsigned(yazmac_degeri2_i);
+
                `ALU_REM     :   sonuc_r_next     =   yazmac_degeri1_i % yazmac_degeri2_i;
                
                `ALU_REMU    :   sonuc_r_next     =   $unsigned(yazmac_degeri1_i) % $unsigned(yazmac_degeri2_i); 
@@ -110,7 +113,7 @@ always @(*) begin
           
                `ALU_SRLI    :   sonuc_r_next = $signed({1'b0, yazmac_degeri1_i}) >>> anlik_i[4:0];
          
-               `ALU_SRAI    :   sonuc_r_next = {(anlik_i[31])>>(anlik_i[4:0]),(yazmac_degeri1_i >> anlik_i[4:0])};
+               `ALU_SRAI    :   sonuc_r_next = $signed(yazmac_degeri1_i) >>> anlik_i[4:0];
          
                `ALU_SLL    :    sonuc_r_next = yazmac_degeri1_i << yazmac_degeri2_i[4:0];
          
