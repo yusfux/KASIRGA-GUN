@@ -71,7 +71,7 @@ always @(*) begin
                
                `ALU_DIVU    :   sonuc_r_next     =   $unsigned(yazmac_degeri1_i) / $unsigned(yazmac_degeri2_i);
 
-               `ALU_REM     :   sonuc_r_next     =   yazmac_degeri1_i % yazmac_degeri2_i;
+               `ALU_REM     :   sonuc_r_next     =   $signed(yazmac_degeri1_i) % $signed(yazmac_degeri2_i);
                
                `ALU_REMU    :   sonuc_r_next     =   $unsigned(yazmac_degeri1_i) % $unsigned(yazmac_degeri2_i); 
                
@@ -117,7 +117,7 @@ always @(*) begin
          
                `ALU_SLL    :    sonuc_r_next = yazmac_degeri1_i << yazmac_degeri2_i[4:0];
          
-               `ALU_SLT     :   sonuc_r_next = (yazmac_degeri1_i) < (yazmac_degeri2_i);
+               `ALU_SLT     :   sonuc_r_next = $signed(yazmac_degeri1_i) < $signed(yazmac_degeri2_i);
          
                `ALU_SLTU    :   sonuc_r_next = $unsigned(yazmac_degeri1_i) < $unsigned(yazmac_degeri2_i); 
          
