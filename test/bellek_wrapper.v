@@ -118,7 +118,7 @@ module bellek_wrapper(
          .clk_i(clk_i),                    
          .rst_i(rst_i),                    
                                               
-         .veri_obegi_i(obek_okunan_o),             
+         .denetleyici_obek_i(obek_okunan_o),             
          .adres_i(bellek_adresi_i),                  
          .veri_i(bellek_veri_i),                   
          .bellekten_oku_i(bellekten_oku_i),          

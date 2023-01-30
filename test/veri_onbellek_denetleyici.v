@@ -48,7 +48,6 @@ module veri_onbellek_denetleyici(
     input           bellek_oku_i, 
     input           bellek_yaz_i,
     input   [31:0]  adres_i,
-   // input   [31:0]  veri_i,
     input   [2:0]   buyruk_turu_i,
     
     // onbellek inputlari
@@ -82,14 +81,14 @@ module veri_onbellek_denetleyici(
     output          denetim_hazir_o
            
 );
+localparam  BOSTA         = 3'd0;
+localparam  ONBELLEK      = 3'd1;
+localparam  ANABELLEK_YAZ = 3'd2;
+localparam  ANABELLEK_OKU = 3'd3;
+localparam  ONBELLEK_YAZ  = 3'd4;
 
-localparam  ONBELLEK      = 2'b00;
-localparam  ANABELLEK_YAZ = 2'b01;
-localparam  ANABELLEK_OKU = 2'b10;
-localparam  ONBELLEK_YAZ  = 2'b11;
-
-reg     [1:0]       durum_r = ONBELLEK;
-reg     [1:0]       durum_ns;
+reg     [2:0]       durum_r = ONBELLEK;
+reg     [2:0]       durum_ns;
 
 reg     [31:0]      veri_r;
 reg                 veri_hazir_r ;
@@ -104,8 +103,7 @@ reg                 denetim_hazir_r;
 
 reg     [3:0]       secilen_byte_r;
 reg     [3:0]       secilen_byte_ns;
-
-   
+ 
 always @(*) begin 
    
    secilen_byte_ns = secilen_byte_r; 
@@ -119,25 +117,32 @@ always @(*) begin
    anabellek_adres_r = 32'd0;
    denetim_hazir_r = 1'b0; 
     
+   if(bellek_oku_i == 1'b1 || bellek_yaz_i == 1'b1) begin
     case(durum_r) 
           
+          BOSTA: begin
+            veri_hazir_r = 1'b0;
+            denetim_hazir_r = 1'b0;
+            durum_ns = ONBELLEK;
+          end
+          
           ONBELLEK: begin  
-             
               if(bellek_oku_i) begin
+                             
                    if(adres_bulundu_i) begin 
                         veri_r = onbellek_veri_i;
                         veri_hazir_r = 1'b1; 
-                        denetim_hazir_r = 1'b1;     
+                        denetim_hazir_r = 1'b1;   
+                        durum_ns = BOSTA;  
                    end 
                    else begin
                         veri_hazir_r = 1'b0;
                         denetim_hazir_r = 1'b0;
-                        secilen_byte_ns   =  adres_i[3:0];
+                        secilen_byte_ns = adres_i[3:0];
                         if(anabellek_musait_i) begin
                             
                               if(obek_kirli_i) begin                                        
                                 durum_ns = ANABELLEK_YAZ;
-                                //anabellek_kirli_adres_r = kirli_obek_adresi_i;
                                 anabellek_adres_r = kirli_obek_adresi_i;
                                 anabellek_kirli_obek_r = kirli_obek_i;                               
                               end
@@ -151,16 +156,18 @@ always @(*) begin
               else if(bellek_yaz_i) begin
                     if(adres_bulundu_i) begin
                         veri_hazir_r = 1'b1;
-                        denetim_hazir_r = 1'b1;                     
+                        denetim_hazir_r = 1'b1;   
+                        durum_ns = BOSTA;                  
                     end
                     else begin
                         veri_hazir_r = 1'b0;
                         denetim_hazir_r = 1'b0;
+                        secilen_byte_ns = adres_i[3:0];
                         if(anabellek_musait_i) begin
                         
                               if(obek_kirli_i) begin                                        
                                 durum_ns = ANABELLEK_YAZ;
-                                //anabellek_kirli_adres_r = kirli_obek_adresi_i;
+
                                 anabellek_adres_r = kirli_obek_adresi_i;
                                 anabellek_kirli_obek_r = kirli_obek_i;
                                 
@@ -172,9 +179,10 @@ always @(*) begin
                         end  
                     end
               end
-          end          
-          
+          end      
+                       
           ANABELLEK_YAZ : begin 
+         
              anabellek_adres_r = kirli_obek_adresi_i;
              anabellek_kirli_obek_r = kirli_obek_i;
              
@@ -184,8 +192,7 @@ always @(*) begin
                    veri_hazir_r = 1'b0;
                    denetim_hazir_r = 1'b0;  
                    durum_ns = ANABELLEK_OKU;
-             end        
-          
+             end                  
           end
               
           ANABELLEK_OKU : begin 
@@ -197,9 +204,9 @@ always @(*) begin
                  durum_ns = ONBELLEK_YAZ;
              end
           end
-        
+         
           ONBELLEK_YAZ : begin 
-            durum_ns = ONBELLEK;
+            durum_ns = BOSTA;
             if(bellek_oku_i) begin  
                 case(buyruk_turu_i)
                     `MEM_LB  : begin
@@ -223,8 +230,9 @@ always @(*) begin
             veri_hazir_r = 1'b1;
             denetim_hazir_r = 1'b1;                     
           end  
-    endcase
-end      
+    endcase 
+   end 
+ end      
 
 
 always @(posedge clk_i) begin
