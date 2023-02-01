@@ -24,35 +24,34 @@ module kriptografi_birimi(
     input [2:0]islem_kodu_i,
     
     output [31:0] sonuc_o,
-    output kriptografi_hazir_o 
+    output kriptografi_hazir_o,
+    input  durdur_i 
     
 );
     
-reg kriptografi_hazir_r = 1'b0;
-reg kriptografi_hazir_r_next = 1'b0;
+reg kriptografi_hazir_r;
+reg kriptografi_hazir_r_next;
 
-reg [31:0] sonuc_r = 0;
-reg [31:0] sonuc_r_next = 0;
+reg [31:0] sonuc_r;
+reg [31:0] sonuc_r_next;
 
 integer i=0;
 
-reg [31:0] xor_result_ns ;
-reg [31:0] xor_result_r ;
+wire [31:0] xor_result_w ;
+assign  xor_result_w = yazmac_rs1_i ^ yazmac_rs2_i;
 
 wire [31:0] variable_w;
-assign variable_w = xor_result_ns - ((xor_result_ns >> 1) & 32'hdb6d_b6db) - ((xor_result_ns >> 2) & 32'h4924_9249);
+assign variable_w = xor_result_w - ((xor_result_w >> 1) & 32'hdb6d_b6db) - ((xor_result_w >> 2) & 32'h4924_9249);
 
 always @* begin
-    
-    xor_result_ns = xor_result_r;
+
     sonuc_r_next = sonuc_r;
     kriptografi_hazir_r_next = 1'b0;
     
-    if(blok_aktif_i) begin
+    if(blok_aktif_i && !durdur_i) begin
         
         case(islem_kodu_i) 
         `CRY_HMDST : begin              
-            xor_result_ns = yazmac_rs1_i ^ yazmac_rs2_i;
             sonuc_r_next = ((variable_w + (variable_w >> 3)) & 32'hc71c_71c7) % 63;
             kriptografi_hazir_r_next = 1'b1;
          end
@@ -74,7 +73,7 @@ always @* begin
             kriptografi_hazir_r_next = 1'b1;
          end
         
-        `CRY_CNTZ : begin // ilk 1 i bulmak için binary search yapýlýyor
+        `CRY_CNTZ : begin // ilk 1 i bulmak için binary search yap?l?yor
         
             if(yazmac_rs1_i[15:0] == 16'd0) begin
                 if(yazmac_rs1_i[23:16] == 8'd0) begin
@@ -226,7 +225,6 @@ always @(posedge clk_i) begin
     else begin
         sonuc_r <= sonuc_r_next;
         kriptografi_hazir_r <= kriptografi_hazir_r_next;
-        xor_result_r <= xor_result_ns;
     end    
 end
 

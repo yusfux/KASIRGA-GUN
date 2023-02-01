@@ -35,14 +35,14 @@ module yapay_zeka_hizlandirici(
 
     );
     
-    reg conv_hazir_r = 1'b0;
-	reg conv_hazir_r_next = 1'b0;
+    reg conv_hazir_r;
+	reg conv_hazir_r_next;
 	
-    reg [31:0] convolution_sonuc_r = 32'd0;
-	reg [31:0] convolution_sonuc_r_next = 32'd0;
+    reg [31:0] convolution_sonuc_r;
+	reg [31:0] convolution_sonuc_r_next;
 	
-    reg bir_cevrim_stall_r = 1'b0;
-    reg bir_cevrim_stall_r_next = 1'b0;
+    reg bir_cevrim_stall_r;
+    reg bir_cevrim_stall_r_next;
 	
     assign conv_hazir_o = (blok_aktif_i || stall_o) ? conv_hazir_r : 1'b0; // stall_o durumunda da calismali
     assign convolution_sonuc_o = (blok_aktif_i || stall_o) ? convolution_sonuc_r : 32'd0;
@@ -50,24 +50,24 @@ module yapay_zeka_hizlandirici(
     
     reg [31:0] veri_matris_r [15:0]; 
     reg [31:0] filtre_matris_r [15:0];
-    reg [31:0] rs1_veri_r_next = 32'd0;
-    reg [31:0] rs2_veri_r_next = 32'd0;
+    reg [31:0] rs1_veri_r_next;
+    reg [31:0] rs2_veri_r_next;
    
     
-    reg [3:0] veri_matris_idx = 4'd0;
-    reg [3:0] filtre_matris_idx = 4'd0; 
-	reg [3:0] veri_matris_idx_next = 4'd0;
-    reg [3:0] filtre_matris_idx_next = 4'd0;
+    reg [3:0] veri_matris_idx;
+    reg [3:0] filtre_matris_idx; 
+	reg [3:0] veri_matris_idx_next;
+    reg [3:0] filtre_matris_idx_next;
     
-    reg [15:0] veri_matris_dolu = 16'd0;
-    reg [15:0] filtre_matris_dolu = 16'd0;
-	reg [15:0] veri_matris_dolu_next = 16'd0;
-    reg [15:0] filtre_matris_dolu_next = 16'd0;
+    reg [15:0] veri_matris_dolu;
+    reg [15:0] filtre_matris_dolu;
+	reg [15:0] veri_matris_dolu_next;
+    reg [15:0] filtre_matris_dolu_next;
     wire [15:0] conva_hazir;
     assign conva_hazir = veri_matris_dolu & filtre_matris_dolu;
     
-    reg [3:0] conv_idx = 4'd0;
-    reg [3:0] conv_idx_next = 4'd0;
+    reg [3:0] conv_idx;
+    reg [3:0] conv_idx_next;
     
     localparam pasif = 3'b000;
     localparam filtre_1 = 3'b001;
@@ -75,19 +75,11 @@ module yapay_zeka_hizlandirici(
     localparam veri_1 = 3'b011;
     localparam veri_2 = 3'b100;
     
-    reg [2:0] mod = 3'd0;
-    reg [2:0] mod_next = 3'd0;
+    reg [2:0] mod;
+    reg [2:0] mod_next;
     
-    integer i = 0;
     integer j = 0;
     integer k = 0;
-    
-    initial begin
-        for(i=0 ; i<16 ; i=i+1) begin
-            veri_matris_r[i] = 32'd0;
-            filtre_matris_r[i] = 32'd0;
-        end
-    end
     
     
     always @ * begin

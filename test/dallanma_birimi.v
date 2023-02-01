@@ -56,10 +56,10 @@ module dallanma_birimi(
     assign guncelle_ps_o = ps_i;
     
     
-	reg [31:0] guncelle_hedef_adresi_o_r = 32'd0;
+	reg [31:0] guncelle_hedef_adresi_o_r;
 	
-    reg guncelle_gecerli_o_r = 1'b0;
-    reg guncelle_atladi_o_r = 1'b0;
+    reg guncelle_gecerli_o_r;
+    reg guncelle_atladi_o_r;
     
     assign guncelle_gecerli_o = blok_aktif_i ? guncelle_gecerli_o_r : 1'b0;
     assign guncelle_atladi_o = blok_aktif_i ? guncelle_atladi_o_r : 1'b0;
