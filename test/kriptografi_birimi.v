@@ -15,7 +15,7 @@
 */
 `include "operations.vh"   
 
-module kriptografi(
+module kriptografi_birimi(
     input clk_i,
     input rst_i,
     input blok_aktif_i,
@@ -36,9 +36,11 @@ reg [31:0] sonuc_r_next = 0;
 
 integer i=0;
 
-wire [31:0] xor_result_w = yazmac_rs1_i ^ yazmac_rs2_i;
+wire [31:0] xor_result_w ;
+assign  xor_result_w = yazmac_rs1_i ^ yazmac_rs2_i;
 
-wire [31:0] variable_w = xor_result_w - ((xor_result_w >> 1) & 32'hdb6d_b6db) - ((xor_result_w >> 2) & 32'h4924_9249);
+wire [31:0] variable_w;
+assign variable_w = xor_result_w - ((xor_result_w >> 1) & 32'hdb6d_b6db) - ((xor_result_w >> 2) & 32'h4924_9249);
 
 always @* begin
 
