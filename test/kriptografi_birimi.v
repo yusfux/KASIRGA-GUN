@@ -15,10 +15,9 @@
 */
 `include "operations.vh"   
 
-module kriptografi_birimi(
+module kriptografi(
     input clk_i,
     input rst_i,
-    input durdur_i,
     input blok_aktif_i,
     input [31:0] yazmac_rs1_i,
     input [31:0] yazmac_rs2_i,
@@ -36,23 +35,21 @@ reg [31:0] sonuc_r = 0;
 reg [31:0] sonuc_r_next = 0;
 
 integer i=0;
-integer k=0;
 
-reg [31:0] xor_result = 0;
-reg [31:0] variable = 0;
+wire [31:0] xor_result_w = yazmac_rs1_i ^ yazmac_rs2_i;
+
+wire [31:0] variable_w = xor_result_w - ((xor_result_w >> 1) & 32'hdb6d_b6db) - ((xor_result_w >> 2) & 32'h4924_9249);
 
 always @* begin
 
     sonuc_r_next = sonuc_r;
     kriptografi_hazir_r_next = 1'b0;
     
-    if(blok_aktif_i && !durdur_i) begin
+    if(blok_aktif_i) begin
         
         case(islem_kodu_i) 
         `CRY_HMDST : begin              
-            xor_result = yazmac_rs1_i ^ yazmac_rs2_i;
-            variable = xor_result - ((xor_result >> 1) & 32'hdb6d_b6db) - ((xor_result >> 2) & 32'h4924_9249);
-            sonuc_r_next = ((variable + (variable >> 3)) & 32'hc71c_71c7) % 63;
+            sonuc_r_next = ((variable_w + (variable_w >> 3)) & 32'hc71c_71c7) % 63;
             kriptografi_hazir_r_next = 1'b1;
          end
         
@@ -62,8 +59,8 @@ always @* begin
          end
         
         `CRY_RVRS : begin
-            for(k=0;k<32;k=k+1) begin
-                sonuc_r_next[31-k] = yazmac_rs1_i[k];
+            for(i=0;i<32;i=i+1) begin
+                sonuc_r_next[31-i] = yazmac_rs1_i[i];
             end
             kriptografi_hazir_r_next = 1'b1;
          end
@@ -73,7 +70,7 @@ always @* begin
             kriptografi_hazir_r_next = 1'b1;
          end
         
-        `CRY_CNTZ : begin // ilk 1 i bulmak için binary search yap?l?yor
+        `CRY_CNTZ : begin // ilk 1 i bulmak için binary search yapýlýyor
         
             if(yazmac_rs1_i[15:0] == 16'd0) begin
                 if(yazmac_rs1_i[23:16] == 8'd0) begin
@@ -209,10 +206,8 @@ always @* begin
             end
             kriptografi_hazir_r_next = 1'b1;   
          end
-               
         `CRY_CNTP : begin         
-            variable = yazmac_rs1_i - ((yazmac_rs1_i >> 1) & 32'hdb6d_b6db) - ((yazmac_rs1_i >> 2) & 32'h4924_9249);
-            sonuc_r_next = ((variable + (variable >> 3)) & 32'hc71c_71c7) % 63;
+            sonuc_r_next = ((variable_w + (variable_w >> 3)) & 32'hc71c_71c7) % 63;
             kriptografi_hazir_r_next = 1'b1;                 
          end
         endcase
