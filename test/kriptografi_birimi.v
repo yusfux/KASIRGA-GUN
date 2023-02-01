@@ -36,14 +36,15 @@ reg [31:0] sonuc_r_next = 0;
 
 integer i=0;
 
-wire [31:0] xor_result_w ;
-assign  xor_result_w = yazmac_rs1_i ^ yazmac_rs2_i;
+reg [31:0] xor_result_ns ;
+reg [31:0] xor_result_r ;
 
 wire [31:0] variable_w;
-assign variable_w = xor_result_w - ((xor_result_w >> 1) & 32'hdb6d_b6db) - ((xor_result_w >> 2) & 32'h4924_9249);
+assign variable_w = xor_result_ns - ((xor_result_ns >> 1) & 32'hdb6d_b6db) - ((xor_result_ns >> 2) & 32'h4924_9249);
 
 always @* begin
-
+    
+    xor_result_ns = xor_result_r;
     sonuc_r_next = sonuc_r;
     kriptografi_hazir_r_next = 1'b0;
     
@@ -51,6 +52,7 @@ always @* begin
         
         case(islem_kodu_i) 
         `CRY_HMDST : begin              
+            xor_result_ns = yazmac_rs1_i ^ yazmac_rs2_i;
             sonuc_r_next = ((variable_w + (variable_w >> 3)) & 32'hc71c_71c7) % 63;
             kriptografi_hazir_r_next = 1'b1;
          end
@@ -224,6 +226,7 @@ always @(posedge clk_i) begin
     else begin
         sonuc_r <= sonuc_r_next;
         kriptografi_hazir_r <= kriptografi_hazir_r_next;
+        xor_result_r <= xor_result_ns;
     end    
 end
 
