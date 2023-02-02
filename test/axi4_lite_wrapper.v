@@ -23,7 +23,7 @@ module axi4_lite_wrapper(
      wire              axi_rready_w;
      wire              axi_rvalid_w;
 	 wire   [31:0]     axi_rdata_w; 
-	 wire              axi_rresp_w; 
+	 //wire              axi_rresp_w; 
      wire   [31:0]     axi_awaddr_w;
      wire              axi_awready_w;
      wire              axi_awvalid_w;
@@ -33,7 +33,7 @@ module axi4_lite_wrapper(
      wire              axi_wvalid_w;
      wire              axi_bready_w;
      wire              axi_bvalid_w; 
-     wire              axi_bresp_w; 
+     //wire              axi_bresp_w; 
      wire   [3:0]      read_size_w;
     
      wire s_axi_arready_o_uart;
@@ -57,11 +57,11 @@ module axi4_lite_wrapper(
      assign axi_arready_w    = s_axi_arready_o_uart ||  s_axi_arready_o_pwm;
      assign axi_rvalid_w     = s_axi_rvalid_o_uart  ^  s_axi_rvalid_o_pwm;
      assign axi_rdata_w      = s_axi_rvalid_o_uart ? s_axi_rdata_o_uart : s_axi_rvalid_o_pwm ? s_axi_rdata_o_pwm : 32'd0;
-     assign axi_rresp_w      = s_axi_rresp_o_uart   ^ s_axi_rresp_o_pwm;
+    // assign axi_rresp_w      = s_axi_rresp_o_uart   ^ s_axi_rresp_o_pwm;
      assign axi_awready_w    = s_axi_awready_o_uart ||  s_axi_awready_o_pwm;
      assign axi_wready_w     = s_axi_wready_o_uart  ||  s_axi_wready_o_pwm;
      assign axi_bvalid_w     = s_axi_bvalid_o_uart  ^  s_axi_bvalid_o_pwm;
-     assign axi_bresp_w      = s_axi_bresp_o_uart   ^  s_axi_bresp_o_pwm;
+    // assign axi_bresp_w      = s_axi_bresp_o_uart   ^  s_axi_bresp_o_pwm;
      
     
      axi_master axi_m(
@@ -73,7 +73,7 @@ module axi4_lite_wrapper(
          .axi_rready_o(axi_rready_w), 
          .axi_rvalid_i(axi_rvalid_w),
          .axi_rdata_i(axi_rdata_w),
-         .axi_rresp_i(axi_rresp_w),
+       //  .axi_rresp_i(axi_rresp_w),
          .axi_awaddr_o(axi_awaddr_w),
          .axi_awready_i(axi_awready_w),
          .axi_awvalid_o(axi_awvalid_w),
@@ -83,7 +83,7 @@ module axi4_lite_wrapper(
          .axi_wvalid_o(axi_wvalid_w),
          .axi_bready_o(axi_bready_w),
          .axi_bvalid_i(axi_bvalid_w),
-         .axi_bresp_i(axi_bresp_w),
+        // .axi_bresp_i(axi_bresp_w),
          
          .address_i(address_i),
 	     .buyruk_turu_i(buyruk_turu_i),
@@ -106,7 +106,7 @@ module axi4_lite_wrapper(
         .s_axi_rready_i(axi_rready_w),
         .s_axi_rvalid_o(s_axi_rvalid_o_uart),
         .s_axi_rdata_o(s_axi_rdata_o_uart), 
-        .s_axi_rresp_o(s_axi_rresp_o_uart),
+       // .s_axi_rresp_o(s_axi_rresp_o_uart),
         .s_axi_awaddr_i(axi_awaddr_w),
         .s_axi_awready_o(s_axi_awready_o_uart),
         .s_axi_awvalid_i(axi_awvalid_w),
@@ -116,7 +116,7 @@ module axi4_lite_wrapper(
         .s_axi_wvalid_i(axi_wvalid_w),
         .s_axi_bready_i(axi_bready_w),
         .s_axi_bvalid_o(s_axi_bvalid_o_uart),
-        .s_axi_bresp_o(s_axi_bresp_o_uart),
+       // .s_axi_bresp_o(s_axi_bresp_o_uart),
         .read_size_i(read_size_w),
          
         .tx_o(tx_o),
@@ -134,7 +134,7 @@ module axi4_lite_wrapper(
         .s_axi_rready_i(axi_rready_w),
         .s_axi_rvalid_o(s_axi_rvalid_o_pwm),
         .s_axi_rdata_o(s_axi_rdata_o_pwm), 
-        .s_axi_rresp_o(s_axi_rresp_o_pwm),
+       // .s_axi_rresp_o(s_axi_rresp_o_pwm),
         .s_axi_awaddr_i(axi_awaddr_w),
         .s_axi_awready_o(s_axi_awready_o_pwm),
         .s_axi_awvalid_i(axi_awvalid_w),
@@ -144,7 +144,7 @@ module axi4_lite_wrapper(
         .s_axi_wvalid_i(axi_wvalid_w),
         .s_axi_bready_i(axi_bready_w),
         .s_axi_bvalid_o(s_axi_bvalid_o_pwm),
-        .s_axi_bresp_o(s_axi_bresp_o_pwm),
+       // .s_axi_bresp_o(s_axi_bresp_o_pwm),
         .read_size_i(read_size_w),
                
         .pwm1_o(pwm1_o),

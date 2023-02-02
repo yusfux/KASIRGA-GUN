@@ -11,11 +11,11 @@ module pwm2(
 	output          pwm2_o
     );
     
-    wire [1:0]     pwm2_mode_w;
-    wire [31:0]    pwm2_period_w;
-    wire [31:0]    pwm2_threshold1_w;
-    wire [31:0]    pwm2_threshold2_w;
-    wire [11:0]    pwm2_step_w;
+    wire [1:0]     pwm2_mode_w          ;
+    wire [31:0]    pwm2_period_w        ;
+    wire [31:0]    pwm2_threshold1_w    ;
+    wire [31:0]    pwm2_threshold2_w    ;
+    wire [11:0]    pwm2_step_w          ;
     
     assign pwm2_mode_w = pwm2_mode_i;
     assign pwm2_period_w = pwm2_period_i;
@@ -24,16 +24,16 @@ module pwm2(
     assign pwm2_step_w = pwm2_step_i;
     
     
-	reg [31:0] counter = 32'd0;
-	reg [31:0] counter_next = 32'd0;
-	reg [31:0] mode2_threshold = 32'd0;
-	reg [31:0] mode2_threshold_next = 32'd0;
+	reg [31:0] counter                 ;
+	reg [31:0] counter_next            ;
+	reg [31:0] mode2_threshold         ;
+	reg [31:0] mode2_threshold_next    ;
 	
-	reg pwm2_o_r = 1'b0;
-	reg pwm2_o_r_next = 1'b0;
+	reg pwm2_o_r                       ;
+	reg pwm2_o_r_next                  ;
 	assign pwm2_o = pwm2_o_r;
-    reg mode2_threshold_control = 1'b0;
-    reg mode2_threshold_control_next = 1'b0;
+    reg mode2_threshold_control        ;
+    reg mode2_threshold_control_next   ;
     
     wire kontrol;
     assign kontrol = (counter==(pwm2_period_w-1'b1));

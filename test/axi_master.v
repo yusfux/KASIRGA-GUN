@@ -59,41 +59,41 @@ module axi_master(
 //	localparam SW = 3'b110;
 	
 	
-	reg  [31:0]  axi_araddr_r = 32'd0;
+	reg  [31:0]  axi_araddr_r;
 	assign axi_araddr_o = axi_araddr_r;
 	
-	reg          axi_arvalid_r = 1'b0; // hafiza
-	reg 		 axi_arvalid_r_next = 1'b0;
+	reg          axi_arvalid_r; // hafiza
+	reg 		 axi_arvalid_r_next;
 	assign axi_arvalid_o = axi_arvalid_r_next;
 	
-	reg			 axi_rready_r = 1'b0;
+	reg			 axi_rready_r;
 	assign axi_rready_o = axi_rready_r;
 	
-	reg  [31:0]  axi_awaddr_r = 32'd0;
+	reg  [31:0]  axi_awaddr_r;
 	assign axi_awaddr_o = axi_awaddr_r;
 	
-	reg		     axi_awvalid_r = 1'b0; // hafiza
-	reg		     axi_awvalid_r_next = 1'b0;
+	reg		     axi_awvalid_r; // hafiza
+	reg		     axi_awvalid_r_next;
 	assign axi_awvalid_o = axi_awvalid_r_next;
 	
-	reg  [31:0]  axi_wdata_r = 32'd0;
+	reg  [31:0]  axi_wdata_r;
 	assign axi_wdata_o = axi_wdata_r;
 	
-	reg  [3:0]   axi_wstrb_r = 4'd0;
+	reg  [3:0]   axi_wstrb_r;
 	assign axi_wstrb_o = axi_wstrb_r;
 	
-	reg   		 axi_wvalid_r = 1'b0; // hafiza
-	reg   		 axi_wvalid_r_next = 1'b0;
+	reg   		 axi_wvalid_r; // hafiza
+	reg   		 axi_wvalid_r_next;
 	assign axi_wvalid_o = axi_wvalid_r_next;
 	
-	reg 		 axi_bready_r = 1'b0; // hafiza
-	reg 		 axi_bready_r_next = 1'b0;
+	reg 		 axi_bready_r; // hafiza
+	reg 		 axi_bready_r_next;
 	assign axi_bready_o = axi_bready_r_next;
 
-	reg  [3:0]   read_size_o_r = 4'd0;
+	reg  [3:0]   read_size_o_r;
 	assign read_size_o = read_size_o_r;
 	
-	reg          okunan_veri_gecerli_o_r = 1'b0;
+	reg          okunan_veri_gecerli_o_r;
 	assign       okunan_veri_gecerli_o = okunan_veri_gecerli_o_r;
 	
 	wire read_handshake;
@@ -105,8 +105,8 @@ module axi_master(
 	wire write_data_handshake;
 	assign write_data_handshake = (axi_wvalid_r && axi_wready_i);
 
-	reg [31:0] okunan_veri_o_r = 32'd0;
-	reg [2:0]  buyruk_turu_i_r = 3'd0;
+	reg [31:0] okunan_veri_o_r;
+	reg [2:0]  buyruk_turu_i_r;
 	
 	assign okunan_veri_o = okunan_veri_o_r;
 	

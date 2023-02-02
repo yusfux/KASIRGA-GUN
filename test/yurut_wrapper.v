@@ -87,12 +87,12 @@ module yurut_wrapper(
     
 );
 
-    reg     [4:0]       hedef_yazmaci_r     = 5'd0;
-    reg                 yazmaca_yaz_r       = 1'b0;
-    reg     [2:0]       load_save_buyrugu_r = 3'd0;
-    reg                 bellege_yaz_r       = 1'b0;
-    reg                 bellekten_oku_r     = 1'b0;
-    reg     [31:0]      yazmac_degeri2_r    = 32'd0;
+    reg     [4:0]       hedef_yazmaci_r     ;
+    reg                 yazmaca_yaz_r       ;
+    reg     [2:0]       load_save_buyrugu_r ;
+    reg                 bellege_yaz_r       ;
+    reg                 bellekten_oku_r     ;
+    reg     [31:0]      yazmac_degeri2_r    ;
 
     wire                veri_sil_i;
     wire                conv_yap_en_i; 
@@ -185,6 +185,7 @@ module yurut_wrapper(
 	wire    [31:0]      kriptografi_sonuc;
 	wire                kriptografi_hazir;
 
+
 	kriptografi_birimi kriptografi(
 		//		INPUTS
 		.clk_i(clk_i),
@@ -231,5 +232,5 @@ module yurut_wrapper(
 	assign bellek_adresi_o =  AMB_hazir ? AMB_sonuc : 32'd0;
 	assign bellek_veri_o = AMB_hazir ? yazmac_degeri2_r : 32'd0;  
 	assign hedef_yazmac_verisi_o = conv_hazir ? convolution_sonuc : kriptografi_hazir ? kriptografi_sonuc : AMB_hazir ? AMB_sonuc : 32'd0;
-
+	
 	endmodule

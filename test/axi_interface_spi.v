@@ -15,7 +15,7 @@ module axi_interface_spi(
      output             s_axi_rvalid_o,
      
 	 output  [31:0]     s_axi_rdata_o, 
-	 output             s_axi_rresp_o, // 1 gecerli, 0 gecersiz
+	// output             s_axi_rresp_o, // 1 gecerli, 0 gecersiz
      
      //         WRITE SIGNALS
 	 // aw -> address write (address in)
@@ -33,7 +33,7 @@ module axi_interface_spi(
      
      input              s_axi_bready_i,
      output             s_axi_bvalid_o,
-     output             s_axi_bresp_o, // 1 gecerli, 0 gecersiz      
+    // output             s_axi_bresp_o, // 1 gecerli, 0 gecersiz      
 	 
 	 input   [3:0]      read_size_i, 
 	 output             stall_o,
@@ -55,14 +55,14 @@ module axi_interface_spi(
 	// SPI cikislarinin atamalari 116. satirda
 	
 	// OUTPUTS
-	reg s_axi_arready_o_r      = 1'b0;
-	reg s_axi_rvalid_o_r       = 1'b0;
-	reg [31:0] s_axi_rdata_o_r = 32'd0;
-	reg s_axi_awready_o_r      = 1'b0;
-	reg s_axi_wready_o_r       = 1'b0;
-	reg s_axi_bvalid_o_r       = 1'b0;
-	reg s_axi_bresp_o_r        = 1'b0;
-	reg s_axi_rresp_o_r        = 1'b0;
+	reg s_axi_arready_o_r      ;
+	reg s_axi_rvalid_o_r       ;
+	reg [31:0] s_axi_rdata_o_r ;
+	reg s_axi_awready_o_r      ;
+	reg s_axi_wready_o_r       ;
+	reg s_axi_bvalid_o_r       ;
+	reg s_axi_bresp_o_r        ;
+	reg s_axi_rresp_o_r        ;
 	
 	assign s_axi_arready_o = s_axi_arready_o_r;
 	assign s_axi_rvalid_o  = s_axi_rvalid_o_r;
@@ -70,22 +70,22 @@ module axi_interface_spi(
 	assign s_axi_awready_o = s_axi_awready_o_r;
 	assign s_axi_wready_o  = s_axi_wready_o_r;
 	assign s_axi_bvalid_o  = s_axi_bvalid_o_r;
-	assign s_axi_bresp_o   = s_axi_bresp_o_r;
-	assign s_axi_rresp_o   = s_axi_rresp_o_r;
+	//assign s_axi_bresp_o   = s_axi_bresp_o_r;
+	//assign s_axi_rresp_o   = s_axi_rresp_o_r;
 	assign stall_o		   = stall_i;
 	
 	// ADDRESS
 	parameter [31:0] SPI_BASE_ADDR = 32'h2001_0000;
 	parameter [31:0] SPI_MASK_ADDR = 32'h0000_00ff;
            
-	reg s_axi_arready_o_next = 1'b0;
-	reg [31:0] s_axi_rdata_o_next = 32'd0;
-	reg s_axi_awready_o_next = 1'b0;
-	reg s_axi_wready_o_next  = 1'b0;
-	reg s_axi_bvalid_o_next  = 1'b0;
-	reg s_axi_rvalid_o_next  = 1'b0;
-	reg s_axi_bresp_o_r_next = 1'b0;
-	reg s_axi_rresp_o_r_next = 1'b0;
+	reg s_axi_arready_o_next       ;
+	reg [31:0] s_axi_rdata_o_next  ;
+	reg s_axi_awready_o_next       ;
+	reg s_axi_wready_o_next        ;
+	reg s_axi_bvalid_o_next        ;
+	reg s_axi_rvalid_o_next        ;
+	reg s_axi_bresp_o_r_next       ;
+	reg s_axi_rresp_o_r_next       ;
 	
 	wire [4:0]	reg_addres_r;
 	assign reg_addres_r = s_axi_araddr_i[4:0];

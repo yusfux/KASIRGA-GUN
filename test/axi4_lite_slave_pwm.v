@@ -15,7 +15,7 @@ module axi4_lite_slave_pwm(
      output             s_axi_rvalid_o,
      
 	 output  [31:0]     s_axi_rdata_o,
-	 output             s_axi_rresp_o, 
+	 //output             s_axi_rresp_o, 
      
      //         WRITE SIGNALS
 	 // aw -> address write (address in)
@@ -33,7 +33,7 @@ module axi4_lite_slave_pwm(
      
      input              s_axi_bready_i,
      output             s_axi_bvalid_o,
-     output             s_axi_bresp_o,
+     //output             s_axi_bresp_o,
      
      output             pwm1_o,
      output             pwm2_o,
@@ -68,7 +68,7 @@ module axi4_lite_slave_pwm(
         .s_axi_rready_i(s_axi_rready_i),
         .s_axi_rvalid_o(s_axi_rvalid_o),
 	    .s_axi_rdata_o(s_axi_rdata_o),
-	    .s_axi_rresp_o(s_axi_rresp_o), 
+	   // .s_axi_rresp_o(s_axi_rresp_o), 
 	    .s_axi_awaddr_i(s_axi_awaddr_i),
         .s_axi_awready_o(s_axi_awready_o),
         .s_axi_awvalid_i(s_axi_awvalid_i),
@@ -78,7 +78,7 @@ module axi4_lite_slave_pwm(
         .s_axi_wvalid_i(s_axi_wvalid_i),
         .s_axi_bready_i(s_axi_bready_i),
         .s_axi_bvalid_o(s_axi_bvalid_o),
-		.s_axi_bresp_o(s_axi_bresp_o),
+		//.s_axi_bresp_o(s_axi_bresp_o),
 	    .read_size_i(read_size_i),
 	    
 		.pwm1_mode_o(pwm1_mode_w),
