@@ -11,8 +11,8 @@ module baud_rate_generator
     input [15:0] baud_div_i  
     );
     
-    reg rx_tick_o_r = 1'b0;
-    reg tx_tick_o_r = 1'b0;
+    reg rx_tick_o_r ;
+    reg tx_tick_o_r ;
     
     assign rx_tick_o = rx_tick_o_r;
     assign tx_tick_o = tx_tick_o_r;
@@ -22,8 +22,8 @@ module baud_rate_generator
     assign max_r_clock = baud_div_i[15:4];
     assign max_t_clock = baud_div_i;
     
-    reg [31:0] rx_counter = 32'd0;
-    reg [31:0] tx_counter = 32'd0;
+    reg [31:0] rx_counter ;
+    reg [31:0] tx_counter ;
     
 
  always @(posedge clk_i) begin

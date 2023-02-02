@@ -12,26 +12,26 @@ module transmitter(
 	output t_done_o
 );
     
-    reg t_done_o_r = 1'b0;
-    reg tx_o_r = 1'b1;
+    reg t_done_o_r ;
+    reg tx_o_r ;
     assign tx_o = tx_o_r;
     assign t_done_o = t_done_o_r;
     
-    reg next_tx = 1'b1;
-	reg [2:0]bit_index = 3'b0;
-	reg [2:0]next_bit_index = 3'b0;
-	reg t_done_next  = 1'b0;
+    reg next_tx  ;
+	reg [2:0]bit_index ;
+	reg [2:0]next_bit_index ;
+	reg t_done_next  ;
 	
 	localparam idle     = 2'b00;
 	localparam start    = 2'b01;
 	localparam data     = 2'b10;
 	localparam stop     = 2'b11;
 	
-	reg [1:0]state      = 2'b00;
-	reg [1:0]next_state = 2'b00;
+	reg [1:0]state      ;
+	reg [1:0]next_state ;
 	
-	reg [7:0]uart_wdata = 8'd0;
-	reg [7:0]wdata_next = 8'd0;
+	reg [7:0]uart_wdata ;
+	reg [7:0]wdata_next ;
 	
 	
 	always @* begin

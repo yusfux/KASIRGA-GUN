@@ -10,25 +10,25 @@ module receiver(
 	input rx_en_i
 );
 
-    reg r_done_o_r  = 1'b0;
+    reg r_done_o_r  ;
     assign r_done_o = r_done_o_r;
     
 	localparam idle = 2'b00;
 	localparam data = 2'b01;
 	localparam stop = 2'b10;
  	
- 	reg r_done_next = 1'b0;
-	reg [1:0]state = 2'b00;
-	reg [1:0]next_state = 2'b00;
-	reg [7:0]tut = 8'd0;
-	reg [7:0]tut_next = 8'd0;
-	reg [7:0]next_r_out = 8'd0;
-	reg [4:0]sayac = 5'd0;
-	reg [4:0]next_sayac = 5'd0;
-	reg [2:0]bit_sayac = 3'd0;
-	reg [2:0]next_bit_sayac = 3'd0;
+ 	reg r_done_next ;
+	reg [1:0]state  ;
+	reg [1:0]next_state ;
+	reg [7:0]tut ;
+	reg [7:0]tut_next ;
+	reg [7:0]next_r_out ;
+	reg [4:0]sayac ;
+	reg [4:0]next_sayac ;
+	reg [2:0]bit_sayac ;
+	reg [2:0]next_bit_sayac ;
     
-    reg [7:0]uart_rdata = 8'd0;
+    reg [7:0]uart_rdata ;
     assign r_out_o = uart_rdata;
     
 	always @* begin
