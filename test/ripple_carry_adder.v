@@ -59,7 +59,7 @@ full_adder fa30(sayi1_i[30], sayi2_i[30], c30,  sonuc_w[30],c31);
 full_adder fa31(sayi1_i[31], sayi2_i[31], c31,  sonuc_w[31],cout);        
 
 always @(*) begin
-
+    sonuc_ns = sonuc_r;
     if(blok_aktif_i) begin
        sonuc_ns = sonuc_w;
     end
