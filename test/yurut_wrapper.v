@@ -50,6 +50,7 @@ module yurut_wrapper(
     input                    bellege_yaz_i, 
     input                    bellekten_oku_i, 
     input       [2:0]        dallanma_buy_turu_i, 
+	input 					 sikistirilmis_mi_i,
     // GETIR->COZ->YURUT
     input                    dallanma_ongorusu_i,
 	// \--------------------- COZ-YURUT -> YAPAY ZEKA -----------------------------/		
@@ -125,6 +126,7 @@ module yurut_wrapper(
 		.yazmac_degeri2_i(yazmac_degeri2_i),  
 		.adres_i(ps_i),
 		.islem_kodu_i(amb_islem_kodu_i),
+		.sikistirilmis_mi_i(sikistirilmis_mi_i),
 		// 		OUTPUTS
 		.AMB_hazir_o(AMB_hazir),
 		.sonuc_o(AMB_sonuc),

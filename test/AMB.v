@@ -19,6 +19,7 @@ module AMB(
     input       [31:0]      yazmac_degeri2_i,
     input       [31:0]      adres_i,
     input       [5:0]       islem_kodu_i,
+    input                   sikistirilmis_mi_i,
     
     output                  AMB_hazir_o,
     output      [31:0]      sonuc_o,
@@ -80,13 +81,13 @@ always @(*) begin
                `ALU_LUI     :   sonuc_r_next     =   anlik_i;
                          
                `ALU_JAL     : begin  
-                         sonuc_r_next     =   adres_i + 4; 
-                         adres_r     =   adres_i + anlik_i; 
+                         sonuc_r_next          = sikistirilmis_mi_i ? adres_i + 2 : adres_i + 4;
+                         adres_r               =   adres_i + anlik_i; 
                          jal_r_adres_gecerli_r = 1'b1;
                 end        
                `ALU_JALR    : begin  
-                         sonuc_r_next     =   adres_i + 4;      
-                         adres_r     =   yazmac_degeri1_i + anlik_i;     
+                         sonuc_r_next          = sikistirilmis_mi_i ? adres_i + 2 : adres_i + 4;      
+                         adres_r               =   yazmac_degeri1_i + anlik_i;     
                          jal_r_adres_gecerli_r = 1'b1;                            
                 end
                 

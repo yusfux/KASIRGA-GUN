@@ -74,7 +74,8 @@ module wrapper_decode(
         output reg [31:0] reg_rs2_data_o,
 
         output reg [31:0] program_counter_o,
-        output reg        branch_taken_o
+        output reg        branch_taken_o,
+        output reg        is_compressed_o
 
     );
 
@@ -82,6 +83,7 @@ module wrapper_decode(
     // RISC V COMPRESS EXPANDER
     wire [31:0] expanded_instruction_w;
     wire        exception_illegal_inst_expander_w;
+    wire        is_compressed_w;
 
 
     //INSTRUCTION DECODER
@@ -144,6 +146,7 @@ module wrapper_decode(
         .instruction_i(instruction_i),
 
         .instruction_o(expanded_instruction_w),
+        .is_compressed_o(is_compressed_w),
         .exception_illegal_instruction_o(exception_illegal_inst_expander_w)
     );
 
@@ -265,6 +268,7 @@ module wrapper_decode(
 
             program_counter_o   <= program_counter_i;
             branch_taken_o      <= branch_taken_i;
+            is_compressed_o     <= is_compressed_w;
             
         end
     end

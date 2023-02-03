@@ -29,6 +29,7 @@ module rvc_expander(
 
         //-----------------------signals to "instruction decoder"------------------------
         output [31:0] instruction_o,
+        output        is_compressed_o,
         //-------------------------------------------------------------------------------
 
         //-----------------------signals to "control status unit"------------------------
@@ -188,6 +189,7 @@ module rvc_expander(
         endcase
     end   
 
+    assign is_compressed_o                 = (instruction_i[1:0] == 2'b11) ? 0 : 1;
     assign instruction_o                   = (instruction_i[1:0] == 2'b11) ? instruction_i : expanded_instruction_r;
     assign exception_illegal_instruction_o = exception_illegal_instruction_r && (instruction_i[1:0] != 2'b11);
 endmodule

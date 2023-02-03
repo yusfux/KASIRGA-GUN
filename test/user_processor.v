@@ -98,6 +98,7 @@ module user_processor(
     wire      [31:0]       reg_rs2_data_o_w;
     wire      [31:0]       program_counter_o_w;
     wire                   branch_taken_o_w;
+    wire                   is_compressed_o_w;
     
     // GERI YAZ -> COZ
     wire                   gy_yazmaca_yaz_o_w;
@@ -222,7 +223,8 @@ module user_processor(
         .reg_rs2_data_o(reg_rs2_data_o_w),
 
         .program_counter_o(program_counter_o_w),
-        .branch_taken_o(branch_taken_o_w)
+        .branch_taken_o(branch_taken_o_w),
+        .is_compressed_o(is_compressed_o_w)
     );
     
     pipeline_controller pipeline_denetim (
@@ -279,6 +281,7 @@ module user_processor(
         .bellege_yaz_i(mem_write_o_w), 
         .bellekten_oku_i(mem_read_o_w), 
         .dallanma_buy_turu_i(op_branching_o_w), 
+        .sikistirilmis_mi_i(is_compressed_o_w),
         // GETIR->COZ->YURUT
         .dallanma_ongorusu_i(branch_taken_o_w),
         // \--------------------- COZ-YURUT -> YAPAY ZEKA -----------------------------/		
