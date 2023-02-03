@@ -22,14 +22,14 @@ module dallanma_ongoru_blogu(
 	input               dallanma_hata_i,
 	
     // Atlama sonucunu belirten sinyaller
-    /* Bu kýsým program sayacý üreticisine girecek */
+    /* Bu kisim program sayaci ureticisine girecek */
     output  [31:0]      atlanan_ps_o,       // Atlanilacak olan program sayaci
     output              ongoru_gecerli_o    // Ongoru gecerli
     );
     
     
     reg [127:0] etiket_gecerli_r;
-    reg [22:0] etiket_r [127:0];
+    reg [23:0] etiket_r [127:0];
 	reg [1:0] durum_r [127:0];
 	reg [31:0] hedef_adres_r [127:0];
 	
@@ -38,16 +38,16 @@ module dallanma_ongoru_blogu(
     
 	// Satir numaralari
 	wire [6:0]an_str_idx;
-	assign an_str_idx =  ongoru_aktif_i ? ps_i[8:2] : 0;
+	assign an_str_idx =  ongoru_aktif_i ? ps_i[7:1] : 0;
 	wire [6:0]gun_str_idx;
-	assign gun_str_idx = guncelle_gecerli_i ? guncelle_ps_i[8:2] : 0;
+	assign gun_str_idx = guncelle_gecerli_i ? guncelle_ps_i[7:1] : 0;
 	
 	// Etiket
-	wire [22:0] etiket_gun;
-	assign etiket_gun = guncelle_gecerli_i ? guncelle_ps_i[31:9] : 0; 
+	wire [23:0] etiket_gun;
+	assign etiket_gun = guncelle_gecerli_i ? guncelle_ps_i[31:8] : 0; 
 	
-	wire [22:0] etiket_anl;
-	assign etiket_anl = ongoru_aktif_i ? ps_i[31:9] : 0; 
+	wire [23:0] etiket_anl;
+	assign etiket_anl = ongoru_aktif_i ? ps_i[31:8] : 0; 
 	
 	reg  etiket_gecerli;
 	
@@ -63,7 +63,7 @@ module dallanma_ongoru_blogu(
 	reg ongoru_gecerli_o_r;
 	assign ongoru_gecerli_o = ongoru_gecerli_o_r; 
 
-	// TEST ÝÇÝN
+	// TEST ICIN
     reg [31:0]atlamaz_tahmin;
     reg [31:0]atlar_tahmin;
     reg [31:0]atladi;
@@ -187,7 +187,7 @@ module dallanma_ongoru_blogu(
 		  etiket_gecerli_r <= 128'd0;
         
 		for(i=0;i<128;i=i+1) begin
-			etiket_r[i] <= 23'd0;
+			etiket_r[i] <= 24'd0;
 			durum_r[i] <= 2'd0;
 			hedef_adres_r[i] <= 32'd0;
 		end
