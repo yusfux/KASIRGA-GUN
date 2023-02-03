@@ -8,20 +8,12 @@ module full_adder(in0, in1, cin, out, cout);
 	assign cout = ((in0 ^ in1) & cin) | (in0 & in1);
 endmodule
 
-module ripple_carry_adder(
-    
-    input           clk_i,           
-    input           rst_i,           
-    
-    input           blok_aktif_i,
-    
+module ripple_carry_adder(        
     input   [31:0]  sayi1_i,
     input   [31:0]  sayi2_i,
     output  [31:0]  sonuc_o
 );
 
-reg     [31:0]      sonuc_r;
-reg     [31:0]      sonuc_ns;
 
 wire c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,c30,c31,cout;
 wire [31:0] sonuc_w;
@@ -58,23 +50,8 @@ full_adder fa29(sayi1_i[29], sayi2_i[29], c29,  sonuc_w[29],c30);
 full_adder fa30(sayi1_i[30], sayi2_i[30], c30,  sonuc_w[30],c31);        
 full_adder fa31(sayi1_i[31], sayi2_i[31], c31,  sonuc_w[31],cout);        
 
-always @(*) begin
-    sonuc_ns = sonuc_r;
-    if(blok_aktif_i) begin
-       sonuc_ns = sonuc_w;
-    end
-end
-always @(posedge clk_i) begin
-    
-     if(rst_i == 1'b0) begin
-        
-     end
-     else begin
-        sonuc_r <= sonuc_ns;
-     end          
-end
+assign  sonuc_o = sonuc_w;
 
-assign  sonuc_o = sonuc_r;
 endmodule
 
 

@@ -27,7 +27,7 @@ module AMB(
     output                  jal_r_adres_gecerli_o,          
     output                  esit_mi_o,  
     output                  buyuk_mu_o,         
-    output                  buyuk_mu_o_unsigned         
+    output                  buyuk_mu_o_unsigned
 );
 
 reg     [63:0]  sonuc_r               =    64'd0    ;
@@ -42,6 +42,18 @@ assign esit_mi_o   =  AMB_aktif_i ? (yazmac_degeri1_i == yazmac_degeri2_i) : 0;
 assign buyuk_mu_o  =  AMB_aktif_i ? ($signed(yazmac_degeri1_i) > $signed(yazmac_degeri2_i)) : 0;
 assign buyuk_mu_o_unsigned  =  AMB_aktif_i ? ($unsigned(yazmac_degeri1_i) > $unsigned(yazmac_degeri2_i)) : 0;
      
+reg  [31:0] aritmetik_sayi1_r;
+reg  [31:0] aritmetik_sayi2_r;
+wire [31:0] aritmetik_sonuc_r;
+
+
+ripple_carry_adder toplayici(
+    .sayi1_i(aritmetik_sayi1_r),
+    .sayi2_i(aritmetik_sayi2_r),
+    .sonuc_o(aritmetik_sonuc_r)
+);
+
+
 always @(*) begin
    /* durdur_i gelirse icerideki degerler korunmali,
    ama su anda tek cevrimde yapiyor, disariya nop verilmeli */
@@ -49,26 +61,43 @@ always @(*) begin
    adres_r           =   32'd0;
    jal_r_adres_gecerli_r = 1'b0;
    AMB_hazir_r_next  =   1'b0;
+   aritmetik_sayi1_r = 32'd0;
+   aritmetik_sayi2_r = 32'd0;
    
    if(!durdur_i) begin
        if(AMB_aktif_i) begin
            AMB_hazir_r_next = 1'b1;
            case(islem_kodu_i)
                 
-                // aritmatik i?lemler 
-               `ALU_ADD     :   sonuc_r_next     =   yazmac_degeri1_i + yazmac_degeri2_i;
+                // aritmatik islemler 
+               `ALU_ADD     :   begin //sonuc_r_next     =   yazmac_degeri1_i + yazmac_degeri2_i;
+                    aritmetik_sayi1_r = yazmac_degeri1_i;
+                    aritmetik_sayi2_r = yazmac_degeri2_i;
+                    sonuc_r_next      = aritmetik_sonuc_r;
+               end
                
-               `ALU_ADDI    :   sonuc_r_next     =   yazmac_degeri1_i + anlik_i;
+               `ALU_ADDI    :   begin //sonuc_r_next     =   yazmac_degeri1_i + anlik_i;
+                    aritmetik_sayi1_r = yazmac_degeri1_i;
+                    aritmetik_sayi2_r = anlik_i;
+                    sonuc_r_next      = aritmetik_sonuc_r;
+               end
                
-               `ALU_MUL     :   sonuc_r_next     =   $signed(yazmac_degeri1_i) * $signed(yazmac_degeri2_i); 
+               `ALU_MUL     :   begin 
+                    sonuc_r_next     =   $signed(yazmac_degeri1_i) * $signed(yazmac_degeri2_i);
+               end 
           
-               `ALU_MULH    :   sonuc_r_next     =   ($signed(yazmac_degeri1_i) * $signed(yazmac_degeri2_i)) >> 32;
+               `ALU_MULH    :   begin 
+                    sonuc_r_next     =   ($signed(yazmac_degeri1_i) * $signed(yazmac_degeri2_i)) >> 32;
+               end
                           
-               `ALU_MULHSU  :   sonuc_r_next     =   ({{6'd32{yazmac_degeri1_i[31]}},yazmac_degeri1_i} *  {{6'd32{1'b0}},yazmac_degeri2_i}) >> 32;
-                          
-               `ALU_MULHU   :   sonuc_r_next     =   ($unsigned(yazmac_degeri1_i) * $unsigned(yazmac_degeri2_i)) >> 32;
-                               
-               `ALU_DIV     :   sonuc_r_next     =   $signed(yazmac_degeri1_i) / $signed(yazmac_degeri2_i);
+               `ALU_MULHSU  :   begin 
+                    sonuc_r_next     =   ({{6'd32{yazmac_degeri1_i[31]}},yazmac_degeri1_i} *  {{6'd32{1'b0}},yazmac_degeri2_i}) >> 32;		  
+               end
+               
+			   `ALU_MULHU   :   begin 
+			         sonuc_r_next     =   ($unsigned(yazmac_degeri1_i) * $unsigned(yazmac_degeri2_i)) >> 32;
+               end
+			   `ALU_DIV     :   sonuc_r_next     =   $signed(yazmac_degeri1_i) / $signed(yazmac_degeri2_i);
                
                `ALU_DIVU    :   sonuc_r_next     =   $unsigned(yazmac_degeri1_i) / $unsigned(yazmac_degeri2_i);
 
@@ -154,5 +183,13 @@ assign sonuc_o               =   sonuc_r [31:0];
 assign jal_r_adres_o         =   adres_r;    
 assign AMB_hazir_o           =   AMB_hazir_r;
 assign jal_r_adres_gecerli_o = jal_r_adres_gecerli_r;
+
+
+
+
+
+
+
+
 
 endmodule
