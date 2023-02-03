@@ -119,7 +119,7 @@ dallanma_ongoru_blogu dallanma_ongoru_blogu(
     .guncelle_ps_i(guncelle_ps_i),
     .guncelle_hedef_adresi_i(guncelle_hedef_adresi_i),
 
-    .ps_i(ps_r_w),
+    .ps_i(ps_kuyruk_gecerli_w ? ps_kuyruk_w : ps_r_w),
 
     .dallanma_hata_i(dallanma_hata_i),
 
