@@ -4,6 +4,7 @@ module ps_uretici(
     input         rst_i,
 
     input         ps_durdur_i,
+    input         ps_iki_artir_i,
 
     input         ps_atlat_aktif_i,
     input  [31:0] ps_atlanacak_adres_i,
@@ -45,7 +46,12 @@ always @(*) begin
             ps_o_ns = ps_atlanacak_adres_i;
         end
         else if(!ps_durdur_i) begin
-            ps_o_ns = ps_o_r + 4;
+            if(ps_iki_artir_i) begin
+                ps_o_ns = ps_o_r + 2;
+            end
+            else begin
+                ps_o_ns = ps_o_r + 4;
+            end
         end
     end
 end

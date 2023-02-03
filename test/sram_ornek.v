@@ -13,12 +13,12 @@ module sram_ornek(
     output      reg [148:0]     obek_o
 );
  
-reg      [148:0]     onbellek [20:0];
+reg      [148:0]     onbellek [127:0];
 integer i;
 always @(posedge clk_i) begin
     
     if(rst_i == 0) begin
-         for(i=0 ; i<=20 ; i = i+1) begin
+         for(i=0 ; i<128 ; i = i+1) begin
             onbellek[i] <= 149'd0;
          end
     end  

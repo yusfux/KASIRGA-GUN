@@ -33,6 +33,7 @@ module getir(
 );
 
 wire         ps_durdur_w;
+wire         ps_iki_artir_w;
 
 wire         kuyruk_buyruk_hazir_w;
 wire [31:0]  kuyruk_gelen_buyruk_w;
@@ -45,6 +46,8 @@ wire [31:0]  atlanan_ps_w;
 
 wire [31:0]  ps_r_w;
 wire [31:0]  ps_ns_w;
+wire [31:0]  ps_kuyruk_w;
+wire         ps_kuyruk_gecerli_w;
 
 wire [31:0]  buyruk_w;
 wire         adres_bulundu_w;
@@ -61,6 +64,7 @@ ps_uretici ps_uretici(
     .rst_i(rst_i),
 
     .ps_durdur_i(ps_uretici_durdur_w),
+    .ps_iki_artir_i(ps_iki_artir_w),
 
     .ps_atlat_aktif_i(ongoru_gecerli_o),
     .ps_atlanacak_adres_i(atlanan_ps_w),
@@ -84,12 +88,16 @@ buyruk_kuyrugu buyruk_kuyrugu(
     .kuyruk_aktif_i(bellek_buyruk_hazir_w),
     .ps_atladi_i(ongoru_gecerli_o | dallanma_hata_i | jal_gecerli_i | mret_gecerli_i),
 
+    .ps_i(ps_ns_w),
     .buyruk_i(bellek_gelen_buyruk_w),
 
     .buyruk_o(kuyruk_gelen_buyruk_w),
+    .ps_o(ps_kuyruk_w),
+    .ps_gecerli_o(ps_kuyruk_gecerli_w),
     .buyruk_hazir_o(kuyruk_buyruk_hazir_w),
 
-    .ps_durdur_o(ps_durdur_w)
+    .ps_durdur_o(ps_durdur_w),
+    .ps_iki_artir_o(ps_iki_artir_w)
 );
 
 oncozucu oncozucu(
@@ -166,7 +174,7 @@ reg [31:0] buyruk_r;
 
 always @(posedge clk_i) begin
     if(!durdur_i && kuyruk_buyruk_hazir_w && !dallanma_hata_i && !jal_gecerli_i) begin
-        ps_r <= ps_r_w;
+        ps_r <=  ps_kuyruk_gecerli_w ? ps_kuyruk_w : ps_r_w;
         buyruk_r <= kuyruk_gelen_buyruk_w;
         ongoru_gecerli_o_r <= ongoru_gecerli_o_w;
     end
