@@ -48,7 +48,7 @@ module user_processor(
     
     // DURDUR/FLUSH SINYALLERI
     wire                   bellek_durdur_o_w;
-    wire                   yz_stall_o_w;
+    wire                   yurut_stall_o_w;
     wire                   yurut_flush_o_w;
     wire                   dallanma_hata_o_w;
     wire                   en_flush_mret_instruction_o_w;
@@ -229,7 +229,7 @@ module user_processor(
     
     pipeline_controller pipeline_denetim (
         .en_stall_decode_stage_i(en_stall_decode_stage_o_w),
-        .en_stall_execute_stage_i(yz_stall_o_w),
+        .en_stall_execute_stage_i(yurut_stall_o_w),
         .en_stall_memory_stage_i(bellek_durdur_o_w),
         
         .en_flush_branch_misprediction_i(yurut_flush_o_w),
@@ -288,7 +288,7 @@ module user_processor(
         .yapay_zeka_aktif_i(en_ai_unit_o_w),
         .rs2_en_i(enable_rs2_conv_o_w),
         .yz_islem_kodu_i(op_ai_o_w),
-        .yz_stall_o(yz_stall_o_w), // boru hattinin durdurulmasini soyleyen sinyal
+        .yurut_stall_o(yurut_stall_o_w), // boru hattinin durdurulmasini soyleyen sinyal
         // \--------------------- COZ-YURUT -> KRIPTOGRAFI ----------------------------/		
         .kriptografi_aktif_i(en_crypto_unit_o_w),
         .kriptografi_islem_kodu_i(op_crypto_o_w),

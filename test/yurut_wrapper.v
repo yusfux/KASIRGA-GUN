@@ -57,7 +57,7 @@ module yurut_wrapper(
     input                    yapay_zeka_aktif_i,
     input                    rs2_en_i,
     input       [2:0]        yz_islem_kodu_i,
-    output                   yz_stall_o, // boru hattinin durdurulmasini soyleyen sinyal
+    output                   yurut_stall_o, // boru hattinin durdurulmasini soyleyen sinyal
     // \--------------------- COZ-YURUT -> KRIPTOGRAFI ----------------------------/		
     input                    kriptografi_aktif_i,
     input       [2:0]        kriptografi_islem_kodu_i,
@@ -115,6 +115,7 @@ module yurut_wrapper(
 	wire                buyuk_mu_unsigned;       // ky1 ky2 den b?y?k m? 
 	wire    [31:0]      atlanilmis_adres;
 	wire                AMB_hazir;
+	wire                amb_stall_o_w;
     
 	AMB aritmetik_mantik(
 		//		INPUTS
@@ -135,7 +136,8 @@ module yurut_wrapper(
 		.esit_mi_o(esit_mi),
 		.buyuk_mu_o(buyuk_mu),
 		.buyuk_mu_o_unsigned(buyuk_mu_unsigned),
-		.durdur_i(durdur_i)
+		.durdur_i(durdur_i),
+		.stall_o(amb_stall_o_w)
 	);
 
 	dallanma_birimi dallanma(
@@ -161,6 +163,7 @@ module yurut_wrapper(
 	// yapay_zekadan cikanlar
 	 wire    [31:0]  convolution_sonuc;
 	 wire            conv_hazir;    
+	 wire            yz_stall_o_w;
  
 	yapay_zeka_hizlandirici yapay_zeka(
 		//		INPUTS
@@ -179,7 +182,7 @@ module yurut_wrapper(
 		//		OUTPUTS
 		.convolution_sonuc_o(convolution_sonuc),
 		.conv_hazir_o(conv_hazir),
-		.stall_o(yz_stall_o),
+		.stall_o(yz_stall_o_w),
 		.durdur_i(durdur_i)
 	);
 
@@ -205,7 +208,7 @@ module yurut_wrapper(
 
 
 	always @(posedge clk_i) begin
-	    if(bosalt_i || yz_stall_o || (!rst_i)) begin
+	    if(bosalt_i || yurut_stall_o || (!rst_i)) begin
             hedef_yazmaci_r <= 5'd0;
             yazmaca_yaz_r <= 1'b0;
             load_save_buyrugu_r <= 3'd0;
@@ -234,5 +237,8 @@ module yurut_wrapper(
 	assign bellek_adresi_o =  AMB_hazir ? AMB_sonuc : 32'd0;
 	assign bellek_veri_o = AMB_hazir ? yazmac_degeri2_r : 32'd0;  
 	assign hedef_yazmac_verisi_o = conv_hazir ? convolution_sonuc : kriptografi_hazir ? kriptografi_sonuc : AMB_hazir ? AMB_sonuc : 32'd0;
+	
+	assign yurut_stall_o = yz_stall_o_w || amb_stall_o_w;
+	
 	
 	endmodule
