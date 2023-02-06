@@ -1,4 +1,5 @@
 `timescale 1ns / 1ps
+
 // SIGNED 33 CEVRIM / UNSIGNED 33 CEVRIM
 module bolme(
         input            clk_i,
@@ -20,12 +21,14 @@ module bolme(
     reg [31:0] a_ns;
     reg [31:0] q_ns;
     reg [31:0] m_ns;
+    
     reg [31:0] a_r;
     reg [31:0] q_r;
     reg [31:0] m_r;  
     
     reg [31:0] q;//quotient
     reg [31:0] a;//remainder
+    
     reg [31:0] q2;//quotient
     reg [31:0] a2;//remainder
  
@@ -83,11 +86,11 @@ module bolme(
                         m_ns              = bolen_i;
                         q_ns              = bolunen_i;    
                         if(bolen_i[31])begin
-                            m_ns              = ~bolen_i + 1;  
+                            m_ns              = ~bolen_i + 1;           
                         end  
                         if(bolunen_i[31])begin
-                            q_ns              = ~bolunen_i + 1;         
-                        end  
+                            q_ns              = ~bolunen_i + 1;   
+                        end    
                         bolen_isaret_ns   = bolen_i[31];   
                         bolunen_isaret_ns = bolunen_i[31];                 
                         durum_ns       = ISLEM;
@@ -96,6 +99,12 @@ module bolme(
                         a_ns               = 32'd0;
                         m_ns               = bolen_i;
                         q_ns               = bolunen_i;
+                        if(bolen_i[31])begin
+                            m_ns              = ~bolen_i + 1;           
+                        end  
+                        if(bolunen_i[31])begin
+                            q_ns              = ~bolunen_i + 1;   
+                        end 
                         durum_ns       = ISLEM;                        
                     end
                 end
@@ -111,7 +120,7 @@ module bolme(
                     a    = a_r << 1;
                     a[0] = q_r[31];
                     q_ns    = q_r << 1;
-                    a_ns = a + 1+ ~m_r;       
+                    a_ns = a - m_r;       
                 end
                 q_ns[0] = 1'b1;
                 if(a_r[31])begin
@@ -137,27 +146,31 @@ module bolme(
                 end
                 else begin
                     result_ready_ns = 1'b1;  
-                    Ncounter_ns        = 6'd32;      
+                    Ncounter_ns        = 6'd32;//TEKRAR BAK EMIN DEGILIM         
                     durum_ns        = ISLEM_BEKLE;    
                 end
             end
             SIGNED_SONUC: begin
                     if(bolunen_isaret_r == 1 && bolen_isaret_r == 1 && a_r != 32'd0)begin
+                            //a_ns[31] = 1'b1;
                             a_ns = ~a_r+1;
                     end
                     else if(bolunen_isaret_r == 1 && bolen_isaret_r == 0) begin
+                        q_ns = ~(q_r)+1;                     
                         if(a_r != 0) begin
                             //q_ns = q_r + 1;
                             q_ns = ~(q_r + 1)+1;
                             a_ns = m_r + 1 + ~a_r;
-                            a_ns[31] = 1'b0;
+                            //a_ns[31] = 1'b0;
+                            //q_ns[31] = 1'b1;
                         end
                     end
                     else if(bolunen_isaret_r == 0 && bolen_isaret_r == 1) begin
+                        q_ns = ~(q_r)+1;                    
                         if(a_r != 0) begin
                             q_ns = ~(q_r + 1)+1;
-                            a_ns = m_r + 1 + ~a_r;
-                            a_ns[31] = 1'b1;                          
+                            a_ns = ~(m_r + 1 + ~a_r)+1;
+                           // a_ns[31] = 1'b1;                          
                         end
                     end   
                     Ncounter_ns        = 6'd32;//TEKRAR BAK EMIN DEGILIM   
@@ -193,5 +206,5 @@ module bolme(
             bolunen_isaret_r  <= bolunen_isaret_ns;
         end
     end
-        
+    
 endmodule
