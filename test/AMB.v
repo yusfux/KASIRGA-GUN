@@ -184,7 +184,7 @@ always @(*) begin
                     bolme_signed_r    = 1'b0;
                     aritmetik_sayi1_r = yazmac_degeri1_i;
                     aritmetik_sayi2_r = yazmac_degeri2_i;
-                    
+                           
                     if(!bolme_sonuc_hazir_w) begin
                         bolme_stall_r     = 1'b1; 
                     end
@@ -194,9 +194,34 @@ always @(*) begin
                     end
                end
 
-               `ALU_REM     :   sonuc_r_next     =   $signed(yazmac_degeri1_i) % $signed(yazmac_degeri2_i);
+               `ALU_REM     :   begin //sonuc_r_next     =   $signed(yazmac_degeri1_i) % $signed(yazmac_degeri2_i);
+                    bolme_istek_r     = 1'b1;
+                    bolme_signed_r    = 1'b1;
+                    aritmetik_sayi1_r = yazmac_degeri1_i;
+                    aritmetik_sayi2_r = yazmac_degeri2_i;  
+                       
+                    if(!bolme_sonuc_hazir_w) begin
+                        bolme_stall_r     = 1'b1; 
+                    end
+                    else begin
+                        bolme_stall_r     = 1'b0;
+                        sonuc_r_next      = bolme_kalan_w;
+                    end 
+               end
                
-               `ALU_REMU    :   sonuc_r_next     =   $unsigned(yazmac_degeri1_i) % $unsigned(yazmac_degeri2_i); 
+               `ALU_REMU    :   begin //sonuc_r_next     =   $unsigned(yazmac_degeri1_i) % $unsigned(yazmac_degeri2_i); 
+                    bolme_istek_r     = 1'b1;
+                    bolme_signed_r    = 1'b0;
+                    aritmetik_sayi1_r = yazmac_degeri1_i;
+                    aritmetik_sayi2_r = yazmac_degeri2_i;
+                    if(!bolme_sonuc_hazir_w) begin
+                        bolme_stall_r     = 1'b1; 
+                    end
+                    else begin
+                        bolme_stall_r     = 1'b0;
+                        sonuc_r_next      = bolme_kalan_w;
+                    end
+               end
                
                `ALU_AUIPC   :   sonuc_r_next     =   adres_i + anlik_i;
                
