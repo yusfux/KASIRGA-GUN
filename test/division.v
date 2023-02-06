@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
 
-// SIGNED 32 CEVRIM / UNSIGNED 33 CEVRIM
+// SIGNED 33 CEVRIM / UNSIGNED 33 CEVRIM
 module division(
         input            clk_i,
         input            rst_i,
@@ -180,7 +180,7 @@ module division(
     
     always @(posedge clk_i)begin
         if(!rst_i)begin
-            result_ready_ns    <= 1'b0;  
+            result_ready_r    <= 1'b0;  
             a_r               <= 32'd0;
             m_r               <= 32'd0;
             q_r               <= 32'd0;
