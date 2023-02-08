@@ -25,7 +25,10 @@ module getir(
     input         dallanma_hata_i,
 
     input         jal_gecerli_i,
-    input [31:0]  jal_adres_i
+    input [31:0]  jal_adres_i,
+
+    input         mret_gecerli_i,
+    input [31:0]  mret_ps_i
 
 );
 
@@ -72,7 +75,10 @@ ps_uretici ps_uretici(
     .dallanma_hata_i(dallanma_hata_i),
 
     .jal_gecerli_i(jal_gecerli_i),
-    .jal_adres_i(jal_adres_i)
+    .jal_adres_i(jal_adres_i),
+    
+    .mret_gecerli_i(mret_gecerli_i),
+    .mret_ps_i(mret_ps_i)
 );
 
 buyruk_kuyrugu buyruk_kuyrugu(
@@ -80,7 +86,7 @@ buyruk_kuyrugu buyruk_kuyrugu(
     .rst_i(rst_i),
 
     .kuyruk_aktif_i(bellek_buyruk_hazir_w),
-    .ps_atladi_i(ongoru_gecerli_o | dallanma_hata_i | jal_gecerli_i),
+    .ps_atladi_i(ongoru_gecerli_o | dallanma_hata_i | jal_gecerli_i | mret_gecerli_i),
 
     .ps_i(ps_ns_w),
     .buyruk_i(bellek_gelen_buyruk_w),
@@ -129,15 +135,15 @@ buyruk_onbellegi_denetleyici buyruk_onbellegi_denetleyici(
 
     .adres_i(ps_ns_w),
     .adres_kontrol_i(ps_r_w),
-    .adres_bulundu_i(adres_bulundu_w),
-    .buyruk_i(buyruk_w),
-    .veri_obegi_o(veri_obegi_w),
-    .onbellege_obek_yaz_o(onbellege_obek_yaz_w),
+    .onbellek_adres_bulundu_i(adres_bulundu_w),
+    .onbellek_buyruk_i(buyruk_w),
+    .onbellek_buyruk_obegi_o(veri_obegi_w),
+    .onbellek_obek_yaz_o(onbellege_obek_yaz_w),
     .onbellek_yaz_adres_o(onbellek_yaz_adres_w),
 
     .anabellek_musait_i(anabellek_musait_i),
-    .getir_asamasina_veri_hazir_i(getir_asamasina_veri_hazir_i),
-    .okunan_obek_i(okunan_obek_i),
+    .anabellek_hazir_i(getir_asamasina_veri_hazir_i),
+    .anabellek_obek_i(okunan_obek_i),
     .anabellek_adres_o(getir_adres_o),
     .anabellek_istek_o(getir_asamasi_istek_o),
     .anabellek_yaz_o(anabellek_yaz_o),
@@ -150,9 +156,10 @@ buyruk_onbellegi_denetleyici buyruk_onbellegi_denetleyici(
 buyruk_onbellegi buyruk_onbellegi(
     .clk_i(clk_i),
     .rst_i(rst_i),
-
+    
+    .durdur_i(durdur_i),
     .adres_i(ps_ns_w),
-    .buyruk_obegi_i(veri_obegi_w),
+    .buyruk_obek_i(veri_obegi_w),
     .anabellekten_obek_geldi_i(onbellege_obek_yaz_w),
     .onbellek_yaz_adres_i(onbellek_yaz_adres_w),
     .buyruk_o(buyruk_w),
