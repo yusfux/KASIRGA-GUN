@@ -405,14 +405,14 @@ module axi_interface_uart(
 	       // uart_rdata <= 8'd0;                    
 	                                                         
 	       for(j=0 ; j<32 ; j=j+1) begin                     
-	           tx_buffer[tx_buffer_read_idx] <= 8'd0; 
+	           tx_buffer[j] <= 8'd0; 
 	       end
 	                                                         
 	       tx_buffer_write_idx <= 5'd0;  
 	       tx_buffer_read_idx <= 5'd0;    
 	                                                         
 	       for(k=0 ; k<32 ; k=k+1) begin                        
-	          rx_buffer[rx_buffer_write_idx] <= 8'd0; 
+	          rx_buffer[k] <= 8'd0; 
 	       end
 	                                                         
 	       rx_buffer_write_idx <= 5'd0;  
