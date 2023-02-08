@@ -129,15 +129,15 @@ buyruk_onbellegi_denetleyici buyruk_onbellegi_denetleyici(
 
     .adres_i(ps_ns_w),
     .adres_kontrol_i(ps_r_w),
-    .adres_bulundu_i(adres_bulundu_w),
-    .buyruk_i(buyruk_w),
-    .veri_obegi_o(veri_obegi_w),
-    .onbellege_obek_yaz_o(onbellege_obek_yaz_w),
+    .onbellek_adres_bulundu_i(adres_bulundu_w),
+    .onbellek_buyruk_i(buyruk_w),
+    .onbellek_buyruk_obegi_o(veri_obegi_w),
+    .onbellek_obek_yaz_o(onbellege_obek_yaz_w),
     .onbellek_yaz_adres_o(onbellek_yaz_adres_w),
 
     .anabellek_musait_i(anabellek_musait_i),
-    .getir_asamasina_veri_hazir_i(getir_asamasina_veri_hazir_i),
-    .okunan_obek_i(okunan_obek_i),
+    .anabellek_hazir_i(getir_asamasina_veri_hazir_i),
+    .anabellek_obek_i(okunan_obek_i),
     .anabellek_adres_o(getir_adres_o),
     .anabellek_istek_o(getir_asamasi_istek_o),
     .anabellek_yaz_o(anabellek_yaz_o),
@@ -150,9 +150,10 @@ buyruk_onbellegi_denetleyici buyruk_onbellegi_denetleyici(
 buyruk_onbellegi buyruk_onbellegi(
     .clk_i(clk_i),
     .rst_i(rst_i),
-
+    
+    .durdur_i(durdur_i),
     .adres_i(ps_ns_w),
-    .buyruk_obegi_i(veri_obegi_w),
+    .buyruk_obek_i(veri_obegi_w),
     .anabellekten_obek_geldi_i(onbellege_obek_yaz_w),
     .onbellek_yaz_adres_i(onbellek_yaz_adres_w),
     .buyruk_o(buyruk_w),
