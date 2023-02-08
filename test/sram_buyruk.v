@@ -18,7 +18,7 @@ integer i;
 always @(posedge clk_i) begin
     
     if(rst_i == 0) begin
-         for(i=0 ; i<=20 ; i = i+1) begin
+        for(i=0 ; i<=127 ; i = i+1) begin
             onbellek[i] <= 149'd0;
          end
     end  
