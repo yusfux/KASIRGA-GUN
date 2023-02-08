@@ -14,9 +14,6 @@ module ps_uretici(
 
     input         jal_gecerli_i,
     input  [31:0] jal_adres_i,
-
-    input         mret_gecerli_i,
-    input  [31:0] mret_ps_i,
     
     output [31:0] ps_ongorucu_o,
     output [31:0] ps_o
@@ -35,9 +32,6 @@ always @(*) begin
     else begin
         if(dallanma_hata_i) begin
             ps_o_ns = guncelle_hedef_adresi_i;
-        end
-        else if(mret_gecerli_i) begin
-            ps_o_ns = mret_ps_i;
         end
         else if(jal_gecerli_i) begin
             ps_o_ns = jal_adres_i;

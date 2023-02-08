@@ -25,10 +25,7 @@ module getir(
     input         dallanma_hata_i,
 
     input         jal_gecerli_i,
-    input [31:0]  jal_adres_i,
-
-    input         mret_gecerli_i,
-    input [31:0]  mret_ps_i
+    input [31:0]  jal_adres_i
 
 );
 
@@ -75,10 +72,7 @@ ps_uretici ps_uretici(
     .dallanma_hata_i(dallanma_hata_i),
 
     .jal_gecerli_i(jal_gecerli_i),
-    .jal_adres_i(jal_adres_i),
-    
-    .mret_gecerli_i(mret_gecerli_i),
-    .mret_ps_i(mret_ps_i)
+    .jal_adres_i(jal_adres_i)
 );
 
 buyruk_kuyrugu buyruk_kuyrugu(
@@ -86,7 +80,7 @@ buyruk_kuyrugu buyruk_kuyrugu(
     .rst_i(rst_i),
 
     .kuyruk_aktif_i(bellek_buyruk_hazir_w),
-    .ps_atladi_i(ongoru_gecerli_o | dallanma_hata_i | jal_gecerli_i | mret_gecerli_i),
+    .ps_atladi_i(ongoru_gecerli_o | dallanma_hata_i | jal_gecerli_i),
 
     .ps_i(ps_ns_w),
     .buyruk_i(bellek_gelen_buyruk_w),

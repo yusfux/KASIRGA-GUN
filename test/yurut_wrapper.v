@@ -35,7 +35,6 @@ module yurut_wrapper(
     input                    clk_i,
     input                    rst_i,
     input                    durdur_i,
-    input                    bosalt_i,
 	// \-------------------- COZ-YURUT -> AMB, ORTAK ------------------------------/
     input                    amb_aktif_i,
     input       [31:0]       yazmac_degeri1_i,
@@ -208,7 +207,7 @@ module yurut_wrapper(
 
 
 	always @(posedge clk_i) begin
-	    if(bosalt_i || yurut_stall_o || (!rst_i)) begin
+	    if(yurut_stall_o || (!rst_i)) begin
             hedef_yazmaci_r <= 5'd0;
             yazmaca_yaz_r <= 1'b0;
             load_save_buyrugu_r <= 3'd0;

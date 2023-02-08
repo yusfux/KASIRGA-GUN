@@ -34,26 +34,17 @@ module user_processor(
     wire      [31:0]       guncelle_ps_o_w;
     wire                   jal_r_adres_gecerli_o_w;
     
-    // PIPELINE CONTROLLER -> GETIR
-    wire                   en_excep_program_counter_o_w;
-    wire      [31:0]       excep_program_counter_o_w;
-    
      // PIPELINE CONTROLLER stall/flush
     wire                   stall_fetch_stage_o_w;
     wire                   stall_decode_stage_o_w;
     wire                   stall_execute_stage_o_w;
-    wire                   flush_fetch_stage_o_w;
     wire                   flush_decode_stage_o_w;
-    wire                   flush_execute_stage_o_w;
     
     // DURDUR/FLUSH SINYALLERI
     wire                   bellek_durdur_o_w;
     wire                   yurut_stall_o_w;
     wire                   yurut_flush_o_w;
     wire                   dallanma_hata_o_w;
-    wire                   en_flush_mret_instruction_o_w;
-    wire                   en_exception_o_w;  
-    wire      [31:0]       exception_program_counter_o_w;  
     assign  yurut_flush_o_w = dallanma_hata_o_w || jal_r_adres_gecerli_o_w; // dallanma biriminden ya da jal/jalr -> COZ
 	  
     // BUYRUK ONBELLEK - ANABELLEK DENETLEY�C�
@@ -66,16 +57,9 @@ module user_processor(
     wire      [127:0]      okunan_veri_obegi_o_w;
     wire                   anabellek_musait_o_w;
     
-    // FROM PIPELINE CONTROLLER - COMBINATONAL
-    wire      [2:0]        exception_cause_o_w;
-    wire      [31:0]       exception_adress_o_w;
   
     //TO PIPELINE CONTROLLER - COMBINATIONAL
-    wire                   [31:0] program_counter_decode_stage_o_w;
     wire                   en_stall_decode_stage_o_w;
-    wire                   exception_illegal_instruction_o_w;
-    wire                   exception_breakpoint_o_w;
-    wire                   exception_env_call_from_M_mode_o_w;
 
     // COZ -> YURUT
     wire                   en_alu_o_w;
@@ -162,9 +146,7 @@ module user_processor(
         .getir_oku_o(getir_oku_o_w),
         .anabellek_musait_i(anabellek_musait_o_w),
         .getir_asamasina_veri_hazir_i(getir_asamasina_veri_hazir_o_w),
-        .okunan_obek_i(okunan_veri_obegi_o_w),
-        .mret_gecerli_i(en_excep_program_counter_o_w),
-        .mret_ps_i(excep_program_counter_o_w)    
+        .okunan_obek_i(okunan_veri_obegi_o_w)
     );
     
     wrapper_decode coz_pipeline(
@@ -185,22 +167,9 @@ module user_processor(
         //FROM PIPELINE CONTROLLER - COMBINATONAL
         .stall_decode_stage_i(stall_decode_stage_o_w),
         .flush_decode_stage_i(flush_decode_stage_o_w),
-        .en_exception_i(en_exception_o_w),   
-        .exception_cause_i(exception_cause_o_w),
-        .exception_adress_i(exception_adress_o_w),
-        .exception_program_counter_i(exception_program_counter_o_w),
             // outputs
         //TO PIPELINE CONTROLLER - COMBINATIONAL
-        .program_counter_decode_stage_o(program_counter_decode_stage_o_w),
         .en_stall_decode_stage_o(en_stall_decode_stage_o_w),
-        .en_flush_mret_instruction_o(en_flush_mret_instruction_o_w),//*
-        .exception_illegal_instruction_o(exception_illegal_instruction_o_w),
-        .exception_breakpoint_o(exception_breakpoint_o_w),
-        .exception_env_call_from_M_mode_o(exception_env_call_from_M_mode_o_w),
-
-        //TO FETCH STAGE - COMBINATIONAL
-        .en_excep_program_counter_o(en_excep_program_counter_o_w),
-        .excep_program_counter_o(excep_program_counter_o_w),
 
         //TO EXECUTION STAGE - POSEDGE
         .en_alu_o(en_alu_o_w),
@@ -234,39 +203,17 @@ module user_processor(
         
         .en_flush_branch_misprediction_i(yurut_flush_o_w),
         
-        .program_counter_fetch_stage_i(ps_o_w),
-        .program_counter_decode_stage_i(program_counter_decode_stage_o_w),
-        //.program_counter_memory_stage_i,
-        
-        //.adress_memory_stage_i,
-        
-        //.exception_instr_adress_misaligned_i,
-        .exception_illegal_instruction_i(exception_illegal_instruction_o_w),
-        .exception_breakpoint_i(exception_breakpoint_o_w),
-        //.exception_load_adress_misaligned_i,
-        //.exception_store_adress_misaligned_i,
-        .exception_env_call_from_M_mode_i(exception_env_call_from_M_mode_o_w),
-
-
-        .en_exception_o(en_exception_o_w),
-        .exception_program_counter_o(exception_program_counter_o_w),
-        .exception_adress_o(exception_adress_o_w),
-        .exception_cause_o(exception_cause_o_w),
-        
         .stall_fetch_stage_o(stall_fetch_stage_o_w),
         .stall_decode_stage_o(stall_decode_stage_o_w),
         .stall_execute_stage_o(stall_execute_stage_o_w),
         
-        .flush_fetch_stage_o(flush_fetch_stage_o_w),
-        .flush_decode_stage_o(flush_decode_stage_o_w),
-        .flush_execute_stage_o(flush_execute_stage_o_w)
+        .flush_decode_stage_o(flush_decode_stage_o_w)
     );
     
     yurut_wrapper pipeline_yurut(
         .clk_i(clk),
         .rst_i(resetn),
         .durdur_i(stall_execute_stage_o_w),
-        .bosalt_i(flush_execute_stage_o_w),
         // \-------------------- COZ-YURUT -> AMB, ORTAK ------------------------------/
         .amb_aktif_i(en_alu_o_w),
         .yazmac_degeri1_i(reg_rs1_data_o_w),  
