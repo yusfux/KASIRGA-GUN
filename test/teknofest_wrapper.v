@@ -129,7 +129,7 @@ teknofest_ram #(
   .NB_COL(4),
   .COL_WIDTH(8),
   .RAM_DEPTH(RAM_DEPTH),
-  .INIT_FILE("C:/Users/yusuf/Desktop/KASIRGA/RISCV-TEST/rv32imc-hex/rv32imc-hex/rv32um-p-mul.hex")  //Yüklenecek program?n yolu
+  .INIT_FILE("C:/Users/yusuf/Desktop/KASIRGA/RISCV-TEST/tekno_example.hex")  //Yüklenecek program?n yolu
 ) main_memory
 (
   .clk_i           (clk_i ),

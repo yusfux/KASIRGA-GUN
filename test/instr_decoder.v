@@ -50,7 +50,6 @@ module instr_decoder (
         //-------------------------------------------------------------------------------
 
         //--------------------------signals to "register file"---------------------------
-        output reg_write_csr_o,
         output reg_read_rs1_o,
         output reg_read_rs2_o,
         output reg_write_o,

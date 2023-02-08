@@ -357,7 +357,4 @@ module user_processor(
     assign spi_sck_o = 0; // ayarlanmali   
     assign spi_mosi_o = 0;// ayarlanmali   
 
-    
-    
-    
 endmodule

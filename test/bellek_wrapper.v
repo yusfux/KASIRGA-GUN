@@ -179,7 +179,7 @@ module bellek_wrapper(
             hedef_yazmac_verisi_r = 32'd0;
         end
         else begin
-		    if((!denetleyici_musait && (bellekten_oku_i || bellege_yaz_i)) || gc_stall_w)begin
+		    if((!denetleyici_musait && (bellekten_oku_i || bellege_yaz_i) && !giris_cikis_aktif_w) || gc_stall_w)begin
                 yazmaca_yaz_r         <= 1'b0;        // SOR: 1 mi olmali?
             end
             else begin
