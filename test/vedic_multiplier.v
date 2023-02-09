@@ -1,4 +1,3 @@
-
 `timescale 1ns / 1ps
 
 /*module full_adder(in0, in1, cin, out, cout);
@@ -349,6 +348,9 @@ module ha(a, b, sum, carry);
 endmodule
 
 module vedic_multiplier(
+    
+    input           clk_i,
+    input           rst_i,
         
     input           blok_aktif_i,
     
@@ -357,12 +359,23 @@ module vedic_multiplier(
                  
     input   [31:0]  sayi1_i,
     input   [31:0]  sayi2_i, 
-    output  [63:0]  sonuc_o
+    output  [63:0]  sonuc_o,
+    
+    output          carpim_hazir_o
         
 );
 
+localparam DURUM_0 = 0;
+localparam DURUM_1 = 1;
+localparam DURUM_2 = 2;
+localparam DURUM_3 = 3;
+
+reg     [1:0]       durum_ns;
+reg     [1:0]       durum_r;
+
+reg                 carpim_hazir_r;
+
 reg     [63:0]      sonuc_r;
-              
 
 wire    [31:0]      poz_sayi1_w;
 assign  poz_sayi1_w = (sayi1_i[31] == 1'b1) ? (~sayi1_i + 1) : sayi1_i;
@@ -371,72 +384,99 @@ wire    [31:0]      poz_sayi2_w;
 assign  poz_sayi2_w = (sayi2_i[31] == 1'b1) ? (~sayi2_i + 1) : sayi2_i;
 
 reg                 sayi1_neg_mi_r;
+reg                 sayi1_neg_mi_ns;
 
 reg                 sayi2_neg_mi_r;
+reg                 sayi2_neg_mi_ns;
 
 reg     [15:0]      variable1_r;
 
 reg     [15:0]      variable2_r;
 
-reg     [15:0]      variable3_r;
+reg     [31:0]      temp1_ns;
+reg     [31:0]      temp1_r;
 
-reg     [15:0]      variable4_r;
+reg     [47:0]      temp2_ns;
+reg     [47:0]      temp2_r;
+
+reg     [31:0]      vedic16_output1_ns;
+reg     [31:0]      vedic16_output1_r;
+
+reg     [31:0]      vedic16_output2_ns;
+reg     [31:0]      vedic16_output2_r;
 
 wire     [31:0]      toplam1_w;
 wire     [47:0]      toplam2_w;
 wire     [47:0]      toplam3_w;
 
-wire     [31:0]      vedic16_output1_w;
-wire     [31:0]      vedic16_output2_w;
-wire     [31:0]      vedic16_output3_w;
-wire     [31:0]      vedic16_output4_w;
-
-
-wire    [31:0]      temp1_w;
-assign      temp1_w = {16'b0 , vedic16_output1_w[31:16]};  
-
-wire    [47:0]      temp2_w;
-assign      temp2_w = {16'b0 , vedic16_output3_w};
+wire     [31:0]      vedic16_output_w;
 
 wire    [47:0]      temp3_w;
-assign      temp3_w = {vedic16_output4_w , 16'b0};
+assign      temp3_w = {vedic16_output_w , 16'b0};
 
 wire    [47:0]      temp4_w;
 assign      temp4_w = {16'b0 , toplam1_w};
 
-ripple_carry_adder m1( temp1_w, vedic16_output2_w , toplam1_w);
+ripple_carry_adder m1( temp1_ns, vedic16_output2_ns , toplam1_w);
 
-ripple_carry_adder_48 m2( temp2_w, temp3_w , toplam2_w);
+ripple_carry_adder_48 m2( temp2_ns, temp3_w , toplam2_w);
 
 ripple_carry_adder_48 m3( temp4_w, toplam2_w , toplam3_w);
 
-vedic_16x16 a(variable1_r,variable2_r,vedic16_output1_w);
-vedic_16x16 b(variable3_r,variable2_r,vedic16_output2_w);
-vedic_16x16 c(variable1_r,variable4_r,vedic16_output3_w);
-vedic_16x16 d(variable3_r,variable4_r,vedic16_output4_w);
+
+vedic_16x16 a(variable1_r,variable2_r,vedic16_output_w);
 
 always @(*) begin
     
-    sonuc_r = 0;
-    variable1_r = 0;
-    variable2_r = 0;
-    variable3_r = 0;
-    variable4_r = 0;
-    
-    sayi1_neg_mi_r = 0;
-    sayi2_neg_mi_r = 0;
+    sonuc_r = 64'd0;
+ 
+    carpim_hazir_r = 1'b0;
+    sayi1_neg_mi_ns  =  sayi1_neg_mi_r; 
+    sayi2_neg_mi_ns  =  sayi2_neg_mi_r; 
+    durum_ns     =  durum_r;            
+    variable1_r  = 16'd0;
+    variable2_r  = 16'd0;
+    temp1_ns    =   temp1_r;    
+    temp2_ns    =   temp2_r;   
+    vedic16_output1_ns = vedic16_output1_r; 
+    vedic16_output2_ns = vedic16_output2_r; 
     
     if(blok_aktif_i) begin
-        
+        carpim_hazir_r = 1'b0;   
+                            
         if(carpim_unsigned_i) begin
-
-            variable1_r = sayi1_i[15:0];                   
-            variable2_r = sayi2_i[15:0];                       
-            variable3_r = sayi1_i[31:16];                  
-            variable4_r = sayi2_i[31:16];                  
-                                                                 
-            sonuc_r = {toplam3_w,vedic16_output1_w[15:0]};                        
-            
+            case(durum_r)     
+            DURUM_0 : begin
+                carpim_hazir_r = 1'b0;
+                variable1_r = sayi1_i[15:0];                           
+                variable2_r = sayi2_i[15:0];
+                vedic16_output1_ns = vedic16_output_w;
+                temp1_ns = {16'b0 , vedic16_output_w[31:16]};
+                durum_ns = DURUM_1;
+            end
+            DURUM_1 : begin
+                carpim_hazir_r = 1'b0; 
+                variable1_r = sayi1_i[31:16];                                                
+                variable2_r = sayi2_i[15:0];
+                vedic16_output2_ns = vedic16_output_w;  
+                durum_ns = DURUM_2;                                             
+            end  
+            DURUM_2 : begin
+                carpim_hazir_r = 1'b0;
+                variable1_r = sayi1_i[15:0];                                                
+                variable2_r = sayi2_i[31:16];
+                temp2_ns = {16'b0 , vedic16_output_w};  
+                durum_ns = DURUM_3;                                               
+            end
+            DURUM_3 : begin
+                carpim_hazir_r = 1'b1;
+                variable1_r = sayi1_i[31:16];                                                 
+                variable2_r = sayi2_i[31:16];                                                 
+                                
+                sonuc_r = {toplam3_w,vedic16_output1_r[15:0]}; 
+                durum_ns = DURUM_0;                                             
+            end          
+            endcase
         end 
         else if(carpim_mulhsu_i) begin
 
@@ -446,13 +486,39 @@ always @(*) begin
             else begin
                 sayi1_neg_mi_r = 1'b0;            
             end
-
-            variable1_r = poz_sayi1_w[15:0];                   
-            variable2_r = sayi2_i[15:0];                       
-            variable3_r = poz_sayi1_w[31:16];                  
-            variable4_r = sayi2_i[31:16];                  
-
-            sonuc_r = {toplam3_w,vedic16_output1_w[15:0]};                        
+            
+            case(durum_r) 
+            DURUM_0 : begin
+                carpim_hazir_r = 1'b0;
+                variable1_r = poz_sayi1_w[15:0];                           
+                variable2_r = sayi2_i[15:0];
+                vedic16_output1_ns = vedic16_output_w;
+                temp1_ns = {16'b0 , vedic16_output_w[31:16]};
+                durum_ns = DURUM_1;
+            end
+            DURUM_1 : begin
+                carpim_hazir_r = 1'b0; 
+                variable1_r = poz_sayi1_w[31:16];                                                
+                variable2_r = sayi2_i[15:0];
+                vedic16_output2_ns = vedic16_output_w;  
+                durum_ns = DURUM_2;                                             
+            end  
+            DURUM_2 : begin
+                carpim_hazir_r = 1'b0;
+                variable1_r = poz_sayi1_w[15:0];                                                
+                variable2_r = sayi2_i[31:16];
+                temp2_ns = {16'b0 , vedic16_output_w};  
+                durum_ns = DURUM_3;                                               
+            end
+            DURUM_3 : begin
+                carpim_hazir_r = 1'b1;
+                variable1_r  = poz_sayi1_w[31:16];                                                 
+                variable2_r  = sayi2_i[31:16];                                                 
+                                
+                sonuc_r = {toplam3_w,vedic16_output1_r[15:0]}; 
+                durum_ns = DURUM_0;                                             
+            end          
+            endcase
             
         end
         else begin
@@ -469,18 +535,64 @@ always @(*) begin
                 sayi2_neg_mi_r = 1'b0;                    
             end
             
-            variable1_r = poz_sayi1_w[15:0];                   
-            variable2_r = poz_sayi2_w[15:0];                       
-            variable3_r = poz_sayi1_w[31:16];                  
-            variable4_r = poz_sayi2_w[31:16];                  
-                                                                 
-            sonuc_r = {toplam3_w,vedic16_output1_w[15:0]};                        
+            case(durum_r)     
+            DURUM_0 : begin
+                carpim_hazir_r = 1'b0;
+                variable1_r = poz_sayi1_w[15:0];                           
+                variable2_r = poz_sayi2_w[15:0];
+                vedic16_output1_ns = vedic16_output_w;
+                temp1_ns = {16'b0 , vedic16_output_w[31:16]};
+                durum_ns = DURUM_1;
+            end
+            DURUM_1 : begin
+                carpim_hazir_r = 1'b0; 
+                variable1_r = poz_sayi1_w[31:16];                                                
+                variable2_r = poz_sayi2_w[15:0];
+                vedic16_output2_ns = vedic16_output_w;  
+                durum_ns = DURUM_2;                                             
+            end  
+            DURUM_2 : begin
+                carpim_hazir_r = 1'b0;
+                variable1_r = poz_sayi1_w[15:0];                                                
+                variable2_r = poz_sayi2_w[31:16];
+                temp2_ns = {16'b0 , vedic16_output_w};  
+                durum_ns = DURUM_3;                                               
+            end
+            DURUM_3 : begin
+                carpim_hazir_r = 1'b1;
+                variable1_r = poz_sayi1_w[31:16];                                                 
+                variable2_r = poz_sayi2_w[31:16];                                                 
+                                
+                sonuc_r = {toplam3_w,vedic16_output1_ns[15:0]}; 
+                durum_ns = DURUM_0;                                             
+            end          
+            endcase            
         end
     end      
-end 
+end                                                               
+                                              
+always @(posedge clk_i) begin
+    
+    if(rst_i == 1'b0) begin
+        sayi1_neg_mi_r  <=  1'b0;   
+        sayi2_neg_mi_r  <=  1'b0;   
+        durum_r     <=   2'd0; 
+    end
+    else begin
+            
+        temp1_r      <=   temp1_ns;    
+        temp2_r      <=   temp2_ns;   
+        vedic16_output1_r <= vedic16_output1_ns; 
+        vedic16_output2_r <= vedic16_output2_ns; 
+                                  
+        sayi1_neg_mi_r  <=  sayi1_neg_mi_ns;   
+        sayi2_neg_mi_r  <=  sayi2_neg_mi_ns;   
+        durum_r     <=  durum_ns;
+        
+    end
+end
 
-assign  sonuc_o = carpim_unsigned_i ? sonuc_r : carpim_mulhsu_i ? ((sayi1_neg_mi_r == 1'b1) ? (~sonuc_r+1) : sonuc_r ) : (sayi2_neg_mi_r == 1'b1 && sayi1_neg_mi_r == 1'b0) ? (~sonuc_r+1) : (sayi2_neg_mi_r == 1'b0 && sayi1_neg_mi_r == 1'b1) ? (~sonuc_r+1) : sonuc_r ;
+assign  sonuc_o = carpim_hazir_r ? carpim_unsigned_i ? sonuc_r : carpim_mulhsu_i ? ((sayi1_neg_mi_r == 1'b1) ? (~sonuc_r+1) : sonuc_r ) : (sayi2_neg_mi_r == 1'b1 && sayi1_neg_mi_r == 1'b0) ? (~sonuc_r+1) : (sayi2_neg_mi_r == 1'b0 && sayi1_neg_mi_r == 1'b1) ? (~sonuc_r+1) : sonuc_r : 64'd0;
+assign  carpim_hazir_o = carpim_hazir_r;
 
 endmodule
-
-

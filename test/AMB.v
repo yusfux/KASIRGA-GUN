@@ -50,6 +50,7 @@ reg  [31:0] aritmetik_sayi2_r;
 reg         carpma_aktif_r;
 reg         carpim_unsigned_r;
 reg         carpim_mulhsu_r;
+wire        carpim_sonuc_hazir_w;
 
 reg         bolme_istek_r;
 wire        bolme_sonuc_hazir_w;
@@ -60,8 +61,8 @@ wire [63:0] carpma_sonuc_w;
 wire [31:0] bolme_sonuc_w;
 wire [31:0] bolme_kalan_w;
 
-reg         bolme_stall_r;
-assign      stall_o = bolme_stall_r;
+reg         stall_r;
+assign      stall_o = stall_r;
 
 ripple_carry_adder toplayici(
     .sayi1_i(aritmetik_sayi1_r),
@@ -70,12 +71,15 @@ ripple_carry_adder toplayici(
 );
 
 vedic_multiplier carpici(
+    .clk_i(clk_i),
+    .rst_i(rst_i),
     .blok_aktif_i(carpma_aktif_r),
     .carpim_unsigned_i(carpim_unsigned_r),
     .carpim_mulhsu_i(carpim_mulhsu_r),
     .sayi1_i(aritmetik_sayi1_r),
     .sayi2_i(aritmetik_sayi2_r), 
-    .sonuc_o(carpma_sonuc_w)
+    .sonuc_o(carpma_sonuc_w),
+    .carpim_hazir_o(carpim_sonuc_hazir_w)
 );
 
 bolme bolme_algoritmasi(
@@ -96,18 +100,18 @@ bolme bolme_algoritmasi(
 always @(*) begin
    /* durdur_i gelirse icerideki degerler korunmali,
    ama su anda tek cevrimde yapiyor, disariya nop verilmeli */
-   sonuc_r_next      =   sonuc_r;
-   adres_r           =   32'd0;
+   sonuc_r_next          =   sonuc_r;
+   adres_r               =   32'd0;
    jal_r_adres_gecerli_r = 1'b0;
-   AMB_hazir_r_next  =   1'b0;
-   aritmetik_sayi1_r = 32'd0;
-   aritmetik_sayi2_r = 32'd0;
+   AMB_hazir_r_next      =   1'b0;
+   aritmetik_sayi1_r     = 32'd0;
+   aritmetik_sayi2_r     = 32'd0;
    
    carpma_aktif_r    = 1'b0; 
    carpim_unsigned_r = 1'b0;
    bolme_istek_r     = 1'b0;
    bolme_signed_r    = 1'b0;
-   bolme_stall_r     = 1'b0;
+   stall_r           = 1'b0;
    carpim_mulhsu_r   = 1'b0;
    
    if(!durdur_i) begin
@@ -130,39 +134,69 @@ always @(*) begin
                
                `ALU_MUL     :   begin 
                     //sonuc_r_next     =   $signed(yazmac_degeri1_i) * $signed(yazmac_degeri2_i);
-                    carpma_aktif_r = 1'b1;
+                    carpma_aktif_r    = 1'b1;
                     carpim_unsigned_r = 1'b0;
                     aritmetik_sayi1_r = yazmac_degeri1_i;
                     aritmetik_sayi2_r = yazmac_degeri2_i;
-                    sonuc_r_next      = carpma_sonuc_w[31:0];
+                    
+                   if(!carpim_sonuc_hazir_w) begin
+                       stall_r     = 1'b1;   
+                   end
+                   else begin
+                       stall_r           = 1'b0;
+                        sonuc_r_next      = carpma_sonuc_w;
+                    end
+
                end 
           
                `ALU_MULH    :   begin 
                     //sonuc_r_next     =   ($signed(yazmac_degeri1_i) * $signed(yazmac_degeri2_i)) >> 32;
-                    carpma_aktif_r = 1'b1;
+                    carpma_aktif_r    = 1'b1;
                     carpim_unsigned_r = 1'b0;
                     aritmetik_sayi1_r = yazmac_degeri1_i;
                     aritmetik_sayi2_r = yazmac_degeri2_i;
-                    sonuc_r_next      = carpma_sonuc_w[63:32];
+                    
+                   if(!carpim_sonuc_hazir_w) begin
+                       stall_r     = 1'b1;   
+                    end
+                    else begin
+                        stall_r           = 1'b0;
+                        sonuc_r_next      = carpma_sonuc_w[63:32];
+                    end
                end
                           
                `ALU_MULHSU  :   begin 
                     //sonuc_r_next     =   ({{6'd32{yazmac_degeri1_i[31]}},yazmac_degeri1_i} *  {{6'd32{1'b0}},yazmac_degeri2_i}) >> 32;	
-                    carpma_aktif_r = 1'b1;
+                    carpma_aktif_r    = 1'b1;
                     carpim_unsigned_r = 1'b0; 
-                    carpim_mulhsu_r = 1'b1;
+                    carpim_mulhsu_r   = 1'b1;
                     aritmetik_sayi1_r = yazmac_degeri1_i;
-                    aritmetik_sayi2_r = yazmac_degeri2_i;
-                    sonuc_r_next      = carpma_sonuc_w[63:32];	  
+                    aritmetik_sayi2_r = yazmac_degeri2_i;	  
+                    
+                    if(!carpim_sonuc_hazir_w) begin
+                        stall_r     = 1'b1;   
+                    end
+                    else begin
+                        stall_r           = 1'b0;
+                        sonuc_r_next      = carpma_sonuc_w[63:32];
+                    end
                end
                
 			   `ALU_MULHU   :   begin 
 			        //sonuc_r_next     =   ($unsigned(yazmac_degeri1_i) * $unsigned(yazmac_degeri2_i)) >> 32;
-			        carpma_aktif_r = 1'b1;
+			        carpma_aktif_r    = 1'b1;
 			        carpim_unsigned_r = 1'b1;
                     aritmetik_sayi1_r = yazmac_degeri1_i;
                     aritmetik_sayi2_r = yazmac_degeri2_i;
-                    sonuc_r_next      = carpma_sonuc_w[63:32];
+                    
+                    if(!carpim_sonuc_hazir_w) begin
+                        stall_r     = 1'b1;   
+                    end
+                    else begin
+                        stall_r           = 1'b0;
+                        sonuc_r_next      = carpma_sonuc_w[63:32];
+                    end
+
                end
 			   `ALU_DIV     :   begin        //sonuc_r_next     =   $signed(yazmac_degeri1_i) / $signed(yazmac_degeri2_i);
 			        bolme_istek_r     = 1'b1;
@@ -171,10 +205,10 @@ always @(*) begin
                     aritmetik_sayi2_r = yazmac_degeri2_i;
                     
                     if(!bolme_sonuc_hazir_w) begin
-                        bolme_stall_r     = 1'b1;   
+                        stall_r     = 1'b1;   
                     end
                     else begin
-                        bolme_stall_r     = 1'b0;
+                        stall_r           = 1'b0;
                         sonuc_r_next      = bolme_sonuc_w;
                     end
 			   end
@@ -186,10 +220,10 @@ always @(*) begin
                     aritmetik_sayi2_r = yazmac_degeri2_i;
                            
                     if(!bolme_sonuc_hazir_w) begin
-                        bolme_stall_r     = 1'b1; 
+                        stall_r     = 1'b1; 
                     end
                     else begin
-                        bolme_stall_r     = 1'b0;
+                        stall_r     = 1'b0;
                         sonuc_r_next      = bolme_sonuc_w;
                     end
                end
@@ -201,10 +235,10 @@ always @(*) begin
                     aritmetik_sayi2_r = yazmac_degeri2_i;  
                        
                     if(!bolme_sonuc_hazir_w) begin
-                        bolme_stall_r     = 1'b1; 
+                        stall_r     = 1'b1; 
                     end
                     else begin
-                        bolme_stall_r     = 1'b0;
+                        stall_r     = 1'b0;
                         sonuc_r_next      = bolme_kalan_w;
                     end 
                end
@@ -215,10 +249,10 @@ always @(*) begin
                     aritmetik_sayi1_r = yazmac_degeri1_i;
                     aritmetik_sayi2_r = yazmac_degeri2_i;
                     if(!bolme_sonuc_hazir_w) begin
-                        bolme_stall_r     = 1'b1; 
+                        stall_r     = 1'b1; 
                     end
                     else begin
-                        bolme_stall_r     = 1'b0;
+                        stall_r     = 1'b0;
                         sonuc_r_next      = bolme_kalan_w;
                     end
                end
