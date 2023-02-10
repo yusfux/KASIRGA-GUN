@@ -481,10 +481,10 @@ always @(*) begin
         else if(carpim_mulhsu_i) begin
 
             if(sayi1_i[31] == 1'b1) begin
-                sayi1_neg_mi_r = 1'b1;
+                sayi1_neg_mi_ns = 1'b1;
             end
             else begin
-                sayi1_neg_mi_r = 1'b0;            
+                sayi1_neg_mi_ns = 1'b0;            
             end
             
             case(durum_r) 
@@ -523,16 +523,16 @@ always @(*) begin
         end
         else begin
             if(sayi1_i[31] == 1'b1) begin
-                sayi1_neg_mi_r = 1'b1;
+                sayi1_neg_mi_ns = 1'b1;
             end
             else begin
-                sayi1_neg_mi_r = 1'b0;            
+                sayi1_neg_mi_ns = 1'b0;            
             end
             if(sayi2_i[31] == 1'b1) begin
-                sayi2_neg_mi_r = 1'b1;            
+                sayi2_neg_mi_ns = 1'b1;            
             end
             else begin
-                sayi2_neg_mi_r = 1'b0;                    
+                sayi2_neg_mi_ns = 1'b0;                    
             end
             
             case(durum_r)     
