@@ -13,7 +13,6 @@ module getir(
     output        getir_oku_o,
 
     input         anabellek_musait_i,
-    output        anabellek_yaz_o,
     input         getir_asamasina_veri_hazir_i,
     input [127:0] okunan_obek_i,
 
@@ -140,7 +139,6 @@ buyruk_onbellegi_denetleyici buyruk_onbellegi_denetleyici(
     .anabellek_obek_i(okunan_obek_i),
     .anabellek_adres_o(getir_adres_o),
     .anabellek_istek_o(getir_asamasi_istek_o),
-    .anabellek_yaz_o(anabellek_yaz_o),
     .anabellek_oku_o(getir_oku_o),
 
     .buyruk_o(bellek_gelen_buyruk_w),
