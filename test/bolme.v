@@ -160,7 +160,6 @@ module bolme(
                         if(a_r != 0) begin
                             //q_ns = q_r + 1;
                            // q_ns = ~(q_r + 1)+1;
-                            q_ns = ~(q_r)+1;
                            // a_ns = m_r + 1 + ~a_r;
                             a_ns = ~a_r + 1; 
                             //a_ns[31] = 1'b0;
@@ -171,10 +170,8 @@ module bolme(
                         q_ns = ~(q_r)+1;                    
                         if(a_r != 0) begin
                             //q_ns = ~(q_r + 1)+1;
-                            q_ns = ~(q_r)+1;
-                           // a_ns = ~(m_r + 1 + ~a_r)+1;
-                            a_ns = ~a_r + 1;                           
-                           // a_ns[31] = 1'b1;                          
+                           // a_ns = ~a_r + 1;   
+                            a_ns = a_r;
                         end
                     end   
                     Ncounter_ns        = 6'd32;//TEKRAR BAK EMIN DEGILIM   
