@@ -75,6 +75,12 @@ module bolme(
                         durum_ns = ISLEM_BEKLE;
                         result_ready_ns= 1'b1;
                     end
+                    else if( !sign_i && (bolen_i > bolunen_i)) begin // *********
+                        a_ns = bolunen_i;
+                        q_ns = 32'd0;
+                        durum_ns = TAMAMLANDI;
+                        result_ready_ns= 1'b1;
+                    end
                     else if(sign_i == 1 && bolunen_i == 32'h80000000 && bolen_i == 32'hffffffff)begin //OVERFLOW
                         q_ns= bolunen_i;
                         a_ns = 32'd0;
@@ -100,10 +106,10 @@ module bolme(
                         m_ns               = bolen_i;
                         q_ns               = bolunen_i;
                         if(bolen_i[31])begin
-                            m_ns              = ~bolen_i + 1;           
+                            m_ns              = bolen_i;//~bolen_i + 1;           
                         end  
                         if(bolunen_i[31])begin
-                            q_ns              = ~bolunen_i + 1;   
+                            q_ns              = bolunen_i;//~bolunen_i + 1;   
                         end 
                         durum_ns       = ISLEM;                        
                     end
@@ -114,13 +120,13 @@ module bolme(
                     a    = a_r << 1;
                     a[0] = q_r[31];
                     q_ns    = q_r << 1;
-                    a_ns = a + m_r;       
+                    a_ns = a + m_r;    //*    
                 end
                 else begin
                     a    = a_r << 1;
                     a[0] = q_r[31];
                     q_ns    = q_r << 1;
-                    a_ns = a - m_r;       
+                    a_ns = a - m_r;  // *     
                 end
                 q_ns[0] = 1'b1;
                 if(a_r[31])begin
@@ -136,6 +142,7 @@ module bolme(
                 if(a_r[31])begin
                     a_ns       = a_r + m_r;
                 end
+             
                 q_ns    = q_r << 1;
                 q_ns[0] = 1'b1;
                 if(a_r[31])begin
@@ -160,6 +167,8 @@ module bolme(
                         if(a_r != 0) begin
                             //q_ns = q_r + 1;
                            // q_ns = ~(q_r + 1)+1;
+                            q_ns = ~(q_r)+1; 
+
                            // a_ns = m_r + 1 + ~a_r;
                             a_ns = ~a_r + 1; 
                             //a_ns[31] = 1'b0;
@@ -170,8 +179,13 @@ module bolme(
                         q_ns = ~(q_r)+1;                    
                         if(a_r != 0) begin
                             //q_ns = ~(q_r + 1)+1;
-                           // a_ns = ~a_r + 1;   
-                            a_ns = a_r;
+                            q_ns = ~(q_r)+1;
+                           // a_ns = ~(m_r + 1 + ~a_r)+1;
+                           
+                           
+                            //a_ns = ~a_r + 1;    // ** 
+                            a_ns = a_r;                       
+                           // a_ns[31] = 1'b1;                          
                         end
                     end   
                     Ncounter_ns        = 6'd32;//TEKRAR BAK EMIN DEGILIM   
