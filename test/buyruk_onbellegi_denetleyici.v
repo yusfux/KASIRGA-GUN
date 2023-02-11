@@ -26,7 +26,6 @@ module buyruk_onbellegi_denetleyici(
     
     output  [31:0]      anabellek_adres_o,
     output              anabellek_istek_o,
-    output              anabellek_yaz_o,
     output              anabellek_oku_o,
     
     // oncozucuye gidecek olanlar    
@@ -142,8 +141,7 @@ end
 assign onbellek_buyruk_obegi_o =  onbellek_buyruk_obegi_r;
 assign onbellek_obek_yaz_o     =  (durum_r==ANABELLEK_OKU)&&(durum_ns==ONBELLEK_YAZ); 
 assign anabellek_adres_o       =  anabellek_adres_r;
-assign anabellek_istek_o       =  !durdur_i && ((durum_r == ONBELLEK_OKU && !onbellek_adres_bulundu_i) || (durum_r == ANABELLEK_OKU && !anabellek_hazir_i));      
-assign anabellek_yaz_o         =   1'b0;                                                            
+assign anabellek_istek_o       =  !durdur_i && ((durum_r == ONBELLEK_OKU && !onbellek_adres_bulundu_i) || (durum_r == ANABELLEK_OKU && !anabellek_hazir_i));                                                               
 assign anabellek_oku_o         =   1'b1;                                                                              
 assign buyruk_o                =   buyruk_r;                                                      
 assign buyruk_hazir_o          =   buyruk_hazir_r;  
