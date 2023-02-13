@@ -13,6 +13,7 @@ module getir(
     output        getir_oku_o,
 
     input         anabellek_musait_i,
+    output        anabellek_yaz_o,
     input         getir_asamasina_veri_hazir_i,
     input [127:0] okunan_obek_i,
 
@@ -128,23 +129,20 @@ buyruk_onbellegi_denetleyici buyruk_onbellegi_denetleyici(
 
     .adres_i(ps_r_w),
     .adres_kontrol_i(ps_r_w),
-    .onbellek_adres_bulundu_i(adres_bulundu_w),
-    .onbellek_buyruk_i(buyruk_w),
-    .onbellek_buyruk_obegi_o(veri_obegi_w),
-    .onbellek_obek_yaz_o(onbellege_obek_yaz_w),
-    .onbellek_yaz_adres_o(onbellek_yaz_adres_w),
 
     .anabellek_musait_i(anabellek_musait_i),
     .anabellek_hazir_i(getir_asamasina_veri_hazir_i),
     .anabellek_obek_i(okunan_obek_i),
     .anabellek_adres_o(getir_adres_o),
     .anabellek_istek_o(getir_asamasi_istek_o),
+    .anabellek_yaz_o(anabellek_yaz_o),
     .anabellek_oku_o(getir_oku_o),
 
     .buyruk_o(bellek_gelen_buyruk_w),
     .buyruk_hazir_o(bellek_buyruk_hazir_w)
 );
 
+/*
 buyruk_onbellegi buyruk_onbellegi(
     .clk_i(clk_i),
     .rst_i(rst_i),
@@ -157,7 +155,7 @@ buyruk_onbellegi buyruk_onbellegi(
     .buyruk_o(buyruk_w),
     .adres_bulundu_o(adres_bulundu_w)
 );
-
+*/
 always @(*) begin
     
 end
