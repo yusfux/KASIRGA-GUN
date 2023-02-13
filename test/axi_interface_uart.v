@@ -308,19 +308,7 @@ module axi_interface_uart(
                         stall_o_r_next = 1'b0; 
                         tx_buf_data = s_axi_wdata_i;
                         
-                        if(write_word) begin 
-                            tx_buffer_read_idx_next = tx_buffer_read_idx + 3'b100;
-                            if(tx_buffer_read_idx_next==tx_buffer_write_idx) begin
-                                us0 = 1'b1; // tx_full
-                            end
-                        end
-                        else if(write_half) begin
-                            tx_buffer_read_idx_next = tx_buffer_read_idx + 2'b10;
-                              if(tx_buffer_read_idx_next==tx_buffer_write_idx) begin
-                                us0 = 1'b1; // tx_full
-                              end
-                        end
-                        else if(write_byte) begin
+                        if(write_byte) begin
                             tx_buffer_read_idx_next = tx_buffer_read_idx + 1'b1;
                             if(tx_buffer_read_idx_next==tx_buffer_write_idx) begin
                                 us0 = 1'b1; // tx_full
@@ -330,7 +318,7 @@ module axi_interface_uart(
                     else begin // tx buffer doluydu
                         s_axi_bvalid_o_next = 1'b0;
                         s_axi_bresp_o_r_next=1'b0;
-                        stall_o_r_next = 1'b1;
+                        //stall_o_r_next = 1'b1;
                     end
                 end
                 
@@ -359,6 +347,7 @@ module axi_interface_uart(
                     else begin
                         tx_buffer_write_idx_next = tx_buffer_write_idx + 1'b1;
                         us1 = 1'b0; // tx_is_not_empty
+								us0 = 1'b0; // tx_full_not
                     end
                 end	
             end
@@ -431,8 +420,6 @@ module axi_interface_uart(
             
             s_axi_rvalid_o_r  <= s_axi_rvalid_o_next;
             
-            //s_axi_bresp_o_r   <= s_axi_bresp_o_r_next; 
-          //  s_axi_rresp_o_r   <= s_axi_rresp_o_r_next; 
             
             uart_status[3] <= us3;
             uart_status[2] <= us2;
@@ -446,26 +433,13 @@ module axi_interface_uart(
             uart_ctrl <= uart_ctrl_next;
             
             if(tx_buffer_write_condition && !uart_status[0]/*tx_is_not_full*/) begin
-                if(s_axi_wstrb_i[0]) begin
-                    tx_buffer[tx_buffer_read_idx]              <= tx_buf_data[7:0];
-                end 
-                if(s_axi_wstrb_i[1]) begin
-                    tx_buffer[tx_buffer_read_idx+1'b1]         <= tx_buf_data[15:8];
-                end 
-                if(s_axi_wstrb_i[2]) begin
-                    tx_buffer[tx_buffer_read_idx+2'b10]         <= tx_buf_data[23:16];
-                end 
-                if(s_axi_wstrb_i[3]) begin
-                    tx_buffer[tx_buffer_read_idx+2'b11]         <= tx_buf_data[31:24];
-                end
-                
-                s_axi_bvalid_o_r <= 1'b1;
-            //    s_axi_bresp_o_r   <= 1'b1;
+				
+               tx_buffer[tx_buffer_read_idx]    <= tx_buf_data[7:0]; 
+					
             end
-            else begin
-                s_axi_bvalid_o_r  <= s_axi_bvalid_o_next;
-             //   s_axi_bresp_o_r   <= s_axi_bresp_o_r_next;
-            end
+           
+				
+				s_axi_bvalid_o_r  <= s_axi_bvalid_o_next;
                
             tx_buffer_write_idx <= tx_buffer_write_idx_next;
             tx_buffer_read_idx <= tx_buffer_read_idx_next;
