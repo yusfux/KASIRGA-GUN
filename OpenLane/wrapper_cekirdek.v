@@ -280,7 +280,7 @@ module wrapper_cekirdek (
         .hedef_yazmaci_o(hedef_yazmaci_bellek_w),
         .bellek_veri_hazir_o(bellek_veri_hazir_w),
         .bellek_veri_o(bellek_geriyaz_veri_w),
-        .gc_okunan_veri_o(gc_okunan_veri_w)
+	    .gc_okunan_veri_o(gc_okunan_veri_w),
         .gc_veri_gecerli_o(gc_veri_gecerli_w),        
 
         .giris_cikis_aktif_o(giris_cikis_aktif_w),
