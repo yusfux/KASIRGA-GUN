@@ -130,10 +130,9 @@ module wrapper_getir (
     end
 
 
-
     assign bbellek_durdur_o    = durdur_i;
     assign buyruk_adres_o      = ps_r_w;
-
+    
     assign ps_o                = ps_r;
     assign buyruk_o            = buyruk_r;
     assign ps_uretici_durdur_w = ps_durdur_w | durdur_i | !buyruk_hazir_i;

@@ -44,6 +44,7 @@ module wrapper_cekirdek (
     // bellek -> axi
     wire giris_cikis_aktif_w;
 
+
     //-----------------------------------------------------------------------------------
     //-----------------------------------------------------------------------------------
     //-----------------------------------------------------------------------------------
@@ -280,7 +281,7 @@ module wrapper_cekirdek (
         .hedef_yazmaci_o(hedef_yazmaci_bellek_w),
         .bellek_veri_hazir_o(bellek_veri_hazir_w),
         .bellek_veri_o(bellek_geriyaz_veri_w),
-	    .gc_okunan_veri_o(gc_okunan_veri_w),
+        .gc_okunan_veri_o(gc_okunan_veri_w),
         .gc_veri_gecerli_o(gc_veri_gecerli_w),        
 
         .giris_cikis_aktif_o(giris_cikis_aktif_w),
@@ -331,6 +332,6 @@ module wrapper_cekirdek (
     // bellek -> axi
     assign giris_cikis_aktif_o = giris_cikis_aktif_w;
 
-    assign  yurut_flush_w = dallanma_hata_w || jal_r_adres_gecerli_w;  //????
+    assign yurut_flush_w = dallanma_hata_w || jal_r_adres_gecerli_w;  //????
 
 endmodule
