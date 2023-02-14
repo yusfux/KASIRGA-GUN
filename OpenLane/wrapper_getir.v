@@ -27,7 +27,7 @@ module wrapper_getir (
 
         //bunlar coz asamasina gidiyor
         output [31:0] ps_o,
-        output [31:0] buyruk_o,
+        output [31:0] buyruk_o
     );
 
     wire         ps_durdur_w;
@@ -131,7 +131,9 @@ module wrapper_getir (
 
 
 
+    assign bbellek_durdur_o    = durdur_i;
     assign buyruk_adres_o      = ps_r_w;
+
     assign ps_o                = ps_r;
     assign buyruk_o            = buyruk_r;
     assign ps_uretici_durdur_w = ps_durdur_w | durdur_i | !buyruk_hazir_i;

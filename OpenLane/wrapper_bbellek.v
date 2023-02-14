@@ -1,5 +1,7 @@
 `timescale 1ns / 1ps
 
+`include "operations.vh"
+
 module wrapper_bbellek (
         input               clk_i,
         input               rst_i,

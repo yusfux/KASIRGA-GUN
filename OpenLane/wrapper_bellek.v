@@ -47,7 +47,7 @@ module wrapper_bellek (
         output giris_cikis_aktif_o,
 
         // boru hatti denetleyiciye verilecek sinyaller
-        output durdur_o,
+        output durdur_o
     );
     
     wire            bellege_yaz_w;

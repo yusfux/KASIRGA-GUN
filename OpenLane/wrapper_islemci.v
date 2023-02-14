@@ -49,7 +49,7 @@ module wrapper_islemci (
     wire        vbellek_onbellekten_oku_w;
     wire        vbellek_onbellege_yaz_w;
     wire [31:0] vbellek_adres_w;
-    wire [31:0] vbellek_veri_w;
+    wire [31:0] vbellek_veri_o_w;
     wire [2:0]  vbellek_buyruk_turu_w;
 
     // bellek <-> axi
@@ -57,18 +57,17 @@ module wrapper_islemci (
     wire        gc_veri_gecerli_w;
     wire        gc_stall_w;
     wire        giris_cikis_aktif_w;
-    wire        gc_veri_gecerli_w;
 
     // buyruk bellek <-> anabellek 
-    wire [31:0] anabellek_adres_w;
-    wire        anabellek_istek_w;
-    wire        anabellek_oku_w;
+    wire [31:0] bbellek_anabellek_adres_w;
+    wire        bbellek_anabellek_istek_w;
+    wire        bbellek_anabellek_oku_w;
 
     // veri bellek <-> anabellek
     wire         anabellek_yaz_w;
-    wire         anabellek_oku_w;
-    wire         anabellek_istek_w;
-    wire [31:0]  anabellek_adres_w;
+    wire         vbellek_anabellek_oku_w;
+    wire         vbellek_anabellek_istek_w;
+    wire [31:0]  vbellek_anabellek_adres_w;
     wire [127:0] anabellek_kirli_obek_w;
 
     // anabellek <-> veri & buyruk bellekleri
@@ -86,7 +85,7 @@ module wrapper_islemci (
         .buyruk_adres_o(buyruk_adres_w),
         .bbellek_durdur_o(bbellek_durdur_w),
 
-        .vbellek_veri_i(vbellek_veri_w),
+        .vbellek_veri_i(vbellek_veri_o_w),
         .vbellek_veri_hazir_i(vbellek_veri_hazir_w),
         .vbellek_denetim_hazir_i(vbellek_denetim_hazir_w),
         .vbellek_onbellekten_oku_o(vbellek_onbellekten_oku_w),
@@ -98,8 +97,7 @@ module wrapper_islemci (
         .gc_okunan_veri_i(gc_okunan_veri_w),
         .gc_veri_gecerli_i(gc_veri_gecerli_w),
         .gc_stall_i(gc_stall_w),
-        .giris_cikis_aktif_o(giris_cikis_aktif_w),
-        .gc_veri_gecerli_o(gc_veri_gecerli_w),
+        .giris_cikis_aktif_o(giris_cikis_aktif_w)
     );
 
     wrapper_bbellek buyruk_onbellek   (
@@ -113,17 +111,17 @@ module wrapper_islemci (
         .anabellek_hazir_i(getir_asamasina_veri_hazir_w),
         .anabellek_obek_i(okunan_veri_obegi_w),
     
-        .anabellek_adres_o(anabellek_adres_w),
-        .anabellek_istek_o(anabellek_istek_w),
-        .anabellek_oku_o(anabellek_oku_w),
+        .anabellek_adres_o(bbellek_anabellek_adres_w),
+        .anabellek_istek_o(bbellek_anabellek_istek_w),
+        .anabellek_oku_o(bbellek_anabellek_oku_w),
     
         .buyruk_o(buyruk_w),
-        .buyruk_hazir_o(buyruk_hazir_w),
+        .buyruk_hazir_o(buyruk_hazir_w)
     );
 
     wrapper_vbellek veri_onbellek     (
-        .clk_i(clk_i),
-        .rst_i(rst_i),
+        .clk_i(clk),
+        .rst_i(resetn),
 
         .onbellekten_oku_i(vbellek_onbellekten_oku_w),
         .onbellege_yaz_i(vbellek_onbellege_yaz_w),
@@ -136,28 +134,28 @@ module wrapper_islemci (
         .anabellek_obek_i(okunan_veri_obegi_w),
 
         .anabellek_yaz_o(anabellek_yaz_w),
-        .anabellek_oku_o(anabellek_oku_w),
-        .anabellek_istek_o(anabellek_istek_w), 
-        .anabellek_adres_o(anabellek_adres_w),
+        .anabellek_oku_o(vbellek_anabellek_oku_w),
+        .anabellek_istek_o(vbellek_anabellek_istek_w), 
+        .anabellek_adres_o(vbellek_anabellek_adres_w),
         .anabellek_kirli_obek_o(anabellek_kirli_obek_w),
         
-        .veri_o(vbellek_veri_w),
+        .veri_o(vbellek_veri_o_w),
         .veri_hazir_o(vbellek_veri_hazir_w),
-        .denetim_hazir_o(vbellek_denetim_hazir_w),
+        .denetim_hazir_o(vbellek_denetim_hazir_w)
     );
 
     wrapper_abellek anabellek         (
-        .clk_i(clk_i),
-        .rst_i(rst_i),
+        .clk_i(clk),
+        .rst_i(resetn),
 
-        .bbellek_adres_i(anabellek_adres_w),
-        .bbellek_istek_i(anabellek_istek_w),
-        .bbellek_oku_i(anabellek_oku_w),
+        .bbellek_adres_i(bbellek_anabellek_adres_w),
+        .bbellek_istek_i(bbellek_anabellek_istek_w),
+        .bbellek_oku_i(bbellek_anabellek_oku_w),
 
         .vbellek_yaz_i(anabellek_yaz_w),
-        .vbellek_oku_i(anabellek_oku_w),
-        .vbellek_istek_i(anabellek_istek_w)
-        .vbellek_adres_i(anabellek_adres_w),
+        .vbellek_oku_i(vbellek_anabellek_oku_w),
+        .vbellek_istek_i(vbellek_anabellek_istek_w),
+        .vbellek_adres_i(vbellek_anabellek_adres_w),
         .yazilacak_veri_obegi_i(anabellek_kirli_obek_w),
 
         .iomem_ready_i(iomem_ready),
@@ -175,8 +173,8 @@ module wrapper_islemci (
     );
 
     wrapper_axi axi                   (
-        .axi_aclk_i(clk_i)
-        .axi_aresetn_i(rst_i)
+        .axi_aclk_i(clk),
+        .axi_aresetn_i(resetn),
 
         .rx_i(uart_rx_i),
         .giris_cikis_aktif_i(giris_cikis_aktif_w),
@@ -186,7 +184,7 @@ module wrapper_islemci (
 
         .tx_o(uart_tx_w),
         .pwm1_o(pwm0_w),
-        .pwm2_o(pwm1_w)
+        .pwm2_o(pwm1_w),
         .okunan_veri_o(gc_okunan_veri_w),
         .okunan_gecerli_o(gc_veri_gecerli_w),
         .stall_o(gc_stall_w)

@@ -82,17 +82,17 @@ module wrapper_abellek (
                 MUSAIT: begin
                     iomem_valid_ns      = 1'b0;
                     anabellek_musait_ns = 1'b1;
-                    if(bellek_asamasi_istek_i)begin
+                    if(vbellek_istek_i)begin
                         asama_ns = BELLEK;
-                        if(bellek_oku_i)begin
-                            adres_ns            = bellek_adres_i;
+                        if(vbellek_oku_i)begin
+                            adres_ns            = vbellek_adres_i;
                             iomem_valid_ns      = 1;
                             wr_strb_ns          = 4'b0000;
                             anabellek_musait_ns = 1'b0;
                             durum_next          = OKU;
                         end
-                        else if(bellek_yaz_i)begin
-                            adres_ns            = bellek_adres_i;
+                        else if(vbellek_yaz_i)begin
+                            adres_ns            = vbellek_adres_i;
                             wr_strb_ns          = 4'b1111;
                             yaz_veri_ns         = yazilacak_veri_obegi_i[31:0];
                             iomem_valid_ns      = 1;
@@ -100,10 +100,10 @@ module wrapper_abellek (
                             durum_next          = YAZ;
                         end
                     end
-                    else if(getir_asamasi_istek_i)begin
+                    else if(bbellek_istek_i)begin
                         asama_ns = GETIR;
-                        if(getir_oku_i)begin
-                            adres_ns            = getir_adres_i;
+                        if(bbellek_oku_i)begin
+                            adres_ns            = bbellek_adres_i;
                             iomem_valid_ns      = 1;
                             wr_strb_ns          = 4'b0000;
                             anabellek_musait_ns = 1'b0;

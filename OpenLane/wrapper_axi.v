@@ -15,7 +15,7 @@ module wrapper_axi (
         output        pwm2_o,
         output [31:0] okunan_veri_o,    //gc_okunan_veri_i
         output        okunan_gecerli_o,
-        output        stall_o,
+        output        stall_o
     );
 
     wire [31:0] axi_araddr_w; 
