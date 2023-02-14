@@ -83,24 +83,15 @@ module bellek_wrapper(
         .clk_i(clk_i),
         .rst_i(rst_i),          
                   
-        .bellek_oku_i(bellekten_oku_w),   
-        .bellek_yaz_i(bellege_yaz_w),  
+        .onbellekten_oku_i(bellekten_oku_w),   
+        .onbellege_yaz_i(bellege_yaz_w),  
         .adres_i(bellek_adresi_i),      
         .buyruk_turu_i(load_save_buyrugu_i),  
-                 
-        .adres_bulundu_i(adres_bulundu_o),
-        .onbellek_veri_i(okunan_veri_o),        
-        .kirli_obek_i(veri_obegi_o),           
-        .kirli_obek_adresi_i(kirli_obek_adresi_o),    
-        .obek_kirli_i(obek_kirli_o),           
-                        
-        .obek_okunan_o(obek_okunan_o),          
-        .onbellek_obek_yaz_o(onbellek_obek_yaz_o),    
-
-              
+        .veri_i(bellek_veri_i),                   
+                                                   
         .anabellek_musait_i(anabellek_musait_i), 
         .anabellek_hazir_i(bellek_asamasina_veri_hazir_i),  
-        .okunan_obek_i(okunan_veri_obegi_i),   
+        .anabellek_obek_i(okunan_veri_obegi_i),   
                                      
         .anabellek_yaz_o(anabellek_yaz_o),        
         .anabellek_oku_o(anabellek_oku_o),        
@@ -112,25 +103,6 @@ module bellek_wrapper(
         .veri_hazir_o(veri_hazir_o),
                 
         .denetim_hazir_o(denetleyici_musait)  
-    );
-
-    veri_onbellek   onbellek(
-         .clk_i(clk_i),                    
-         .rst_i(rst_i),                    
-                                              
-         .denetleyici_obek_i(obek_okunan_o),             
-         .adres_i(bellek_adresi_i),                  
-         .veri_i(bellek_veri_i),                   
-         .bellekten_oku_i(bellekten_oku_i),          
-         .bellege_yaz_i(bellege_yaz_i),            
-         .anabellekten_obek_geldi_i(bellek_asamasina_veri_hazir_i),
-         .buyruk_turu_i(load_save_buyrugu_i),        
-                                
-         .veri_obegi_o(veri_obegi_o),            
-         .okunan_veri_o(okunan_veri_o),            
-         .kirli_obek_adresi_o(kirli_obek_adresi_o),      
-         .adres_bulundu_o(adres_bulundu_o),          
-         .obek_kirli_o(obek_kirli_o)
     );
    
    adres_duzenleyici adres_duz(
