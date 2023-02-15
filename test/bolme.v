@@ -26,13 +26,8 @@ module bolme(
     reg [31:0] q_r;
     reg [31:0] m_r;  
     
-    reg [31:0] q;//quotient
     reg [31:0] a;//remainder
-    
-    reg [31:0] q2;//quotient
-    reg [31:0] a2;//remainder
  
-    reg result_ready_r;
     reg result_ready_ns;
     reg [1:0] durum_r; 
     reg [1:0] durum_ns;
@@ -75,7 +70,7 @@ module bolme(
                         durum_ns = ISLEM_BEKLE;
                         result_ready_ns= 1'b1;
                     end
-                    else if( !sign_i && (bolen_i > bolunen_i)) begin // *********
+                    else if( !sign_i && (bolen_i > bolunen_i)) begin
                         a_ns = bolunen_i;
                         q_ns = 32'd0;
                         durum_ns = TAMAMLANDI;
@@ -153,42 +148,29 @@ module bolme(
                 end
                 else begin
                     result_ready_ns = 1'b1;  
-                    Ncounter_ns        = 6'd32;//TEKRAR BAK EMIN DEGILIM         
+                    Ncounter_ns        = 6'd32;         
                     durum_ns        = ISLEM_BEKLE;    
                 end
             end
             SIGNED_SONUC: begin
                     if(bolunen_isaret_r == 1 && bolen_isaret_r == 1 && a_r != 32'd0)begin
-                            //a_ns[31] = 1'b1;
                             a_ns = ~a_r+1;
                     end
                     else if(bolunen_isaret_r == 1 && bolen_isaret_r == 0) begin
                         q_ns = ~(q_r)+1;                     
                         if(a_r != 0) begin
-                            //q_ns = q_r + 1;
-                           // q_ns = ~(q_r + 1)+1;
                             q_ns = ~(q_r)+1; 
-
-                           // a_ns = m_r + 1 + ~a_r;
                             a_ns = ~a_r + 1; 
-                            //a_ns[31] = 1'b0;
-                            //q_ns[31] = 1'b1;
                         end
                     end
                     else if(bolunen_isaret_r == 0 && bolen_isaret_r == 1) begin
                         q_ns = ~(q_r)+1;                    
                         if(a_r != 0) begin
-                            //q_ns = ~(q_r + 1)+1;
                             q_ns = ~(q_r)+1;
-                           // a_ns = ~(m_r + 1 + ~a_r)+1;
-                           
-                           
-                            //a_ns = ~a_r + 1;    // ** 
-                            a_ns = a_r;                       
-                           // a_ns[31] = 1'b1;                          
+                            a_ns = a_r;                                
                         end
                     end   
-                    Ncounter_ns        = 6'd32;//TEKRAR BAK EMIN DEGILIM   
+                    Ncounter_ns        = 6'd32;
                     result_ready_ns = 1'b1;        
                     durum_ns        = ISLEM_BEKLE;          
             end
@@ -197,22 +179,16 @@ module bolme(
     
     always @(posedge clk_i)begin
         if(!rst_i)begin
-            result_ready_r    <= 1'b0;  
             a_r               <= 32'd0;
             m_r               <= 32'd0;
             q_r               <= 32'd0;
             Ncounter_r        <= 6'd32;   
             durum_r           <= ISLEM_BEKLE;
             bolen_isaret_r    <= 1'b0;   
-            bolunen_isaret_r  <= 1'b0;        
-            q                 <= 32'd0;
-            a                 <= 32'd0;
-            q2                <= 32'd0;
-            a2                <= 32'd0;
+            bolunen_isaret_r  <= 1'b0;  
         end
         else begin
             Ncounter_r        <= Ncounter_ns;
-            result_ready_r    <= result_ready_ns;
             a_r               <= a_ns;
             q_r               <= q_ns;
             m_r               <= m_ns;  
