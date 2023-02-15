@@ -1,18 +1,5 @@
 `timescale 1ns / 1ps
 
-/*
-    Gereken sinyaller
-    1-) islem_kodu_i
-    hmdst -> 000
-    pkg -> 001
-    rvrs -> 010
-    sladd -> 011
-    cntz -> 100
-    cntp -> 101
-    2-) yazmac_rs1_i
-    3-) yazmac_rs2_i
-    4-) blok_aktif_i
-*/
 `include "operations.vh"   
 
 module kriptografi_birimi(
@@ -23,12 +10,19 @@ module kriptografi_birimi(
     input [31:0] yazmac_rs2_i,
     input [2:0]islem_kodu_i,
     
+    input  durdur_i,
+    
     output [31:0] sonuc_o,
     output kriptografi_hazir_o,
-    input  durdur_i 
+    output durdur_o 
     
 );
-    
+
+reg durum_r;    
+reg durum_ns;
+
+reg durdur_r;
+     
 reg kriptografi_hazir_r;
 reg kriptografi_hazir_r_next;
 
@@ -43,22 +37,57 @@ assign  xor_result_w = yazmac_rs1_i ^ yazmac_rs2_i;
 wire [31:0] variable_w;
 assign variable_w = xor_result_w - ((xor_result_w >> 1) & 32'hdb6d_b6db) - ((xor_result_w >> 2) & 32'h4924_9249);
 
+wire [31:0] variable2_w;
+assign variable2_w = yazmac_rs1_i - ((yazmac_rs1_i >> 1) & 32'hdb6d_b6db) - ((yazmac_rs1_i >> 2) & 32'h4924_9249);
+
 always @* begin
 
-    sonuc_r_next = sonuc_r;
-    kriptografi_hazir_r_next = 1'b0;
-    
+    sonuc_r_next = sonuc_r;   
+    durum_ns = durum_r;
+    kriptografi_hazir_r_next = kriptografi_hazir_r;
+    durdur_r = 1'b0;
+     
     if(blok_aktif_i && !durdur_i) begin
         
         case(islem_kodu_i) 
-        `CRY_HMDST : begin              
-            sonuc_r_next = ((variable_w + (variable_w >> 3)) & 32'hc71c_71c7) % 63;
-            kriptografi_hazir_r_next = 1'b1;
+        `CRY_HMDST : begin 
+            case(durum_r)            
+            1'b0 : begin
+                sonuc_r_next = ((variable_w + (variable_w >> 3)) & 32'hc71c_71c7);
+                kriptografi_hazir_r_next = 1'b0;   
+                durum_ns = 1'b1; 
+                durdur_r = 1'b1;    
+            end
+            1'b1 : begin
+                sonuc_r_next = sonuc_r % 63; 
+                kriptografi_hazir_r_next = 1'b1;
+                durum_ns = 1'b0;
+                durdur_r = 1'b0;
+            end
+            endcase
+         end
+         
+        `CRY_CNTP : begin   
+            case(durum_r)            
+            1'b0 : begin
+                sonuc_r_next = ((variable2_w + (variable2_w >> 3)) & 32'hc71c_71c7);
+                kriptografi_hazir_r_next = 1'b0;   
+                durum_ns = 1'b1; 
+                durdur_r = 1'b1;    
+            end
+            1'b1 : begin
+                sonuc_r_next = sonuc_r % 63; 
+                kriptografi_hazir_r_next = 1'b1;
+                durum_ns = 1'b0;
+                durdur_r = 1'b0;
+            end
+            endcase
          end
         
         `CRY_PKG : begin
             sonuc_r_next = {yazmac_rs2_i[15:0],yazmac_rs1_i[15:0]};
             kriptografi_hazir_r_next = 1'b1;
+            durdur_r = 1'b0;
          end
         
         `CRY_RVRS : begin
@@ -66,15 +95,18 @@ always @* begin
                 sonuc_r_next[31-i] = yazmac_rs1_i[i];
             end
             kriptografi_hazir_r_next = 1'b1;
+            durdur_r = 1'b0;
          end
         
         `CRY_SLADD : begin
             sonuc_r_next = ( yazmac_rs1_i << 1 ) + yazmac_rs2_i;
             kriptografi_hazir_r_next = 1'b1;
+            durdur_r = 1'b0;
          end
         
         `CRY_CNTZ : begin // ilk 1 i bulmak için binary search yap?l?yor
-        
+            
+            durdur_r = 1'b0;
             if(yazmac_rs1_i[15:0] == 16'd0) begin
                 if(yazmac_rs1_i[23:16] == 8'd0) begin
                     if(yazmac_rs1_i[27:24] == 4'd0) begin
@@ -209,26 +241,25 @@ always @* begin
             end
             kriptografi_hazir_r_next = 1'b1;   
          end
-        `CRY_CNTP : begin         
-            sonuc_r_next = ((variable_w + (variable_w >> 3)) & 32'hc71c_71c7) % 63;
-            kriptografi_hazir_r_next = 1'b1;                 
-         end
         endcase
     end   
 end
 
 always @(posedge clk_i) begin
     if(!rst_i || (!blok_aktif_i)) begin
-        sonuc_r <= 0;
-        kriptografi_hazir_r <= 0; 
+        sonuc_r <= 32'd0;
+        kriptografi_hazir_r <= 1'd0; 
+        durum_r <= 1'b0;
     end
     else begin
         sonuc_r <= sonuc_r_next;
         kriptografi_hazir_r <= kriptografi_hazir_r_next;
+        durum_r <= durum_ns;
     end    
 end
 
 assign kriptografi_hazir_o = kriptografi_hazir_r;
 assign sonuc_o = sonuc_r;
+assign durdur_o = durdur_r;
 
 endmodule
