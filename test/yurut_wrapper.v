@@ -188,7 +188,7 @@ module yurut_wrapper(
 	// kriptografiden cikanlar
 	wire    [31:0]      kriptografi_sonuc;
 	wire                kriptografi_hazir;
-
+    wire                kriptografi_stall_o_w;
 
 	kriptografi_birimi kriptografi(
 		//		INPUTS
@@ -200,6 +200,7 @@ module yurut_wrapper(
 		.islem_kodu_i(kriptografi_islem_kodu_i),
 		//		OUTPUTS
 		.sonuc_o(kriptografi_sonuc),
+		.durdur_o(kriptografi_stall_o_w),
 		.kriptografi_hazir_o(kriptografi_hazir),
 		.durdur_i(durdur_i)
 	);
@@ -237,7 +238,7 @@ module yurut_wrapper(
 	assign bellek_veri_o = AMB_hazir ? yazmac_degeri2_r : 32'd0;  
 	assign hedef_yazmac_verisi_o = conv_hazir ? convolution_sonuc : kriptografi_hazir ? kriptografi_sonuc : AMB_hazir ? AMB_sonuc : 32'd0;
 	
-	assign yurut_stall_o = yz_stall_o_w || amb_stall_o_w;
+	assign yurut_stall_o = yz_stall_o_w || amb_stall_o_w || kriptografi_stall_o_w;
 	
 	
 	endmodule
