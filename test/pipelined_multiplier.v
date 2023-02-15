@@ -54,8 +54,8 @@ reg     [31:0]      temp1_r;
 reg     [47:0]      temp2_ns;
 reg     [47:0]      temp2_r;
 
-reg     [31:0]      carpim16_output1_ns;
-reg     [31:0]      carpim16_output1;
+reg     [15:0]      carpim16_output1_ns;
+reg     [15:0]      carpim16_output1;
 
 reg     [31:0]      carpim16_output2_ns;
 reg     [31:0]      carpim16_output2;
@@ -104,7 +104,7 @@ always @(*) begin
                 carpim_hazir_r = 1'b0;
                 variable1_r = sayi1_i[15:0];                           
                 variable2_r = sayi2_i[15:0];
-                carpim16_output1_ns = carpim32_output_w;
+                carpim16_output1_ns = carpim32_output_w[15:0];
                 temp1_ns = {16'b0 , carpim32_output_w[31:16]};
                 durum_ns = DURUM_1;
             end
@@ -148,7 +148,7 @@ always @(*) begin
                 carpim_hazir_r = 1'b0;
                 variable1_r = poz_sayi1_w[15:0];                           
                 variable2_r = sayi2_i[15:0];
-                carpim16_output1_ns = carpim32_output_w;
+                carpim16_output1_ns = carpim32_output_w[15:0];
                 temp1_ns = {16'b0 , carpim32_output_w[31:16]};
                 durum_ns = DURUM_1;
             end
@@ -203,7 +203,7 @@ always @(*) begin
                 carpim_hazir_r = 1'b0;
                 variable1_r = poz_sayi1_w[15:0];                           
                 variable2_r = poz_sayi2_w[15:0];
-                carpim16_output1_ns = carpim32_output_w;
+                carpim16_output1_ns = carpim32_output_w[15:0];
                 temp1_ns = {16'b0 , carpim32_output_w[31:16]};
                 durum_ns = DURUM_1;
             end
@@ -226,7 +226,7 @@ always @(*) begin
                 variable1_r = poz_sayi1_w[31:16];                                                 
                 variable2_r = poz_sayi2_w[31:16];                                                 
                                 
-                sonuc_ns = {toplam3_w,carpim16_output1_ns[15:0]}; 
+                sonuc_ns = {toplam3_w,carpim16_output1_ns}; 
                 durum_ns = DURUM_4;                                             
             end    
             DURUM_4 : begin
