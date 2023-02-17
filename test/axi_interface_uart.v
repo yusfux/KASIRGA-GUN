@@ -248,7 +248,7 @@ module axi_interface_uart(
                         s_axi_rvalid_o_next = 1'b1;
                         stall_o_r_next = 1'b0;
                         s_axi_rdata_o_next[7:0] = rx_buffer[rx_buffer_read_idx ];
-                            if(read_word)begin // word okunacak
+                            /*if(read_word)begin // word okunacak
                                 s_axi_rdata_o_next[15:8]  = rx_buffer[rx_buffer_read_idx+1'b1];
                                 s_axi_rdata_o_next[23:16] = rx_buffer[rx_buffer_read_idx+2'b10];
                                 s_axi_rdata_o_next[31:24] = rx_buffer[rx_buffer_read_idx+2'b11];
@@ -264,7 +264,7 @@ module axi_interface_uart(
                                     us3 = 1'b1; // rx_buffer bosaltildi;
                                 end
                             end
-                            else if(read_byte)begin // bayt okunacak
+                            else*/ if(read_byte)begin // bayt okunacak
                                 rx_buffer_read_idx_next = rx_buffer_read_idx + 1'b1;
                                 if(rx_buffer_read_idx_next == rx_buffer_write_idx) begin
                                     us3 = 1'b1; // rx_buffer bosaltildi
@@ -273,7 +273,7 @@ module axi_interface_uart(
                     end
                     else begin
                         s_axi_rvalid_o_next = 1'b0;
-                        stall_o_r_next = 1'b1;
+                        //stall_o_r_next = 1'b1;
                     end
                 end
                 
