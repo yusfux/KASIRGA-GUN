@@ -75,7 +75,7 @@ reg              sram_wen_r = 1'b0;
 reg     [148:0]  sram_obek_r = 149'd0;
 
 wire    [148:0]  sram_obek_i;
-sram_ornek sram(
+wrapper_sram sram(
     .rst_i(rst_i),
     .clk_i(clk_i),
     .en_i(sram_en_r),
