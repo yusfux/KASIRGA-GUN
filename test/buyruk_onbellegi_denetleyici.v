@@ -69,7 +69,7 @@ reg     [148:0]  sram_obek_r;
 
 
 wire    [148:0]  sram_obek_i;
-sram_buyruk sram(
+wrapper_sram sram(
     
     .rst_i(rst_i),
     .clk_i(clk_i),
