@@ -27,21 +27,52 @@ module dallanma_ongoru_blogu(
     output              ongoru_gecerli_o    // Ongoru gecerli
     );
     
-    
-    reg [127:0] etiket_gecerli_r;
-    reg [23:0] etiket_r [127:0];
-	reg [1:0] durum_r [127:0];
-	reg [31:0] hedef_adres_r [127:0];
-	
-	reg [1:0] durum_buf;
-	reg [31:0] hedef_adres_buf;
-    
-	// Satir numaralari
+    	// Satir numaralari
 	wire [6:0]an_str_idx;
 	assign an_str_idx =  ongoru_aktif_i ? ps_i[7:1] : 0;
 	wire [6:0]gun_str_idx;
 	assign gun_str_idx = guncelle_gecerli_i ? guncelle_ps_i[7:1] : 0;
 	
+	
+    reg [127:0] etiket_gecerli_r;
+	reg [1:0] durum_r [127:0];
+	
+	reg  [31:0] hedef_veri_i_r;
+	wire [31:0] hedef_veri_o_w;
+	reg  [6:0]  hedef_adresi_r;
+	reg bram_en_r;
+	reg bram_wen_r;
+	
+	
+	blk_mem_gen_2 block_memory_dallanma_hadres(
+    .clka(clk_i),
+    .rsta(!rst_i),
+    .ena(bram_en_r),
+    .wea(bram_wen_r),
+    .addra(hedef_adresi_r),
+    .dina(hedef_veri_i_r),
+    .douta(hedef_veri_o_w)
+);
+
+    reg  [23:0] etk_hedef_veri_i_r;
+	wire [23:0] etk_hedef_veri_o_w;
+	reg  [6:0]  etk_hedef_adresi_r;
+	reg etk_bram_en_r;
+	reg etk_bram_wen_r;
+	
+	
+	blk_mem_gen_3 block_memory_dallanma_etiket(
+    .clka(clk_i),
+    .rsta(!rst_i),
+    .ena(etk_bram_en_r),
+    .wea(etk_bram_wen_r),
+    .addra(etk_hedef_adresi_r),
+    .dina(etk_hedef_veri_i_r),
+    .douta(etk_hedef_veri_o_w)
+);
+	
+	reg [1:0] durum_buf;
+  
 	// Etiket
 	wire [23:0] etiket_gun;
 	assign etiket_gun = guncelle_gecerli_i ? guncelle_ps_i[31:8] : 0; 
@@ -86,14 +117,30 @@ module dallanma_ongoru_blogu(
     ongoru_gecerli_o_r = 1'b0;
     atlanan_ps_o_r = 32'd0;
     durum_buf = 2'd0;
-    hedef_adres_buf = 32'd0;
     etiket_gecerli = 1'b0;
+	 
+	bram_en_r = 1'b0;
+	bram_wen_r = 1'b0;
+	hedef_adresi_r = 7'd0;
+	hedef_veri_i_r = 32'd0;
 	
+	etk_bram_en_r = 1'b0;
+	etk_bram_wen_r = 1'b0;
+	etk_hedef_adresi_r = 7'd0;
+	etk_hedef_veri_i_r = 24'd0;
 	if(guncelle_gecerli_i) begin
 	    etiket_gecerli = 1'b1;
+	    etk_hedef_veri_i_r = etiket_gun;
+	    etk_hedef_adresi_r = gun_str_idx;
+		etk_bram_en_r = 1'b1;
+		etk_bram_wen_r = 1'b1;
+
 	    if(guncelle_atladi_i) begin
-	       atladi_ns = atladi + 1'b1;
-		   hedef_adres_buf = guncelle_hedef_adresi_i;
+	         atladi_ns = atladi + 1'b1;
+			 hedef_veri_i_r = guncelle_hedef_adresi_i;
+			 hedef_adresi_r = gun_str_idx;
+			 bram_en_r = 1'b1;
+			 bram_wen_r = 1'b1;
 		end
 		
 	    else 
@@ -131,12 +178,20 @@ module dallanma_ongoru_blogu(
 		endcase
 	end
 	
-	if(ongoru_aktif_i) begin	
-		if((etiket_anl==etiket_r[an_str_idx]) && (etiket_gecerli_r[an_str_idx])) begin
+	if(ongoru_aktif_i) begin
+        etk_hedef_adresi_r = an_str_idx;
+        etk_bram_en_r = 1'b1;
+        etk_bram_wen_r = 1'b0;	
+        
+		if((etiket_anl==etk_hedef_veri_o_w) && (etiket_gecerli_r[an_str_idx])) begin
 			ongoru_gecerli_o_r = 1'b1;
+			
 			if(durum_r[an_str_idx][1]) begin // ATLAR
 				atlar_tahmin_ns = atlar_tahmin + 1'b1;
-			    atlanan_ps_o_r = hedef_adres_r[an_str_idx];
+				atlanan_ps_o_r = hedef_veri_o_w;
+				hedef_adresi_r = an_str_idx;
+			    bram_en_r = 1'b1;
+			    bram_wen_r = 1'b0;
 			end
 			else begin // ATLAMAZ
 			    atlamaz_tahmin_ns = atlamaz_tahmin + 1'b1;
@@ -162,7 +217,7 @@ module dallanma_ongoru_blogu(
         atladi <= atladi_ns;
 	
 		if(guncelle_gecerli_i) begin
-		    if(etiket_gun != etiket_r[gun_str_idx]) begin
+		    if(etiket_gun != etk_hedef_veri_o_w) begin
                 durum_r[gun_str_idx] <= GT;
             end
             else begin
@@ -170,11 +225,6 @@ module dallanma_ongoru_blogu(
             end
             
             etiket_gecerli_r[gun_str_idx] <= etiket_gecerli; 
-            etiket_r[gun_str_idx] <= etiket_gun; // emin degilim
-   	 
-			if(durum_buf[1]) begin // atlar yazilacaksa
-				hedef_adres_r[gun_str_idx] <= hedef_adres_buf;
-			end
 		end
 	end
 	
@@ -184,12 +234,10 @@ module dallanma_ongoru_blogu(
         atlamadi <= 32'd0;
         atladi <= 32'd0;
 		  
-		  etiket_gecerli_r <= 128'd0;
+		etiket_gecerli_r <= 128'd0;
         
 		for(i=0;i<128;i=i+1) begin
-			etiket_r[i] <= 24'd0;
 			durum_r[i] <= 2'd0;
-			hedef_adres_r[i] <= 32'd0;
 		end
 	end
 	
