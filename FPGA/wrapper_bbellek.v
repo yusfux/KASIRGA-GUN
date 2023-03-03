@@ -80,7 +80,7 @@ module wrapper_bbellek (
 //        .obek_o(sram_obek_i)
 //    );
 
-wire rsta_busy_w;
+//wire rsta_busy_w;
 blk_mem_gen_0 block_memory_buyruk(
     .clka(clk_i),
     .rsta(!rst_i),
@@ -88,8 +88,8 @@ blk_mem_gen_0 block_memory_buyruk(
     .wea(sram_wen_r),
     .addra(sram_satir_r),
     .dina(sram_obek_r),
-    .douta(sram_obek_i),
-    .rsta_busy(rsta_busy_w)
+    .douta(sram_obek_i)
+//    .rsta_busy(rsta_busy_w)
 );
 
     wire     [6:0]    onbellek_satir_w;
@@ -119,7 +119,7 @@ blk_mem_gen_0 block_memory_buyruk(
             
             case(durum_r)
             BOSTA : begin
-                if(!durdur_i && !rsta_busy_w) begin
+                if(!durdur_i /*&& !rsta_busy_w*/) begin
                     buyruk_hazir_r = 1'b0;
                     sram_satir_r = onbellek_satir_w;
                     sram_en_r = 1'b1;

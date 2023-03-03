@@ -71,8 +71,8 @@ module wrapper_vbellek (
 
     wire    [148:0]  sram_obek_i;
 
-    wire rsta_busy_w;
-    wire rstb_busy_w;
+//    wire rsta_busy_w;
+//    wire rstb_busy_w;
 //    sram_ornek sram(
 //        .rst_i(rst_i),
 //        .clk_i(clk_i),
@@ -95,9 +95,9 @@ blk_mem_gen_1 block_memory_veri(
     .rstb(!rst_i),
     .enb(sram_en_r),
     .addrb(sram_adres_r),
-    .doutb(sram_obek_i),
-    .rsta_busy(rsta_busy_w),
-    .rstb_busy(rstb_busy_w)
+    .doutb(sram_obek_i)
+//    .rsta_busy(rsta_busy_w),
+//    .rstb_busy(rstb_busy_w)
 );
 
     wire     [6:0]    onbellek_satir_numarasi_w;
@@ -123,7 +123,7 @@ blk_mem_gen_1 block_memory_veri(
             sram_obek_r = 149'd0;       
             denetim_hazir_r = 1'b0;
         
-        if((onbellekten_oku_i == 1'b1 || onbellege_yaz_i == 1'b1) && !rsta_busy_w && !rstb_busy_w) begin
+        if((onbellekten_oku_i == 1'b1 || onbellege_yaz_i == 1'b1) /*&& !rsta_busy_w && !rstb_busy_w*/) begin
             case(durum_r)
             
             BOSTA : begin
