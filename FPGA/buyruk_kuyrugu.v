@@ -5,6 +5,7 @@ module buyruk_kuyrugu(
     input         rst_i,
 
     input         kuyruk_aktif_i,
+    input         durdur_i,
     input         ps_atladi_i,
 
     input  [31:0] ps_i,
@@ -16,7 +17,8 @@ module buyruk_kuyrugu(
     output        buyruk_hazir_o,         // Cikisa verilen buyruk hazir
 
     output        ps_durdur_o,
-    output        ps_iki_artir_o
+    output        ps_iki_artir_o,
+    output        durum_sikistirilmis_o
 
     );
     
@@ -46,6 +48,8 @@ reg         ps_iki_artir_o_cmb;
 wire [1:0]  buyruk_i_birinci_kisim;
 wire [1:0]  buyruk_i_ikinci_kisim;
 
+reg         durum_sikistirilmis_o_cmb;
+
 always @(*) begin
     durum_ns = durum_r;
     kuyruk_ns = kuyruk_r;
@@ -65,7 +69,7 @@ always @(*) begin
             durum_ns = DURUM_BOS;
         end
     end
-    else if(kuyruk_aktif_i) begin
+    else if(kuyruk_aktif_i || (durum_r == DURUM_SIKISTIRILMIS && !durdur_i)) begin
         case (durum_r)
         DURUM_BOS: begin
             if(buyruk_i_birinci_kisim == BUYRUK_TAM) begin
@@ -110,6 +114,7 @@ always @(*) begin
             end
         end
         DURUM_SIKISTIRILMIS: begin
+            durum_sikistirilmis_o_cmb = 1;
             buyruk_o_cmb = {16'b0, kuyruk_r};
             kuyruk_ns = 0;
             ps_gecerli_cmb = 1;
@@ -141,7 +146,7 @@ always @(posedge clk_i) begin
         durum_r  <= 0;
     end
     else begin
-        if(kuyruk_aktif_i || ps_atladi_i) begin
+        if(kuyruk_aktif_i || ps_atladi_i || (durum_r == DURUM_SIKISTIRILMIS && !durdur_i)) begin
             durum_r  <= durum_ns;
             kuyruk_r <= kuyruk_ns;
             ps_r     <= ps_ns;
@@ -157,5 +162,6 @@ assign ps_o                   = ps_r;
 assign ps_gecerli_o           = ps_gecerli_cmb;
 assign buyruk_i_birinci_kisim = buyruk_i[1:0];
 assign buyruk_i_ikinci_kisim  = buyruk_i[17:16];
+assign durum_sikistirilmis_o  = durum_sikistirilmis_o_cmb;
     
 endmodule

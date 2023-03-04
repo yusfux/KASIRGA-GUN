@@ -49,6 +49,13 @@ module wrapper_getir (
 
     wire         ps_uretici_durdur_w;
 
+    wire         durum_sikistirilmis_w; 
+    reg          kuyruk_aktif_cmb;
+    reg          buffer_aktif_r;
+    reg          buffer_aktif_ns;
+    reg  [31:0]  buyruk_buffer_r;
+    reg  [31:0]  buyruk_buffer_ns;
+
     ps_uretici ps_uretici(
         .clk_i(clk_i),
         .rst_i(rst_i),
@@ -72,11 +79,12 @@ module wrapper_getir (
         .clk_i(clk_i),
         .rst_i(rst_i),
 
-        .kuyruk_aktif_i(buyruk_hazir_i),
+        .kuyruk_aktif_i(kuyruk_aktif_cmb),
+        .durdur_i(durdur_i),
         .ps_atladi_i(ongoru_gecerli_o | dallanma_hata_i | jal_gecerli_i),
 
         .ps_i(ps_ns_w),
-        .buyruk_i(buyruk_i),
+        .buyruk_i(buffer_aktif_r ? buyruk_buffer_r : buyruk_i),
 
         .buyruk_o(kuyruk_gelen_buyruk_w),
         .ps_o(ps_kuyruk_w),
@@ -84,7 +92,8 @@ module wrapper_getir (
         .buyruk_hazir_o(kuyruk_buyruk_hazir_w),
 
         .ps_durdur_o(ps_durdur_w),
-        .ps_iki_artir_o(ps_iki_artir_w)
+        .ps_iki_artir_o(ps_iki_artir_w),
+        .durum_sikistirilmis_o(durum_sikistirilmis_w)
     );
 
     oncozucu oncozucu(
@@ -117,25 +126,52 @@ module wrapper_getir (
     reg [31:0] ps_r;
     reg [31:0] buyruk_r;
 
-    always @(posedge clk_i) begin
-        if(!durdur_i && kuyruk_buyruk_hazir_w && !dallanma_hata_i && !jal_gecerli_i) begin
-            ps_r <=  ps_kuyruk_gecerli_w ? ps_kuyruk_w : ps_r_w;
-            buyruk_r <= kuyruk_gelen_buyruk_w;
-            ongoru_gecerli_o_r <= ongoru_gecerli_o_w;
+    always @(*) begin
+        kuyruk_aktif_cmb = 0;
+        buffer_aktif_ns = buffer_aktif_r;
+        buyruk_buffer_ns = buyruk_buffer_r;
+
+        if(buyruk_hazir_i && !durdur_i) begin
+            kuyruk_aktif_cmb = 1;
         end
-        else if((!durdur_i && !kuyruk_buyruk_hazir_w) || dallanma_hata_i || jal_gecerli_i) begin
-            buyruk_r <= 32'h0000_0013;
-            ongoru_gecerli_o_r <= 1'b0;
+        else if(buyruk_hazir_i && durdur_i) begin
+            buyruk_buffer_ns = buyruk_i;
+            buffer_aktif_ns = 1;
+        end
+
+        if(buffer_aktif_r && !durdur_i) begin
+            kuyruk_aktif_cmb = 1;
+            buffer_aktif_ns = 0;
+        end
+    end
+
+    always @(posedge clk_i) begin
+        if(!rst_i) begin
+            buffer_aktif_r <= 0;
+        end
+        else begin
+            buyruk_buffer_r <= buyruk_buffer_ns;
+            buffer_aktif_r <= buffer_aktif_ns;
+
+            if(!durdur_i && kuyruk_buyruk_hazir_w && !dallanma_hata_i && !jal_gecerli_i) begin
+                ps_r <=  ps_kuyruk_gecerli_w ? ps_kuyruk_w : ps_r_w;
+                buyruk_r <= kuyruk_gelen_buyruk_w;
+                ongoru_gecerli_o_r <= ongoru_gecerli_o_w;
+            end
+            else if((!durdur_i && !kuyruk_buyruk_hazir_w) || dallanma_hata_i || jal_gecerli_i) begin
+                buyruk_r <= 32'h0000_0013;
+                ongoru_gecerli_o_r <= 1'b0;
+            end
         end
     end
 
 
     assign bbellek_durdur_o    = durdur_i;
-    assign buyruk_adres_o      = ps_r_w;
+    assign buyruk_adres_o      = ps_r_w & 32'hffff_fffc;
     
     assign ps_o                = ps_r;
     assign buyruk_o            = buyruk_r;
-    assign ps_uretici_durdur_w = ps_durdur_w | durdur_i | !buyruk_hazir_i;
+    assign ps_uretici_durdur_w = (ps_durdur_w | durdur_i | !kuyruk_buyruk_hazir_w);
     assign ongoru_gecerli_o    = ongoru_gecerli_o_r;
 
 endmodule
