@@ -20,22 +20,85 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 module teknofest_wrapper(
-  input  clk_i,
-  input  rst_ni,
-  input  program_rx_i,
-  output prog_mode_led_o,
+  //input  clk_i,
+  input  clk_i_n, //
+  input  clk_i_p,
+  input  rst_yusuf, //
+  //input  program_rx_i, //
+  output prog_mode_led_o, // 
 
   output uart_tx_o,
-  input  uart_rx_i,
+  input  uart_rx_i //
   
-  output spi_cs_o,
-  output spi_sck_o,
-  output spi_mosi_o,
-  input  spi_miso_i,
+  //output spi_cs_o, //
+  //output spi_sck_o, //
+  //output spi_mosi_o, //
+  //input  spi_miso_i, //
   
-  output pwm0_o,
-  output pwm1_o
+  //output pwm0_o, //
+  //output pwm1_o //
+  
+  //output led15_o,
+  //output led14_o,
+  //output led13_o
 );
+
+//assign led15_o = 1'b1;
+//assign led14_o = rst_ni;
+
+wire rst_ni;
+assign rst_ni = !rst_yusuf;
+
+wire spi_cs_o;
+wire spi_sck_o;
+wire spi_mosi_o;
+wire spi_miso_i;
+wire pwm0_o;
+wire pwm1_o;
+
+wire clk_10MHz;
+wire clk_20MHz;
+wire clk_30MHz;
+wire clk_40MHz;
+wire clk_50MHz;
+wire clk_60MHz;
+wire clk_used;
+
+assign clk_used = clk_60MHz;
+
+clk_wiz_0 inst
+  (
+  // Clock out ports  
+  .clk_10MHz(clk_10MHz),
+  .clk_20MHz(clk_20MHz),
+  .clk_30MHz(clk_30MHz),
+  .clk_40MHz(clk_40MHz),
+  .clk_50MHz(clk_50MHz),
+  .clk_60MHz(clk_60MHz),
+ // Clock in ports
+  .clk_in1_n(clk_i_n),
+  .clk_in1_p(clk_i_p)
+  );
+
+reg [31:0] sayac = 32'd0;
+reg led13_r = 1'b0;
+
+
+always @ (posedge clk_used) begin // aslinda 10 mhz
+    if(sayac == 10000000) begin // 1 saniyede bir yan?p son
+        led13_r <= 1'b1;
+        sayac <= sayac + 1'b1;
+    end
+    else if (sayac == 20000000)begin
+        led13_r <= 1'b0;
+        sayac <= 32'd0;
+    end
+    else begin
+        sayac <= sayac + 1'b1;
+    end
+end
+
+//assign led13_o = led13_r;
 
 localparam RAM_DELAY = 16;
 
@@ -51,7 +114,7 @@ parameter [31:0] RAM_BASE_ADDR = 32'h4000_0000;
 parameter [31:0] RAM_MASK_ADDR = 32'h000f_ffff;
 parameter [31:0] CHIP_IO_BASE_ADDR = SPI_BASE_ADDR + SPI_MASK_ADDR;
 parameter [31:0] CHIP_IO_MASK_ADDR = RAM_BASE_ADDR + RAM_MASK_ADDR;
-parameter RAM_DEPTH = 131072;
+parameter RAM_DEPTH = 1430000;//131072;
 
 (* mark_debug = "yes" *) wire        iomem_valid;
 (* mark_debug = "yes" *) wire        iomem_ready;
@@ -72,7 +135,7 @@ wire   rst_n;
 assign rst_n = prog_system_reset & rst_ni;
 
 wrapper_islemci soc (
-  .clk           (clk_i        ),
+  .clk           (clk_used     ),
   .resetn        (rst_n        ),
   .iomem_valid   (iomem_valid  ),
   .iomem_ready   (iomem_ready  ),
@@ -95,7 +158,7 @@ wire ram_ready_check;
 
 assign ram_ready_check = iomem_valid & iomem_ready & ((iomem_addr & ~RAM_MASK_ADDR) == RAM_BASE_ADDR);
 
-always @(posedge clk_i) begin
+always @(posedge clk_used) begin
   if (!rst_ni) begin
     ram_shift_q <= {RAM_DELAY{1'b0}};
   end else begin
@@ -104,7 +167,7 @@ always @(posedge clk_i) begin
   end
 end
 
-always @(posedge clk_i) begin
+always @(posedge clk_used) begin
   if (!rst_n) begin
     ram_ready <= 1'b0;
   end else begin
@@ -112,7 +175,7 @@ always @(posedge clk_i) begin
   end
 end
 
-assign iomem_ready = ram_shift_q[RAM_DELAY-1] | (iomem_valid & (iomem_addr == 32'h3000_0000));
+assign iomem_ready = ram_shift_q[RAM_DELAY-1] | (iomem_valid & (iomem_addr == 32'h3000_0000 || iomem_addr == 32'h3000_0004));
 
 assign iomem_rdata = (iomem_valid & (iomem_addr == 32'h3000_0000)) ? timer[31:0]  :
                      (iomem_valid & (iomem_addr == 32'h3000_0004)) ? timer[63:32] : main_mem_rdata;
@@ -129,10 +192,11 @@ teknofest_ram #(
   .NB_COL(4),
   .COL_WIDTH(8),
   .RAM_DEPTH(RAM_DEPTH),
-  .INIT_FILE("C:/Users/Casper/Desktop/sorting/deneme_w.hex")  //Yüklenecek program?n yolu
+  .INIT_FILE("")  //Yüklenecek program?n yolu
+  //.INIT_FILE("/home/yusf/Desktop/core_main.hex")
 ) main_memory
 (
-  .clk_i           (clk_i ),
+  .clk_i           (clk_used ),
   .rst_ni          (rst_ni),
   .wr_addr         (iomem_addr[clogb2(RAM_DEPTH*4)-1:2]),
   .rd_addr         (iomem_addr[clogb2(RAM_DEPTH*4)-1:2]),
@@ -141,12 +205,13 @@ teknofest_ram #(
   .wr_strb         (main_mem_wstrb   ),
   .rd_data         (main_mem_rdata   ),
   .rd_en           (main_mem_rd_en   ),
-  .ram_prog_rx_i   (program_rx_i     ),
+  //.ram_prog_rx_i   (program_rx_i     ),
+  .ram_prog_rx_i   (uart_rx_i),
   .system_reset_o  (prog_system_reset),
   .prog_mode_led_o (prog_mode_led_o  )
 );
 
-always @(posedge clk_i) begin
+always @(posedge clk_used) begin
   if (!rst_n) begin
     timer <= 64'h0;
   end else begin
