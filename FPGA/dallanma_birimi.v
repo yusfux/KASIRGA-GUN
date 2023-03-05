@@ -51,7 +51,8 @@ module dallanma_birimi(
     output              guncelle_atladi_o,
     output              dallanma_hata_o,
 	output [31:0]       guncelle_hedef_adresi_o, // hata varsa ps buna donmeli !
-	output [31:0]       guncelle_ps_o
+	output [31:0]       guncelle_ps_o,
+	input               sikistirilmis_mi_i
     );
     assign guncelle_ps_o = ps_i;
     
@@ -90,7 +91,10 @@ module dallanma_birimi(
 					end
                     else begin
                         guncelle_atladi_o_r = 1'b0;
-						guncelle_hedef_adresi_o_r = ps_i;
+                        if(sikistirilmis_mi_i)
+						  guncelle_hedef_adresi_o_r = ps_i + 2'd2;
+						else 
+						  guncelle_hedef_adresi_o_r = ps_i + 3'd4;
 					end
                 end
                 
@@ -101,7 +105,10 @@ module dallanma_birimi(
 					end
                     else begin
                         guncelle_atladi_o_r = 1'b0;
-						guncelle_hedef_adresi_o_r = ps_i;
+						if(sikistirilmis_mi_i)
+						  guncelle_hedef_adresi_o_r = ps_i + 2'd2;
+						else 
+						  guncelle_hedef_adresi_o_r = ps_i + 3'd4;
 					end
                 end
                  
@@ -112,7 +119,10 @@ module dallanma_birimi(
 					end
                     else begin
                         guncelle_atladi_o_r = 1'b0;
-						guncelle_hedef_adresi_o_r = ps_i;
+						if(sikistirilmis_mi_i)
+						  guncelle_hedef_adresi_o_r = ps_i + 2'd2;
+						else 
+						  guncelle_hedef_adresi_o_r = ps_i + 3'd4;
 					end
                 end
                 
@@ -123,7 +133,10 @@ module dallanma_birimi(
 					end
                     else begin
                         guncelle_atladi_o_r = 1'b0;
-						guncelle_hedef_adresi_o_r = ps_i;
+						if(sikistirilmis_mi_i)
+						  guncelle_hedef_adresi_o_r = ps_i + 2'd2;
+						else 
+						  guncelle_hedef_adresi_o_r = ps_i + 3'd4;
 					end
                 end
                 
@@ -134,7 +147,10 @@ module dallanma_birimi(
 					end
                     else begin
                         guncelle_atladi_o_r = 1'b0;
-						guncelle_hedef_adresi_o_r = ps_i;
+						if(sikistirilmis_mi_i)
+						  guncelle_hedef_adresi_o_r = ps_i + 2'd2;
+						else 
+						  guncelle_hedef_adresi_o_r = ps_i + 3'd4;
 					end
                 end
                 
@@ -145,7 +161,10 @@ module dallanma_birimi(
 					end
                     else begin
                         guncelle_atladi_o_r = 1'b0;
-						guncelle_hedef_adresi_o_r = ps_i; // hatanin duzeltilmesi icin
+						if(sikistirilmis_mi_i)
+						  guncelle_hedef_adresi_o_r = ps_i + 2'd2;
+						else 
+						  guncelle_hedef_adresi_o_r = ps_i + 3'd4;
 					end
                 end
                 
