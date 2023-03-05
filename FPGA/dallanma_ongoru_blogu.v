@@ -36,51 +36,21 @@ module dallanma_ongoru_blogu(
 	
     reg [127:0] etiket_gecerli_r;
 	reg [1:0] durum_r [127:0];
-	
-	reg  [31:0] hedef_veri_i_r;
-	wire [31:0] hedef_veri_o_w;
-	reg  [6:0]  hedef_adresi_r;
-	reg bram_en_r;
-	reg bram_wen_r;
-	
-	
-	blk_mem_gen_2 block_memory_dallanma_hadres(
-    .clka(clk_i),
-    .rsta(!rst_i),
-    .ena(bram_en_r),
-    .wea(bram_wen_r),
-    .addra(hedef_adresi_r),
-    .dina(hedef_veri_i_r),
-    .douta(hedef_veri_o_w)
-);
-
-    reg  [23:0] etk_hedef_veri_i_r;
-	wire [23:0] etk_hedef_veri_o_w;
-	reg  [6:0]  etk_hedef_adresi_r;
-	reg etk_bram_en_r;
-	reg etk_bram_wen_r;
-	
-	
-	blk_mem_gen_3 block_memory_dallanma_etiket(
-    .clka(clk_i),
-    .rsta(!rst_i),
-    .ena(etk_bram_en_r),
-    .wea(etk_bram_wen_r),
-    .addra(etk_hedef_adresi_r),
-    .dina(etk_hedef_veri_i_r),
-    .douta(etk_hedef_veri_o_w)
-);
+	reg [23:0] etiket_r [127:0];
+	reg [31:0] hedef_adres_r [127:0];
+	reg [31:0] hedef_adres_buf;
 	
 	reg [1:0] durum_buf;
   
 	// Etiket
 	wire [23:0] etiket_gun;
-	assign etiket_gun = guncelle_gecerli_i ? guncelle_ps_i[31:8] : 0; 
+	assign etiket_gun =  guncelle_ps_i[31:8]; 
 	
 	wire [23:0] etiket_anl;
-	assign etiket_anl = ongoru_aktif_i ? ps_i[31:8] : 0; 
+	assign etiket_anl = ps_i[31:8]; 
 	
 	reg  etiket_gecerli;
+	reg  [6:0] gun_str_idx_buf;
 	
 	// Durumlar
     localparam GT = 2'b00;
@@ -118,30 +88,16 @@ module dallanma_ongoru_blogu(
     atlanan_ps_o_r = 32'd0;
     durum_buf = 2'd0;
     etiket_gecerli = 1'b0;
-	 
-	bram_en_r = 1'b0;
-	bram_wen_r = 1'b0;
-	hedef_adresi_r = 7'd0;
-	hedef_veri_i_r = 32'd0;
-	
-	etk_bram_en_r = 1'b0;
-	etk_bram_wen_r = 1'b0;
-	etk_hedef_adresi_r = 7'd0;
-	etk_hedef_veri_i_r = 24'd0;
+    
+    hedef_adres_buf = 32'd0;
 	
 	if(guncelle_gecerli_i) begin
 	    etiket_gecerli = 1'b1;
-	    etk_hedef_veri_i_r = etiket_gun;
-	    etk_hedef_adresi_r = gun_str_idx;
-		etk_bram_en_r = 1'b1;
-		etk_bram_wen_r = 1'b1;
 
 	    if(guncelle_atladi_i) begin
 	         atladi_ns = atladi + 1'b1;
-			 hedef_veri_i_r = guncelle_hedef_adresi_i;
-			 hedef_adresi_r = gun_str_idx;
-			 bram_en_r = 1'b1;
-			 bram_wen_r = 1'b1;
+	         hedef_adres_buf = guncelle_hedef_adresi_i;
+	         gun_str_idx_buf = gun_str_idx;
 		end
 		
 	    else 
@@ -157,15 +113,17 @@ module dallanma_ongoru_blogu(
 			end
 				
 			ZT : begin
-				if(guncelle_atladi_i)
+				if(guncelle_atladi_i) begin
 					durum_buf = ZA;
+				end 
 				else 	
 					durum_buf = GT;		
 			end
 				
 			ZA : begin
-				if(guncelle_atladi_i)
+				if(guncelle_atladi_i) begin
 					durum_buf = GA;
+				end
 				else 	
 					durum_buf = ZT;
 			end
@@ -179,21 +137,14 @@ module dallanma_ongoru_blogu(
 		endcase
 	end
 	
-	if(ongoru_aktif_i) begin
-        etk_hedef_adresi_r = an_str_idx;
-        etk_bram_en_r = 1'b1;
-        etk_bram_wen_r = 1'b0;	
-        
-		if((etiket_anl==etk_hedef_veri_o_w) && (etiket_gecerli_r[an_str_idx])) begin
-//			ongoru_gecerli_o_r = 1'b1;
+	if(ongoru_aktif_i) begin	
+             
+		if((etiket_anl==etiket_r[an_str_idx]) && (etiket_gecerli_r[an_str_idx])) begin
 			
 			if(durum_r[an_str_idx][1]) begin // ATLAR
 			    ongoru_gecerli_o_r = 1'b1;
-				atlar_tahmin_ns = atlar_tahmin + 1'b1;
-				atlanan_ps_o_r = hedef_veri_o_w;
-				hedef_adresi_r = an_str_idx;
-			    bram_en_r = 1'b1;
-			    bram_wen_r = 1'b0;
+				atlar_tahmin_ns = atlar_tahmin + 1'b1;		
+				atlanan_ps_o_r = hedef_adres_r[an_str_idx];
 			end
 			else begin // ATLAMAZ
 			    atlamaz_tahmin_ns = atlamaz_tahmin + 1'b1;
@@ -219,14 +170,21 @@ module dallanma_ongoru_blogu(
         atladi <= atladi_ns;
 	
 		if(guncelle_gecerli_i) begin
-		    if((etiket_gecerli_r[gun_str_idx]) && etiket_gun != etk_hedef_veri_o_w) begin //
+		    if((etiket_gecerli_r[gun_str_idx]) && etiket_gun != etiket_r[gun_str_idx]) begin 
                 durum_r[gun_str_idx] <= GT;
             end
             else begin
                 durum_r[gun_str_idx] <= durum_buf;
             end
             
-            etiket_gecerli_r[gun_str_idx] <= etiket_gecerli; 
+            if(guncelle_atladi_i) begin
+                etiket_gecerli_r[gun_str_idx] <= etiket_gecerli; 
+                etiket_r[gun_str_idx] <= etiket_gun; 
+                
+                if(durum_buf[1]) begin // atlar yazilacaksa
+                    hedef_adres_r[gun_str_idx] <= hedef_adres_buf;
+                end
+			end
 		end
 	end
 	
