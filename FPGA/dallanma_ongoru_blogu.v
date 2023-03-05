@@ -128,6 +128,7 @@ module dallanma_ongoru_blogu(
 	etk_bram_wen_r = 1'b0;
 	etk_hedef_adresi_r = 7'd0;
 	etk_hedef_veri_i_r = 24'd0;
+	
 	if(guncelle_gecerli_i) begin
 	    etiket_gecerli = 1'b1;
 	    etk_hedef_veri_i_r = etiket_gun;
@@ -184,9 +185,10 @@ module dallanma_ongoru_blogu(
         etk_bram_wen_r = 1'b0;	
         
 		if((etiket_anl==etk_hedef_veri_o_w) && (etiket_gecerli_r[an_str_idx])) begin
-			ongoru_gecerli_o_r = 1'b1;
+//			ongoru_gecerli_o_r = 1'b1;
 			
 			if(durum_r[an_str_idx][1]) begin // ATLAR
+			    ongoru_gecerli_o_r = 1'b1;
 				atlar_tahmin_ns = atlar_tahmin + 1'b1;
 				atlanan_ps_o_r = hedef_veri_o_w;
 				hedef_adresi_r = an_str_idx;
@@ -209,15 +211,15 @@ module dallanma_ongoru_blogu(
 	
 	always @(posedge clk_i) begin
 	
-	if(!rst_i) begin
-	
+	if(rst_i) begin
+	    $display("girdi %d",$time);
 		atlamaz_tahmin <= atlamaz_tahmin_ns;
         atlar_tahmin <= atlar_tahmin_ns; 
         atlamadi <= atlamadi_ns;
         atladi <= atladi_ns;
 	
 		if(guncelle_gecerli_i) begin
-		    if(etiket_gun != etk_hedef_veri_o_w) begin
+		    if((etiket_gecerli_r[gun_str_idx]) && etiket_gun != etk_hedef_veri_o_w) begin //
                 durum_r[gun_str_idx] <= GT;
             end
             else begin
