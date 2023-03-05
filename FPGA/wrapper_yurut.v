@@ -117,6 +117,7 @@ module wrapper_yurut (
 		.buyuk_mu_i_unsigned(buyuk_mu_unsigned),
 		.ps_i(ps_i),
 		.br_i(anlik_i),
+		.sikistirilmis_mi_i(sikistirilmis_mi_i),
 		// 		OUTPUTS
 		.guncelle_ps_o(guncelle_ps_o),
 		.guncelle_gecerli_o(guncelle_gecerli_o),
