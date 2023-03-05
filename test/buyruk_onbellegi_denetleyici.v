@@ -69,7 +69,7 @@ reg     [148:0]  sram_obek_r;
 
 
 wire    [148:0]  sram_obek_i;
-wrapper_sram sram(
+sram_buyruk sram(
     
     .rst_i(rst_i),
     .clk_i(clk_i),
@@ -81,11 +81,11 @@ wrapper_sram sram(
     .obek_o(sram_obek_i)
 );
 
-wire     [6:0]    onbellek_satir_w;
-wire     [20:0]   etiket_w;
+//wire     [6:0]    onbellek_satir_w;
+//wire     [20:0]   etiket_w;
 
-assign      onbellek_satir_w  =  adres_i[10:4];
-assign      etiket_w          =  adres_i[31:11];
+//assign      onbellek_satir_w  =  adres_i[10:4];
+//assign      etiket_w          =  adres_i[31:11];
  
 always @(*) begin
 
@@ -97,7 +97,7 @@ always @(*) begin
         secilen_byte_ns = secilen_byte_r;
         
         buyruk_r = 32'd0;
-        sram_satir_r = onbellek_satir_w;  
+        sram_satir_r = adres_i[10:4];  
         sram_en_r = 1'b0;
         sram_wen_r = 1'b0;
         sram_obek_r = 149'd0;
@@ -110,50 +110,50 @@ always @(*) begin
         BOSTA : begin
             if(!durdur_i) begin
                 buyruk_hazir_r = 1'b0;
-                sram_satir_r = onbellek_satir_w;
+                sram_satir_r = adres_i[10:4]; 
                 sram_en_r = 1'b1;
                 sram_wen_r = 1'b0; 
                 durum_ns = ONBELLEK_OKU;
                 adres_bulundu_r = 1'b0;
                 secilen_byte_ns = adres_i[3:0];
+                adres_ns = adres_i;
             end
         end 
         ONBELLEK_OKU:  begin  
               
             if(!durdur_i) begin
-                sram_satir_r = onbellek_satir_w;
+                sram_satir_r = adres_r[10:4];
                 sram_en_r = 1'b0;
                 sram_wen_r = 1'b0;
                 sram_obek_r = sram_obek_i;
                     
-                if(gecerli_buffer_r[onbellek_satir_w] == 1'b0) begin
+                if(gecerli_buffer_r[adres_r[10:4]] == 1'b0) begin
                     
                      buyruk_hazir_r = 1'b0;
                      if(anabellek_musait_i) begin
-                        anabellek_adres_r  =  {adres_i[31:4], 4'b0000};
-                        adres_ns = adres_i;
-                        etiket_yaz_ns = adres_i[31:11];
-                        onbellek_yaz_dizin_ns = adres_i[10:4];
+                        anabellek_adres_r  =  {adres_r[31:4], 4'b0000};
+                        etiket_yaz_ns = adres_r[31:11];
+                        onbellek_yaz_dizin_ns = adres_r[10:4];
                         durum_ns = ANABELLEK;                     
                      end   
                      
                      adres_bulundu_r = 1'b0;                            
                 end 
                                
-                else if(sram_obek_i[148:128] != etiket_w) begin
+                else if(sram_obek_i[148:128] != adres_r[31:11]) begin
                                    
                      buyruk_hazir_r = 1'b0;
                      if(anabellek_musait_i) begin
-                        anabellek_adres_r  =  {adres_i[31:4], 4'b0000};
-                        etiket_yaz_ns = adres_i[31:11];
-                        onbellek_yaz_dizin_ns = adres_i[10:4];
-                        adres_ns = adres_i;
+                        anabellek_adres_r  =  {adres_r[31:4], 4'b0000};
+                        etiket_yaz_ns = adres_r[31:11];
+                        onbellek_yaz_dizin_ns = adres_r[10:4];
+                       
                         durum_ns = ANABELLEK;                     
                      end         
                      
                      adres_bulundu_r = 1'b0;                      
                 end   
-                else if(sram_obek_i[148:128] == etiket_w)begin
+                else if(sram_obek_i[148:128] == adres_r[31:11])begin
                      buyruk_hazir_r  =   1'b1;                       
                      buyruk_r = sram_obek_i[(secilen_byte_r * 8) +: 32];
                      durum_ns = BOSTA;
@@ -166,7 +166,7 @@ always @(*) begin
                     
             sram_en_r = 1'b0;
             sram_wen_r = 1'b0;
-            anabellek_adres_r = {adres_i[31:4], 4'b0000};
+            anabellek_adres_r = {adres_r[31:4], 4'b0000};
             if(anabellek_hazir_i) begin
                 sram_en_r = 1'b1;
                 sram_wen_r = 1'b1; 
