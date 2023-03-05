@@ -212,7 +212,7 @@ module dallanma_ongoru_blogu(
 	always @(posedge clk_i) begin
 	
 	if(rst_i) begin
-	    $display("girdi %d",$time);
+	    
 		atlamaz_tahmin <= atlamaz_tahmin_ns;
         atlar_tahmin <= atlar_tahmin_ns; 
         atlamadi <= atlamadi_ns;
