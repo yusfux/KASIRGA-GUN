@@ -67,11 +67,11 @@ module wrapper_yurut (
     wire                filtre_rs1_en_i;
     wire                veri_rs1_en_i;                                     
     
-    assign filtre_sil_i = (yz_islem_kodu_i == 3'b011);
-    assign veri_sil_i = (yz_islem_kodu_i == 3'b010);
-    assign conv_yap_en_i = (yz_islem_kodu_i == 3'b100);
-    assign filtre_rs1_en_i = (yz_islem_kodu_i == 3'b001);
-    assign veri_rs1_en_i = (yz_islem_kodu_i == 3'b000);
+	assign filtre_sil_i = (yz_islem_kodu_i == 3'b011) && yapay_zeka_aktif_i;
+	assign veri_sil_i = (yz_islem_kodu_i == 3'b010) && yapay_zeka_aktif_i;
+	assign conv_yap_en_i = (yz_islem_kodu_i == 3'b100) && yapay_zeka_aktif_i;
+	assign filtre_rs1_en_i = (yz_islem_kodu_i == 3'b001) && yapay_zeka_aktif_i;
+	assign veri_rs1_en_i = (yz_islem_kodu_i == 3'b000) && yapay_zeka_aktif_i;
     
 
 	// AMB den ??kanlar
