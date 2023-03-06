@@ -43,9 +43,11 @@ module yapay_zeka_hizlandirici(
 	
     reg bir_cevrim_stall_r;
     reg bir_cevrim_stall_r_next;
+    
+    reg conv_yap_en_i_r;
 	
-    assign conv_hazir_o = (blok_aktif_i || stall_o) ? conv_hazir_r : 1'b0; // stall_o durumunda da calismali
-    assign convolution_sonuc_o = (blok_aktif_i || stall_o) ? convolution_sonuc_r : 32'd0;
+    assign conv_hazir_o = (conv_yap_en_i_r && conv_hazir_r); // stall_o durumunda da calismali
+    assign convolution_sonuc_o =  convolution_sonuc_r;
     assign stall_o = bir_cevrim_stall_r; // blok_aktif_i ? bir_cevrim_stall_r : 0 seklinde yapmistim
     
     reg [31:0] veri_matris_r [15:0]; 
@@ -120,12 +122,18 @@ module yapay_zeka_hizlandirici(
         rs1_veri_r_next = 32'd0;
         rs2_veri_r_next = 32'd0;
         
+        conv_hazir_r_next = conv_hazir_r;
+        
+        
          if(durdur_i) begin // conv hazir degilse wrapper'da sonuc aktarilmiyor, ama icerideki sinyaller ayni kalicak
             conv_hazir_r_next = 1'b0; 
          end
          else begin
-            conv_hazir_r_next = conv_hazir_r;
-            
+         
+            if(conv_yap_en_i_r && conv_hazir_r)
+                conv_hazir_r_next = 1'b0;
+            else 
+               
             if(conv_idx == 15) begin 
                 conv_hazir_r_next = 1'b1;
                 bir_cevrim_stall_r_next = 1'b0;
@@ -205,7 +213,8 @@ module yapay_zeka_hizlandirici(
          conv_idx <= 4'd0; 
          conv_hazir_r <= 1'b0;
          bir_cevrim_stall_r <= 1'b0;
-        
+         conv_yap_en_i_r <= conv_yap_en_i;
+         
             if(filtre_sil_i) begin
                 for(j=0 ; j<16 ; j=j+1) begin
                     filtre_matris_r[j] <= 32'd0;
@@ -229,6 +238,7 @@ module yapay_zeka_hizlandirici(
 	
         else begin
         
+        conv_yap_en_i_r <= conv_yap_en_i;
         conv_hazir_r <= conv_hazir_r_next;
         convolution_sonuc_r <= convolution_sonuc_r_next;
         bir_cevrim_stall_r <= bir_cevrim_stall_r_next;
