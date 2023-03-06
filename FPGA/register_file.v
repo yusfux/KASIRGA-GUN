@@ -86,7 +86,8 @@ module register_file(
 
         else begin
             //TODO: STILL NEED TO FIND MORE PROPER WAY
-            if (reg_write_wb_i && reg_write_i && reg_rd_wb_i == reg_rd_i && reg_valid_counter[reg_rd_wb_i] != 2'd1) begin
+            // buradan ( && reg_valid_counter[reg_rd_wb_i] != 2'd1) sartini kaldirdik, bagimlilik hatasi olursa incelememiz lazım
+            if (reg_write_wb_i && reg_write_i && reg_rd_wb_i == reg_rd_i) begin
                 register[reg_rd_wb_i]          <= reg_rd_data_wb_i;
                 if(stall_register_file_o && reg_rd_wb_i != 5'b00000)
                     reg_valid_counter[reg_rd_wb_i] <= reg_valid_counter[reg_rd_wb_i] - 2'b01;

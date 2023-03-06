@@ -167,7 +167,7 @@ module wrapper_getir (
 
 
     assign bbellek_durdur_o    = durdur_i;
-    assign buyruk_adres_o      = ps_r_w & 32'hffff_fffc;
+    assign buyruk_adres_o      = ps_r_w;
     
     assign ps_o                = ps_r;
     assign buyruk_o            = buyruk_r;

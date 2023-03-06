@@ -95,6 +95,8 @@ blk_mem_gen_0 block_memory_buyruk(
     wire     [6:0]    onbellek_satir_w;
     wire     [20:0]   etiket_w;
 
+    wire     [31:0]   adres_i_maskeli_w;
+
     assign      onbellek_satir_w  =  adres_i[10:4];
     assign      etiket_w          =  adres_i[31:11];
     
@@ -126,27 +128,27 @@ blk_mem_gen_0 block_memory_buyruk(
                     sram_wen_r = 1'b0; 
                     durum_ns = ONBELLEK_OKU;
                     adres_bulundu_r = 1'b0;
-                    secilen_byte_ns = adres_i[3:0];
+                    secilen_byte_ns = adres_i_maskeli_w[3:0];
+                    adres_ns = adres_i;
                 end
             end 
             ONBELLEK_OKU:  begin  
-                
+
                 if(!durdur_i) begin
                     sram_satir_r = onbellek_satir_w;
                     sram_en_r = 1'b0;
                     sram_wen_r = 1'b0;
                     sram_obek_r = sram_obek_i;
-                    adres_ns = adres_i;
+                    //adres_ns = adres_i;
                         
                     if(gecerli_buffer_r[onbellek_satir_w] == 1'b0) begin
-                        
                         buyruk_hazir_r = 1'b0;
                         if(anabellek_musait_i) begin
-                            anabellek_adres_r  =  {adres_i[31:4], 4'b0000};
+                            anabellek_adres_r  =  {adres_i_maskeli_w[31:4], 4'b0000};
                             //adres_ns = adres_i;
-                            secilen_byte_ns = adres_i[3:0];
-                            etiket_yaz_ns = adres_i[31:11];
-                            onbellek_yaz_dizin_ns = adres_i[10:4];
+                            secilen_byte_ns = adres_i_maskeli_w[3:0];
+                            etiket_yaz_ns = adres_i_maskeli_w[31:11];
+                            onbellek_yaz_dizin_ns = adres_i_maskeli_w[10:4];
                             durum_ns = ANABELLEK;                     
                         end   
                         
@@ -154,22 +156,23 @@ blk_mem_gen_0 block_memory_buyruk(
                     end 
                                 
                     else if(sram_obek_i[148:128] != etiket_w) begin
-                                    
                         buyruk_hazir_r = 1'b0;
                         if(anabellek_musait_i) begin
-                            anabellek_adres_r  =  {adres_i[31:4], 4'b0000};
-                            etiket_yaz_ns = adres_i[31:11];
-                            onbellek_yaz_dizin_ns = adres_i[10:4];
+                            anabellek_adres_r  =  {adres_i_maskeli_w[31:4], 4'b0000};
+                            etiket_yaz_ns = adres_i_maskeli_w[31:11];
+                            onbellek_yaz_dizin_ns = adres_i_maskeli_w[10:4];
                             //adres_ns = adres_i;
-                            secilen_byte_ns = adres_i[3:0];
+                            secilen_byte_ns = adres_i_maskeli_w[3:0];
                             durum_ns = ANABELLEK;                     
                         end         
                         
                         adres_bulundu_r = 1'b0;                      
                     end   
                     else if(sram_obek_i[148:128] == etiket_w)begin
-                        buyruk_hazir_r  =   1'b1;                       
-                        buyruk_r = sram_obek_i[(secilen_byte_r * 8) +: 32];
+                        if(adres_r == adres_i) begin
+                            buyruk_hazir_r  =   1'b1;
+                            buyruk_r = sram_obek_i[(secilen_byte_r * 8) +: 32];
+                        end
                         durum_ns = BOSTA;
                         
                         adres_bulundu_r = 1'b1;
@@ -180,7 +183,7 @@ blk_mem_gen_0 block_memory_buyruk(
                         
                 sram_en_r = 1'b0;
                 sram_wen_r = 1'b0;
-                anabellek_adres_r = {adres_i[31:4], 4'b0000};
+                anabellek_adres_r = {adres_i_maskeli_w[31:4], 4'b0000};
                 if(anabellek_hazir_i) begin
                     sram_en_r = 1'b1;
                     sram_wen_r = 1'b1; 
@@ -220,6 +223,7 @@ blk_mem_gen_0 block_memory_buyruk(
     assign anabellek_yaz_o        =  1'b0;                                                            
     assign anabellek_oku_o        =  1'b1;                                                                              
     assign buyruk_o               =  buyruk_r;                                                      
-    assign buyruk_hazir_o         =  buyruk_hazir_r;  
+    assign buyruk_hazir_o         =  buyruk_hazir_r;
+    assign adres_i_maskeli_w      =  adres_i & 32'hffff_fffc;
             
 endmodule
