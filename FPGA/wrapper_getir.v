@@ -6,13 +6,13 @@ module wrapper_getir (
         input         durdur_i,
     
         // buyruk onbelleginden gelecek sinyaller
-        input [31:0] buyruk_i,
-        input        buyruk_hazir_i,
+        input [31:0]  buyruk_i,
+        input         buyruk_hazir_i,
 
         // buyruk onbellegine gidecek sinyaller
         output [31:0] buyruk_adres_o,
         output        bbellek_durdur_o,
-
+        output        ps_guncellendi_o,
 
         input         guncelle_gecerli_i,
         input         guncelle_atladi_i,
@@ -67,6 +67,9 @@ module wrapper_getir (
         .ps_atlanacak_adres_i(atlanan_ps_w),
         .ps_ongorucu_o(ps_r_w),
         .ps_o(ps_ns_w),
+
+        .buyruk_geldi_i(buyruk_hazir_i),
+        .ps_guncellendi_o(ps_guncellendi_o),
 
         .guncelle_hedef_adresi_i(guncelle_hedef_adresi_i),
         .dallanma_hata_i(dallanma_hata_i),

@@ -8,6 +8,7 @@ module wrapper_cekirdek (
         input         buyruk_hazir_i,
         output [31:0] buyruk_adres_o,
         output        bbellek_durdur_o,
+        output        ps_guncellendi_o,
 
         // veri bellegi <-> bellek 
         input  [31:0] vbellek_veri_i,
@@ -33,6 +34,7 @@ module wrapper_cekirdek (
     // getir -> buyruk bellegi
     wire [31:0] buyruk_adres_w;
     wire        bbellek_durdur_w;
+    wire        ps_guncellendi_w;
 
     // bellek -> veri bellegi
     wire        vbellek_onbellekten_oku_w;
@@ -140,6 +142,7 @@ module wrapper_cekirdek (
         .buyruk_hazir_i(buyruk_hazir_i),
         .buyruk_adres_o(buyruk_adres_w),
         .bbellek_durdur_o(bbellek_durdur_w),
+        .ps_guncellendi_o(ps_guncellendi_w),
 
         .guncelle_gecerli_i(guncelle_gecerli_w),
         .guncelle_atladi_i(guncelle_atladi_w),        
@@ -321,6 +324,7 @@ module wrapper_cekirdek (
     // getir -> buyruk bellegi
     assign buyruk_adres_o   = buyruk_adres_w;
     assign bbellek_durdur_o = bbellek_durdur_w;
+    assign ps_guncellendi_o = ps_guncellendi_w;
 
     // bellek -> veri bellegi
     assign vbellek_onbellekten_oku_o = vbellek_onbellekten_oku_w;

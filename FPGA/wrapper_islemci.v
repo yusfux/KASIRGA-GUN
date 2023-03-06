@@ -41,6 +41,7 @@ module wrapper_islemci (
     wire        bbellek_durdur_w;
     wire [31:0] buyruk_w;
     wire        buyruk_hazir_w;
+    wire        ps_guncellendi_w;
 
     // bellek <-> veri bellek
     wire [31:0] vbellek_veri_w;
@@ -84,6 +85,7 @@ module wrapper_islemci (
         .buyruk_hazir_i(buyruk_hazir_w),
         .buyruk_adres_o(buyruk_adres_w),
         .bbellek_durdur_o(bbellek_durdur_w),
+        .ps_guncellendi_o(ps_guncellendi_w),
 
         .vbellek_veri_i(vbellek_veri_o_w),
         .vbellek_veri_hazir_i(vbellek_veri_hazir_w),
@@ -106,6 +108,7 @@ module wrapper_islemci (
 
         .adres_i(buyruk_adres_w),
         .durdur_i(bbellek_durdur_w),
+        .ps_guncellendi_i(ps_guncellendi_w),
     
         .anabellek_musait_i(anabellek_musait_w),
         .anabellek_hazir_i(getir_asamasina_veri_hazir_w),

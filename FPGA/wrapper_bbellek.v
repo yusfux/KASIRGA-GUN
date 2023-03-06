@@ -9,6 +9,7 @@ module wrapper_bbellek (
         //getir asamasindan gelecek olanlar
         input     [31:0]    adres_i,
         input               durdur_i,
+        input               ps_guncellendi_i,
         
         // anabellek denetleyiciden gelecek sinyaller
         input               anabellek_musait_i,
@@ -200,6 +201,10 @@ blk_mem_gen_0 block_memory_buyruk(
                 end        
             end  
         endcase
+
+        if(ps_guncellendi_i) begin
+            adres_ns = 32'b0;
+        end
     end
     always @(posedge clk_i) begin
         
