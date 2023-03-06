@@ -27,8 +27,8 @@
        
     ps_i -> dallanmanin program sayaci boru hattinda tasinmali
     
-    esit_mi_i -> Dallanma birimine ekstra donaným eklememek icin AMB'den gelmeli
-    buyuk_mu_i -> Dallanma birimine ekstra donaným eklememek icin AMB'den gelmeli
+    esit_mi_i -> Dallanma birimine ekstra donanï¿½m eklememek icin AMB'den gelmeli
+    buyuk_mu_i -> Dallanma birimine ekstra donanï¿½m eklememek icin AMB'den gelmeli
     
     
     Dallanmanin atlamadan onceki ps'i boru hattinda ilerletilecek
@@ -64,7 +64,7 @@ module dallanma_birimi(
     
     assign guncelle_gecerli_o = blok_aktif_i ? guncelle_gecerli_o_r : 1'b0;
     assign guncelle_atladi_o = blok_aktif_i ? guncelle_atladi_o_r : 1'b0;
-    assign dallanma_hata_o = (blok_aktif_i && rst_i/*reset yok*/) ? !(dallanma_ongorusu_i == guncelle_atladi_o_r) : 1'b0;
+    assign dallanma_hata_o = (blok_aktif_i && rst_i && !durdur_i/*reset yok*/) ? !(dallanma_ongorusu_i == guncelle_atladi_o_r) : 1'b0;
     assign guncelle_hedef_adresi_o = blok_aktif_i ? guncelle_hedef_adresi_o_r : 32'd0;
    
     always @ * begin
