@@ -140,10 +140,10 @@ module wrapper_yurut (
 		.rs1_veri_i(yazmac_degeri1_i),
 		.rs2_veri_i(yazmac_degeri2_i),
 		.filtre_rs1_en_i(filtre_rs1_en_i),
-		.filtre_rs2_en_i(rs2_en_i),
+		.filtre_rs2_en_i(rs2_en_i && filtre_rs1_en_i),
 		.filtre_sil_i(filtre_sil_i),
 		.veri_rs1_en_i(veri_rs1_en_i),
-		.veri_rs2_en_i(rs2_en_i),
+		.veri_rs2_en_i(rs2_en_i && veri_rs1_en_i),
 		.veri_sil_i(veri_sil_i),
 		.conv_yap_en_i(conv_yap_en_i), 
 		//		OUTPUTS
