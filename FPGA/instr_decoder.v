@@ -405,7 +405,7 @@ module instr_decoder (
                     end
                     10'b`CONV_CLR_W: begin
                         if(rs1_w == 5'b0 && rs2_w == 5'b0 && rd_w == 5'b0)
-                            op_ai_r = `AI_CONV_CLR_X;
+                            op_ai_r = `AI_CONV_CLR_W;
                     end
                     10'b`CONV_RUN: begin
                         if(rs1_w == 5'b0 && rs2_w == 5'b0) begin
