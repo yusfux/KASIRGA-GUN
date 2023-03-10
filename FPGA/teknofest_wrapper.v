@@ -193,7 +193,7 @@ teknofest_ram #(
   .COL_WIDTH(8),
   .RAM_DEPTH(RAM_DEPTH),
   .INIT_FILE("")  //Yüklenecek program?n yolu
-  //.INIT_FILE("/home/yusf/Desktop/core_main.hex")
+  //.INIT_FILE("/home/yusf/Development/Hasan/core_mainHASANHASSAN.hex")
 ) main_memory
 (
   .clk_i           (clk_used ),

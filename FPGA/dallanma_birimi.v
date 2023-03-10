@@ -113,7 +113,7 @@ module dallanma_birimi(
                 end
                  
                 `BRA_BLT : begin
-                    if(!buyuk_mu_i || esit_mi_i) begin
+                    if(!buyuk_mu_i && !esit_mi_i) begin
                         guncelle_atladi_o_r = 1'b1;
 						guncelle_hedef_adresi_o_r = ps_i + br_i;
 					end
@@ -141,7 +141,7 @@ module dallanma_birimi(
                 end
                 
                 `BRA_BLTU : begin
-                    if(!buyuk_mu_i_unsigned || esit_mi_i) begin
+                    if(!buyuk_mu_i_unsigned && !esit_mi_i) begin
                         guncelle_atladi_o_r = 1'b1;
 						guncelle_hedef_adresi_o_r = ps_i + br_i;
 					end
