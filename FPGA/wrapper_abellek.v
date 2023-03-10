@@ -19,6 +19,8 @@ module wrapper_abellek (
         //anabellekten gelecek sinyaller
         input         iomem_ready_i,
         input  [31:0] anabellekten_veri_i,
+        
+        input         timer_i,
 
         //anabellege gidecek sinyaller
         output [31:0] adres_o,
@@ -110,6 +112,7 @@ module wrapper_abellek (
                             durum_next          = OKU;
                         end
                     end
+                    
                 end
                 YAZ: begin
                     if(iomem_ready_i) begin 
@@ -144,7 +147,7 @@ module wrapper_abellek (
                          veri_sayisi_ns               = veri_sayisi_r + 1;
                          okunan_veri_obegi_ns         = okunan_veri_obegi_r >> 6'd32;
                          okunan_veri_obegi_ns[127:96] = anabellekten_veri_i;
-                         if(veri_sayisi_r == 3'd3)begin
+                         if((veri_sayisi_r == 3'd3) || ((asama_r == BELLEK) && (adres_r == 32'h3000_0000 || adres_r == 32'h3000_0004)))begin
                             veri_sayisi_ns             = 0;
                             iomem_valid_ns             = 0;
                             anabellek_musait_ns        = 1'b1;
@@ -161,6 +164,7 @@ module wrapper_abellek (
                          adres_ns       = adres_r + 4'b0100;
                          wr_strb_ns     = 4'b0000;
                          end
+                         
                     end
                 end
             endcase

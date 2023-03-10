@@ -24,7 +24,9 @@ module wrapper_cekirdek (
         input [31:0] gc_okunan_veri_i,
         input        gc_veri_gecerli_i,
         input        gc_stall_i,
-        output       giris_cikis_aktif_o
+        output       giris_cikis_aktif_o,
+
+        output       timer_o
     );
 
     //-----------------------------------------------------------------------------------
@@ -132,6 +134,9 @@ module wrapper_cekirdek (
     wire [31:0] bellek_geriyaz_veri_w;
     
     wire bellekten_oku_haha_w;
+
+    wire timer_w;
+    assign timer_o = timer_w; 
 
     wrapper_getir       asama_getir       (
         .clk_i(clk_i),
@@ -288,6 +293,8 @@ module wrapper_cekirdek (
         .gc_veri_gecerli_o(gc_veri_gecerli_w),        
 
         .giris_cikis_aktif_o(giris_cikis_aktif_w),
+        
+        .timer_o(timer_w),
 
         .durdur_o(vbellek_durdur_w)
     );

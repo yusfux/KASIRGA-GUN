@@ -18,6 +18,9 @@ module wrapper_vbellek (
         input         anabellek_hazir_i,
         input [127:0] anabellek_obek_i,
 
+        // timer
+        input         timer_i,
+
         // anabellek denetleyiciye verilecek sinyaller
         output         anabellek_yaz_o,
         output         anabellek_oku_o,
@@ -28,7 +31,7 @@ module wrapper_vbellek (
         // bellek asamasina verilecekler sinyaller
         output [31:0] veri_o, 
         output        veri_hazir_o, 
-        output        denetim_hazir_o            
+        output        denetim_hazir_o         
     );
 
     localparam  BOSTA         = 3'd0;
@@ -102,6 +105,7 @@ blk_mem_gen_1 block_memory_veri(
 
     wire     [6:0]    onbellek_satir_numarasi_w;
     wire     [20:0]   etiket_w;
+    
 
     assign      onbellek_satir_numarasi_w =  adres_i[10:4];
     assign      etiket_w         =  adres_i[31:11];
@@ -130,14 +134,24 @@ blk_mem_gen_1 block_memory_veri(
                 sram_adres_r = onbellek_satir_numarasi_w;            
                 sram_en_r = 1'b1;
                 sram_wen_r = 1'b0;
+                
+                secilen_byte_ns = adres_i[3:0];  
+                durum_ns = ONBELLEK_OKU;
                 veri_hazir_r = 1'b0;
                 denetim_hazir_r = 1'b0;
-                durum_ns = ONBELLEK_OKU;  
-                secilen_byte_ns = adres_i[3:0];          
+                
+                
+
+                          
             end
             
             ONBELLEK_OKU:  begin    
-
+            
+                if(timer_i && anabellek_musait_i) begin
+                    durum_ns = ANABELLEK_OKU;
+                    anabellek_adres_r = adres_i;
+                end
+                else begin
                 sram_adres_r = onbellek_satir_numarasi_w;            
                 sram_en_r = 1'b0;
                 sram_wen_r = 1'b0;
@@ -245,6 +259,7 @@ blk_mem_gen_1 block_memory_veri(
                         durum_ns = BOSTA;
                     end    
                 end
+                end
             end   
             
             ANABELLEK_YAZ: begin
@@ -261,53 +276,71 @@ blk_mem_gen_1 block_memory_veri(
                 sram_adres_r = onbellek_satir_numarasi_w; 
                 sram_en_r = 1'b0;
                 sram_wen_r = 1'b0;
-                sram_obek_r = sram_obek_i;       
+                sram_obek_r = sram_obek_i; 
+                      
+                
+                
+                
                 if(anabellek_hazir_i) begin
-                    sram_en_r = 1'b1;
-                    sram_wen_r = 1'b1;
-                    if(onbellekten_oku_i) begin
-                    case(buyruk_turu_i)
-                            `MEM_LB  : begin
-                                veri_r  = {{24{anabellek_obek_i[secilen_byte_r * 8 + 7]}} , anabellek_obek_i[secilen_byte_r * 8 +: 8]};
-                            end                     
-                            `MEM_LH  : begin 
-                                veri_r  = {{16{anabellek_obek_i[secilen_byte_r * 8 + 15]}} , anabellek_obek_i[secilen_byte_r*8 +: 16]};
-                            end
-                            `MEM_LW  : begin  
-                                veri_r  = anabellek_obek_i[secilen_byte_r * 8 +: 32];
-                            end
-                            `MEM_LBU :  begin 
-                                veri_r = { {24{1'b0}}, anabellek_obek_i[secilen_byte_r * 8 +: 8]};
-                            end                      
-                            `MEM_LHU : begin 
-                                veri_r = { {16{1'b0}}, anabellek_obek_i[secilen_byte_r * 8 +: 16]}; 
-                            end
-                        endcase
-
-                        sram_obek_r[127:0] = anabellek_obek_i;
-                        sram_obek_r[148:128] = etiket_w;
-                        kirli_buffer_ns[onbellek_satir_numarasi_w] = 1'b0;  
-                        gecerli_buffer_ns[onbellek_satir_numarasi_w] = 1'b1; 
-                        
+                
+                    if(timer_i) begin                           
+                            veri_r = anabellek_obek_i[127:96];  
+                            veri_hazir_r = 1'b1;
+                            denetim_hazir_r = 1'b1; 
+                            durum_ns = BOSTA;
+                            sram_en_r = 1'b0;
+                            sram_wen_r = 1'b0;            
                     end
+                    else begin
                     
-                    else if(onbellege_yaz_i) begin
-                        sram_obek_r[127:0] = anabellek_obek_i;
-                        case(buyruk_turu_i) 
-                            `MEM_SB :  sram_obek_r[(secilen_byte_r*8)+:8]  = veri_i[7:0];                  
-                            `MEM_SH :  sram_obek_r[(secilen_byte_r*8)+:16] = veri_i[15:0];                
-                            `MEM_SW :  sram_obek_r[(secilen_byte_r*8)+:32] = veri_i;    
-                        endcase                 
-                        sram_obek_r[148:128] = etiket_w;
-                        kirli_buffer_ns[onbellek_satir_numarasi_w] = 1'b1; 
-                        gecerli_buffer_ns[onbellek_satir_numarasi_w] = 1'b1; 
-                                        
-                    end
-                    veri_hazir_r = 1'b1;
-                    denetim_hazir_r = 1'b1;                     
-                    durum_ns = BOSTA;
-                end          
-            end
+                        sram_en_r = 1'b1;
+                        sram_wen_r = 1'b1;
+                        
+                        if(onbellekten_oku_i) begin
+                        case(buyruk_turu_i)
+                                `MEM_LB  : begin
+                                    veri_r  = {{24{anabellek_obek_i[secilen_byte_r * 8 + 7]}} , anabellek_obek_i[secilen_byte_r * 8 +: 8]};
+                                end                     
+                                `MEM_LH  : begin 
+                                    veri_r  = {{16{anabellek_obek_i[secilen_byte_r * 8 + 15]}} , anabellek_obek_i[secilen_byte_r*8 +: 16]};
+                                end
+                                `MEM_LW  : begin  
+                                    veri_r  = anabellek_obek_i[secilen_byte_r * 8 +: 32];
+                                end
+                                `MEM_LBU :  begin 
+                                    veri_r = { {24{1'b0}}, anabellek_obek_i[secilen_byte_r * 8 +: 8]};
+                                end                      
+                                `MEM_LHU : begin 
+                                    veri_r = { {16{1'b0}}, anabellek_obek_i[secilen_byte_r * 8 +: 16]}; 
+                                end
+                            endcase
+    
+                            sram_obek_r[127:0] = anabellek_obek_i;
+                            sram_obek_r[148:128] = etiket_w;
+                            kirli_buffer_ns[onbellek_satir_numarasi_w] = 1'b0;  
+                            gecerli_buffer_ns[onbellek_satir_numarasi_w] = 1'b1; 
+                            
+                        end
+                        
+                        else if(onbellege_yaz_i) begin
+                            sram_obek_r[127:0] = anabellek_obek_i;
+                            case(buyruk_turu_i) 
+                                `MEM_SB :  sram_obek_r[(secilen_byte_r*8)+:8]  = veri_i[7:0];                  
+                                `MEM_SH :  sram_obek_r[(secilen_byte_r*8)+:16] = veri_i[15:0];                
+                                `MEM_SW :  sram_obek_r[(secilen_byte_r*8)+:32] = veri_i;    
+                            endcase                 
+                            sram_obek_r[148:128] = etiket_w;
+                            kirli_buffer_ns[onbellek_satir_numarasi_w] = 1'b1; 
+                            gecerli_buffer_ns[onbellek_satir_numarasi_w] = 1'b1; 
+                                            
+                        end
+                        veri_hazir_r = 1'b1;
+                        denetim_hazir_r = 1'b1;                     
+                        durum_ns = BOSTA;
+                    end   
+                end    
+            end  
+            
         endcase
     end
     end

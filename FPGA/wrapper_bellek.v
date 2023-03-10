@@ -47,6 +47,7 @@ module wrapper_bellek (
         output giris_cikis_aktif_o,
 
         // boru hatti denetleyiciye verilecek sinyaller
+        output timer_o,
         output durdur_o
     );
     
@@ -58,13 +59,18 @@ module wrapper_bellek (
 	reg     [31:0]	bellek_veri_r;
     reg             bellekten_oku_r;
 
+    
+    wire            timer_w;
+    assign          timer_o = timer_w;
+
    adres_duzenleyici adres_duz(
          .bellege_yaz_i(bellege_yaz_i),
          .bellekten_oku_i(bellekten_oku_i),
-         .bellek_adresi30_i(bellek_adresi_i[30]), //bellek_adresi[30]
+         .bellek_adresi30_28_i(bellek_adresi_i[30:28]), //bellek_adresi[30]
          .bellege_yaz_o(bellege_yaz_w),
          .bellekten_oku_o(bellekten_oku_w),
-         .giris_cikis_aktif_o(giris_cikis_aktif_w)
+         .giris_cikis_aktif_o(giris_cikis_aktif_w),
+         .timer_o(timer_w)
     );
     
     reg        yazmaca_yaz_r;

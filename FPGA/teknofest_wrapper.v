@@ -20,9 +20,9 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 module teknofest_wrapper(
-  //input  clk_i,
-  input  clk_i_n, //
-  input  clk_i_p,
+ // input  clk_i,
+   input  clk_i_n, //
+   input  clk_i_p,
   input  rst_yusuf, //
   //input  program_rx_i, //
   output prog_mode_led_o, // 
@@ -198,8 +198,8 @@ teknofest_ram #(
 (
   .clk_i           (clk_used ),
   .rst_ni          (rst_ni),
-  .wr_addr         (iomem_addr[clogb2(RAM_DEPTH*4)-1:2]),
-  .rd_addr         (iomem_addr[clogb2(RAM_DEPTH*4)-1:2]),
+  .wr_addr         (iomem_addr[clogb2(RAM_DEPTH*4-1)-1:2]),
+  .rd_addr         (iomem_addr[clogb2(RAM_DEPTH*4-1)-1:2]),
   .wr_data         (iomem_wdata),
 
   .wr_strb         (main_mem_wstrb   ),

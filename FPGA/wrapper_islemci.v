@@ -20,7 +20,8 @@ module wrapper_islemci (
         output spi_mosi_o,
         output uart_tx_o ,
         output pwm0_o    ,
-        output pwm1_o
+        output pwm1_o    
+        
     );
 
     // 
@@ -76,6 +77,7 @@ module wrapper_islemci (
     wire [127:0] okunan_veri_obegi_w;
     wire         bellek_asamasina_veri_hazir_w;
     wire         getir_asamasina_veri_hazir_w;
+    wire         timer_w;
 
     wrapper_cekirdek cekirdek         (
         .clk_i(clk),
@@ -99,7 +101,8 @@ module wrapper_islemci (
         .gc_okunan_veri_i(gc_okunan_veri_w),
         .gc_veri_gecerli_i(gc_veri_gecerli_w),
         .gc_stall_i(gc_stall_w),
-        .giris_cikis_aktif_o(giris_cikis_aktif_w)
+        .giris_cikis_aktif_o(giris_cikis_aktif_w),
+        .timer_o(timer_w)
     );
 
     wrapper_bbellek buyruk_onbellek   (
@@ -136,6 +139,8 @@ module wrapper_islemci (
         .anabellek_hazir_i(bellek_asamasina_veri_hazir_w),
         .anabellek_obek_i(okunan_veri_obegi_w),
 
+        .timer_i(timer_w),
+
         .anabellek_yaz_o(anabellek_yaz_w),
         .anabellek_oku_o(vbellek_anabellek_oku_w),
         .anabellek_istek_o(vbellek_anabellek_istek_w), 
@@ -145,6 +150,7 @@ module wrapper_islemci (
         .veri_o(vbellek_veri_o_w),
         .veri_hazir_o(vbellek_veri_hazir_w),
         .denetim_hazir_o(vbellek_denetim_hazir_w)
+        
     );
 
     wrapper_abellek anabellek         (
@@ -163,6 +169,8 @@ module wrapper_islemci (
 
         .iomem_ready_i(iomem_ready),
         .anabellekten_veri_i(iomem_rdata),
+        
+        .timer_i(timer_w),
 
         .adres_o(iomem_addr_w),
         .yaz_veri_o(iomem_wdata_w),
