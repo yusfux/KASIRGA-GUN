@@ -27,35 +27,34 @@ module axi4_lite_slave_uart(
      input   [3:0]      s_axi_wstrb_i,
      input              s_axi_wvalid_i,
      
-	 // Bunlarý anlamadým
      input              s_axi_bready_i,
      output             s_axi_bvalid_o,
      input   [3:0]      read_size_i,
      
-     output tx_o,
-     input rx_i
+     output             tx_o,
+     input              rx_i
      
     );
 
-wire r_done_w;
-wire rx_en_w;
-wire t_done_w;
-wire tx_en_w;
-wire [15:0]baud_div_w;
-	
-wire [7:0] tx_w;
-wire [7:0] rx_w;
+   wire r_done_w;
+   wire rx_en_w;
+   wire t_done_w;
+   wire tx_en_w;
+   wire [15:0]baud_div_w;
+   	
+   wire [7:0] tx_w;
+   wire [7:0] rx_w;
 	
     axi_interface_uart axi_connection(
         .s_axi_aclk_i(s_axi_aclk_i),
-	.s_axi_aresetn_i(s_axi_aresetn_i),
-	.s_axi_araddr_i(s_axi_araddr_i),  
+        .s_axi_aresetn_i(s_axi_aresetn_i),
+        .s_axi_araddr_i(s_axi_araddr_i),  
         .s_axi_arready_o(s_axi_arready_o),  
         .s_axi_arvalid_i(s_axi_arvalid_i), 
         .s_axi_rready_i(s_axi_rready_i),
         .s_axi_rvalid_o(s_axi_rvalid_o),
-	.s_axi_rdata_o(s_axi_rdata_o),
-	.s_axi_awaddr_i(s_axi_awaddr_i),
+        .s_axi_rdata_o(s_axi_rdata_o),
+        .s_axi_awaddr_i(s_axi_awaddr_i),
         .s_axi_awready_o(s_axi_awready_o),
         .s_axi_awvalid_i(s_axi_awvalid_i),
         .s_axi_wdata_i(s_axi_wdata_i),
@@ -64,19 +63,19 @@ wire [7:0] rx_w;
         .s_axi_wvalid_i(s_axi_wvalid_i),
         .s_axi_bready_i(s_axi_bready_i),
         .s_axi_bvalid_o(s_axi_bvalid_o),
-	.read_size_i(read_size_i),	
-	.r_done_i(r_done_w),
-	.t_done_i(t_done_w),
-	.baud_div_o(baud_div_w),
-	.tx_en_o(tx_en_w),
-	.rx_en_o(rx_en_w),
-	.tx_o(tx_w),
-	.rx_i(rx_w)	
+        .read_size_i(read_size_i),	
+        .r_done_i(r_done_w),
+        .t_done_i(t_done_w),
+        .baud_div_o(baud_div_w),
+        .tx_en_o(tx_en_w),
+        .rx_en_o(rx_en_w),
+        .tx_o(tx_w),
+        .rx_i(rx_w)	
     );
     
 
     Uart uart_connection(
-	.clk_i(s_axi_aclk_i),
+        .clk_i(s_axi_aclk_i),
         .rst_i(s_axi_aresetn_i),
         .r_done_o(r_done_w),
         .rx_en_i(rx_en_w),

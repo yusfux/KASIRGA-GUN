@@ -3,21 +3,19 @@
 // her islem 2 cevrim sürüyor
 
 module axi_master(
-	 input               axi_aclk_i,
+     input               axi_aclk_i,
      input               axi_aresetn_i,
-     
+       
      //         READ SIGNALS 
 	 // ar -> address read (address in)
 	 // r  -> read (data out)
      output   [31:0]     axi_araddr_o,  
      input               axi_arready_i,  
-     output              axi_arvalid_o, 
-     
+     output              axi_arvalid_o,   
      output              axi_rready_o,
-     input               axi_rvalid_i,
-     
-	 input [31:0]        axi_rdata_i, 
-	 input               axi_rresp_i,
+     input               axi_rvalid_i,   
+     input [31:0]        axi_rdata_i, 
+     input               axi_rresp_i,
      
      //         WRITE SIGNALS
 	 // aw -> address write (address in)
@@ -37,30 +35,20 @@ module axi_master(
      input               axi_bvalid_i, 
      input               axi_bresp_i,  
 
-	 input 	  [31:0]     address_i,
-	 input    [2:0]      buyruk_turu_i,
-	 output   [31:0]     okunan_veri_o,
-	 output              okunan_veri_gecerli_o,
-	 input    [31:0]     data_i,
-	 output   [3:0]      read_size_o,
-	 input               giris_cikis_aktif_i,
-	 
-	 output              stall_o
+     input 	  [31:0]     address_i,
+     input    [2:0]      buyruk_turu_i,
+     output   [31:0]     okunan_veri_o,
+     output              okunan_veri_gecerli_o,
+     input    [31:0]     data_i,
+     output   [3:0]      read_size_o,
+     input               giris_cikis_aktif_i,
      
-
+     output              stall_o
+   
     );
 
 // LB, LH, LW, SB, SH, SW
-	
-	
-//	localparam LB = 3'b001;
-//	localparam LH = 3'b010;
-//	localparam LW = 3'b011;
-//	localparam SB = 3'b100;
-//	localparam SH = 3'b101;
-//	localparam SW = 3'b110;
-	
-	
+
 	reg  [31:0]  axi_araddr_r;
 	assign axi_araddr_o = axi_araddr_r;
 	
@@ -253,18 +241,18 @@ module axi_master(
 	
 	always @(posedge axi_aclk_i) begin
         if(!axi_aresetn_i) begin // axi_aresetn_i == 0 ise resetlenecek
-            axi_awvalid_r <= 1'b0;
-            axi_bready_r <= 1'b0;
-            axi_wvalid_r <= 1'b0;
-            axi_arvalid_r <= 1'b0;
+            axi_awvalid_r   <= 1'b0;
+            axi_bready_r    <= 1'b0;
+            axi_wvalid_r    <= 1'b0;
+            axi_arvalid_r   <= 1'b0;
             buyruk_turu_i_r <= 3'd0;
             wait_response_r <= 1'b0;
         end
         else begin
-            axi_awvalid_r <= axi_awvalid_r_next;
-            axi_bready_r <= axi_bready_r_next;
-            axi_wvalid_r <= axi_wvalid_r_next;
-            axi_arvalid_r <= axi_arvalid_r_next;
+            axi_awvalid_r   <= axi_awvalid_r_next;
+            axi_bready_r    <= axi_bready_r_next;
+            axi_wvalid_r    <= axi_wvalid_r_next;
+            axi_arvalid_r   <= axi_arvalid_r_next;
             buyruk_turu_i_r <= buyruk_turu_i;
             wait_response_r <= wait_response_r_next;
         end

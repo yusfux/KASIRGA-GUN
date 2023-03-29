@@ -122,17 +122,17 @@ always @(*) begin
                 
                 // aritmetik islemler 
                `ALU_ADD     :   begin //sonuc_r_next     =   yazmac_degeri1_i + yazmac_degeri2_i;
-                    aritmetik_sayi1_r = yazmac_degeri1_i;
-                    aritmetik_sayi2_r = yazmac_degeri2_i;
-                    sonuc_r_next      = toplama_sonuc_w;
-                    AMB_hazir_r_next = 1'b1;
+                   aritmetik_sayi1_r = yazmac_degeri1_i;
+                   aritmetik_sayi2_r = yazmac_degeri2_i;
+                   sonuc_r_next      = toplama_sonuc_w;
+                   AMB_hazir_r_next = 1'b1;
                end
                
                `ALU_ADDI    :   begin //sonuc_r_next     =   yazmac_degeri1_i + anlik_i;
-                    aritmetik_sayi1_r = yazmac_degeri1_i;
-                    aritmetik_sayi2_r = anlik_i;
-                    sonuc_r_next      = toplama_sonuc_w;
-                    AMB_hazir_r_next = 1'b1;
+                   aritmetik_sayi1_r = yazmac_degeri1_i;
+                   aritmetik_sayi2_r = anlik_i;
+                   sonuc_r_next      = toplama_sonuc_w;
+                   AMB_hazir_r_next = 1'b1;
                end
                
                `ALU_MUL     :   begin 
@@ -203,8 +203,8 @@ always @(*) begin
 //			        sonuc_r_next = 4;
 //                    AMB_hazir_r_next = 1'b1;
 			        
-			        carpma_aktif_r    = 1'b1;
-			        carpim_unsigned_r = 1'b1;
+			           carpma_aktif_r    = 1'b1;
+			           carpim_unsigned_r = 1'b1;
                     aritmetik_sayi1_r = yazmac_degeri1_i;
                     aritmetik_sayi2_r = yazmac_degeri2_i;
                     
@@ -219,9 +219,9 @@ always @(*) begin
 
                end
 			   `ALU_DIV     :   begin        //sonuc_r_next     =   $signed(yazmac_degeri1_i) / $signed(yazmac_degeri2_i);
-			        bolme_istek_r     = 1'b1;
-			        bolme_signed_r    = 1'b1;
-			        aritmetik_sayi1_r = yazmac_degeri1_i;
+			           bolme_istek_r     = 1'b1;
+			           bolme_signed_r    = 1'b1;
+			           aritmetik_sayi1_r = yazmac_degeri1_i;
                     aritmetik_sayi2_r = yazmac_degeri2_i;
                     
                     if(!bolme_sonuc_hazir_w) begin

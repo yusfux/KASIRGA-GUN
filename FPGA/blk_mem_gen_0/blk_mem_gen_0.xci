@@ -81,8 +81,8 @@
         "READ_LATENCY_B": [ { "value": "1", "resolve_type": "user", "format": "long", "enabled": false, "usage": "all" } ]
       },
       "model_parameters": {
-        "C_FAMILY": [ { "value": "virtex7", "resolve_type": "generated", "usage": "all" } ],
-        "C_XDEVICEFAMILY": [ { "value": "virtex7", "resolve_type": "generated", "usage": "all" } ],
+        "C_FAMILY": [ { "value": "artix7", "resolve_type": "generated", "usage": "all" } ],
+        "C_XDEVICEFAMILY": [ { "value": "artix7", "resolve_type": "generated", "usage": "all" } ],
         "C_ELABORATION_DIR": [ { "value": "./", "resolve_type": "generated", "usage": "all" } ],
         "C_INTERFACE_TYPE": [ { "value": "0", "resolve_type": "generated", "format": "long", "usage": "all" } ],
         "C_AXI_TYPE": [ { "value": "1", "resolve_type": "generated", "format": "long", "usage": "all" } ],
@@ -158,15 +158,15 @@
         "C_EST_POWER_SUMMARY": [ { "value": "Estimated Power for IP     :     17.41425 mW", "resolve_type": "generated", "usage": "all" } ]
       },
       "project_parameters": {
-        "ARCHITECTURE": [ { "value": "virtex7" } ],
-        "BASE_BOARD_PART": [ { "value": "xilinx.com:vc709:part0:1.8" } ],
+        "ARCHITECTURE": [ { "value": "artix7" } ],
+        "BASE_BOARD_PART": [ { "value": "digilentinc.com:nexys-a7-100t:part0:1.2" } ],
         "BOARD_CONNECTIONS": [ { "value": "" } ],
-        "DEVICE": [ { "value": "xc7vx690t" } ],
-        "PACKAGE": [ { "value": "ffg1761" } ],
+        "DEVICE": [ { "value": "xc7a100t" } ],
+        "PACKAGE": [ { "value": "csg324" } ],
         "PREFHDL": [ { "value": "VERILOG" } ],
         "SILICON_REVISION": [ { "value": "" } ],
-        "SIMULATOR_LANGUAGE": [ { "value": "MIXED" } ],
-        "SPEEDGRADE": [ { "value": "-2" } ],
+        "SIMULATOR_LANGUAGE": [ { "value": "VERILOG" } ],
+        "SPEEDGRADE": [ { "value": "-1" } ],
         "STATIC_POWER": [ { "value": "" } ],
         "TEMPERATURE_GRADE": [ { "value": "" } ],
         "USE_RDI_CUSTOMIZATION": [ { "value": "TRUE" } ],
