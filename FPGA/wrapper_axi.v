@@ -48,7 +48,7 @@ module wrapper_axi (
     wire        s_axi_wready_o_uart;
     wire        s_axi_bvalid_o_uart;
     wire        s_axi_bresp_o_uart;
-	
+   
     wire        s_axi_arready_o_pwm;
     wire        s_axi_rvalid_o_pwm;
     wire [31:0] s_axi_rdata_o_pwm;
@@ -99,8 +99,8 @@ module wrapper_axi (
       .data_i(data_i),
       .read_size_o(read_size_w),
       .okunan_veri_gecerli_o(okunan_gecerli_o),
-	   .giris_cikis_aktif_i(giris_cikis_aktif_i),
-	   .stall_o(stall_o)
+      .giris_cikis_aktif_i(giris_cikis_aktif_i),
+      .stall_o(stall_o)
     );
     
     

@@ -5,8 +5,8 @@ module axi4_lite_slave_uart(
      input              s_axi_aresetn_i,
      
      //         READ SIGNALS 
-	 // ar -> address read (address in)
-	 // r  -> read (data out)
+    // ar -> address read (address in)
+    // r  -> read (data out)
      input   [31:0]     s_axi_araddr_i,  
      output             s_axi_arready_o,  
      input              s_axi_arvalid_i,   
@@ -15,10 +15,10 @@ module axi4_lite_slave_uart(
      output  [31:0]     s_axi_rdata_o,
      
      //         WRITE SIGNALS
-	 // aw -> address write (address in)
- 	 // w  -> write (data in)
-	 // b  -> response 
-	 
+    // aw -> address write (address in)
+     // w  -> write (data in)
+    // b  -> response 
+    
      input   [31:0]     s_axi_awaddr_i,
      output             s_axi_awready_o,
      input              s_axi_awvalid_i,
@@ -41,10 +41,10 @@ module axi4_lite_slave_uart(
    wire t_done_w;
    wire tx_en_w;
    wire [15:0]baud_div_w;
-   	
+      
    wire [7:0] tx_w;
    wire [7:0] rx_w;
-	
+   
     axi_interface_uart axi_connection(
         .s_axi_aclk_i(s_axi_aclk_i),
         .s_axi_aresetn_i(s_axi_aresetn_i),
@@ -63,14 +63,14 @@ module axi4_lite_slave_uart(
         .s_axi_wvalid_i(s_axi_wvalid_i),
         .s_axi_bready_i(s_axi_bready_i),
         .s_axi_bvalid_o(s_axi_bvalid_o),
-        .read_size_i(read_size_i),	
+        .read_size_i(read_size_i),   
         .r_done_i(r_done_w),
         .t_done_i(t_done_w),
         .baud_div_o(baud_div_w),
         .tx_en_o(tx_en_w),
         .rx_en_o(rx_en_w),
         .tx_o(tx_w),
-        .rx_i(rx_w)	
+        .rx_i(rx_w)   
     );
     
 
@@ -85,8 +85,8 @@ module axi4_lite_slave_uart(
         .t_in_i(tx_w),
         .r_out_o(rx_w),
         .tx_o(tx_o),
-        .rx_i(rx_i)     
-	);
-	
-	
+        .rx_i(rx_i)      
+   );
+   
+   
 endmodule

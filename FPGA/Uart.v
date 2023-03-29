@@ -1,17 +1,17 @@
 `timescale 1ns / 1ps
 
 module Uart(
-	input rst_i,
-	input clk_i,
-	output [7:0]r_out_o,
-	input  [7:0]t_in_i,
-	output r_done_o,
-	output t_done_o,
-	input rx_en_i,
-	input tx_en_i,
-	input rx_i,
-	output tx_o,
-	input [15:0 ]baud_div_i
+   input rst_i,
+   input clk_i,
+   output [7:0]r_out_o,
+   input  [7:0]t_in_i,
+   output r_done_o,
+   output t_done_o,
+   input rx_en_i,
+   input tx_en_i,
+   input rx_i,
+   output tx_o,
+   input [15:0 ]baud_div_i
     );
     
     wire tx_tick_w;

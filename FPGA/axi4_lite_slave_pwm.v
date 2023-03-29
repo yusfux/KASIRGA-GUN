@@ -5,8 +5,8 @@ module axi4_lite_slave_pwm(
      input              s_axi_aresetn_i,
      
      //         READ SIGNALS 
-	 // ar -> address read (address in)
-	 // r  -> read (data out)
+    // ar -> address read (address in)
+    // r  -> read (data out)
      input   [31:0]     s_axi_araddr_i,  
      output             s_axi_arready_o,  
      input              s_axi_arvalid_i, 
@@ -17,10 +17,10 @@ module axi4_lite_slave_pwm(
      output  [31:0]     s_axi_rdata_o,
      
      //         WRITE SIGNALS
-	 // aw -> address write (address in)
- 	 // w  -> write (data in)
-	 // b  -> response 
-	 
+    // aw -> address write (address in)
+     // w  -> write (data in)
+    // b  -> response 
+    
      input   [31:0]     s_axi_awaddr_i,
      output             s_axi_awready_o,
      input              s_axi_awvalid_i,
@@ -65,8 +65,8 @@ module axi4_lite_slave_pwm(
         .s_axi_arvalid_i(s_axi_arvalid_i), 
         .s_axi_rready_i(s_axi_rready_i),
         .s_axi_rvalid_o(s_axi_rvalid_o),
-	     .s_axi_rdata_o(s_axi_rdata_o),
-	     .s_axi_awaddr_i(s_axi_awaddr_i),
+        .s_axi_rdata_o(s_axi_rdata_o), 
+        .s_axi_awaddr_i(s_axi_awaddr_i),
         .s_axi_awready_o(s_axi_awready_o),
         .s_axi_awvalid_i(s_axi_awvalid_i),
         .s_axi_wdata_i(s_axi_wdata_i),
@@ -83,7 +83,7 @@ module axi4_lite_slave_pwm(
         .pwm1_threshold2_o(pwm1_threshold2_w),
         .pwm1_step_o(pwm1_step_w),
         .pwm1_i(pwm1_w),
-	    
+       
         .pwm2_mode_o(pwm2_mode_w),
         .pwm2_period_o(pwm2_period_w),
         .pwm2_threshold1_o(pwm2_threshold1_w),
@@ -101,9 +101,9 @@ module axi4_lite_slave_pwm(
         .pwm1_threshold2_i(pwm1_threshold2_w),
         .pwm1_step_i(pwm1_step_w),
         .pwm1_o(pwm1_w)
-	); 
-	
-	pwm2 pwm_connection2(
+    ); 
+   
+    pwm2 pwm_connection2(
         .clk_i(s_axi_aclk_i),
         .rst_i(s_axi_aresetn_i),
         .pwm2_mode_i(pwm2_mode_w),
@@ -112,7 +112,7 @@ module axi4_lite_slave_pwm(
         .pwm2_threshold2_i(pwm2_threshold2_w),
         .pwm2_step_i(pwm2_step_w),
         .pwm2_o(pwm2_w)
-	);
-	
-	
+    );
+   
+   
 endmodule

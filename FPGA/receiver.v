@@ -1,13 +1,13 @@
 `timescale 1ns / 1 ps
 
 module receiver(
-	input         rx_tick_i,
-	input         rst_i,
-	input         rx_i,
-	output  [7:0] r_out_o,
-	output        r_done_o,
-	input         clk_i,
-	input         rx_en_i
+   input         rx_tick_i,
+   input         rst_i,
+   input         rx_i,
+   output  [7:0] r_out_o,
+   output        r_done_o,
+   input         clk_i,
+   input         rx_en_i
 );
 
    reg r_done_o_r  ;
@@ -31,7 +31,7 @@ module receiver(
    reg [7:0]uart_rdata ;
    assign r_out_o = uart_rdata;
     
-	always @* begin
+   always @* begin
       next_r_out = uart_rdata;
       next_state = state;
       next_sayac = sayac;
@@ -74,7 +74,7 @@ module receiver(
                      next_sayac = sayac + 1'b1;
                      next_state = data;
                      tut_next = {rx_i,tut[7:1]}; 
-                     next_sayac = 5'd0;			
+                     next_sayac = 5'd0;         
                      next_bit_sayac = bit_sayac+1;
                      if(&bit_sayac) begin 
                         next_state = stop;
@@ -83,7 +83,7 @@ module receiver(
                   end        
                   else begin
                      next_sayac = sayac + 1'b1;
-                  end		
+                  end      
                end
             end
             
@@ -102,16 +102,16 @@ module receiver(
             end
          endcase
       end
-	end 
-	
-	always @(posedge clk_i) begin
+   end 
+   
+   always @(posedge clk_i) begin
       r_done_o_r <= r_done_next;
       state <= next_state;
       sayac <= next_sayac;
       tut <= tut_next;
       bit_sayac <= next_bit_sayac;
       uart_rdata <= next_r_out; 
-	end
-		
+   end
+      
 endmodule 
 

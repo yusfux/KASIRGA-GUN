@@ -37,10 +37,10 @@ module yapay_zeka_hizlandirici(
     
    reg conv_hazir_r;
    reg conv_hazir_r_next;
-	
+   
    reg [31:0] convolution_sonuc_r;
    reg [31:0] convolution_sonuc_r_next;
-	
+   
    reg bir_cevrim_stall_r;
    reg bir_cevrim_stall_r_next;
    
@@ -58,12 +58,12 @@ module yapay_zeka_hizlandirici(
     
    reg [3:0] veri_matris_idx;
    reg [3:0] filtre_matris_idx; 
-	reg [3:0] veri_matris_idx_next;
+   reg [3:0] veri_matris_idx_next;
    reg [3:0] filtre_matris_idx_next;
    
    reg [15:0] veri_matris_dolu;
    reg [15:0] filtre_matris_dolu;
-	reg [15:0] veri_matris_dolu_next;
+   reg [15:0] veri_matris_dolu_next;
    reg [15:0] filtre_matris_dolu_next;
    wire [15:0] conva_hazir;
    assign conva_hazir = veri_matris_dolu & filtre_matris_dolu;
@@ -213,7 +213,7 @@ module yapay_zeka_hizlandirici(
              filtre_matris_dolu<= filtre_matris_dolu_next;
          end
       end
-	
+   
       else begin
         
          conv_yap_en_i_r <= conv_yap_en_i;
@@ -228,31 +228,31 @@ module yapay_zeka_hizlandirici(
          filtre_matris_dolu <= filtre_matris_dolu_next;
          
          conv_idx <= conv_idx_next;
-	 
-	      case(mod_next)
-	        filtre_1 : begin
-	           filtre_matris_r[filtre_matris_idx] <= rs1_veri_r_next;
-	        end
-	        
-	        filtre_2 : begin
-	           filtre_matris_r[filtre_matris_idx] <= rs1_veri_r_next;
-	           filtre_matris_r[filtre_matris_idx + 1'b1] <= rs2_veri_r_next;
-	        end
-	        
-	        veri_1 : begin
-	           veri_matris_r[veri_matris_idx] <= rs1_veri_r_next;
-	        end
-	        
-	        veri_2 : begin
-	           veri_matris_r[veri_matris_idx] <= rs1_veri_r_next;
+    
+         case(mod_next)
+           filtre_1 : begin
+              filtre_matris_r[filtre_matris_idx] <= rs1_veri_r_next;
+           end
+           
+           filtre_2 : begin
+              filtre_matris_r[filtre_matris_idx] <= rs1_veri_r_next;
+              filtre_matris_r[filtre_matris_idx + 1'b1] <= rs2_veri_r_next;
+           end
+           
+           veri_1 : begin
+              veri_matris_r[veri_matris_idx] <= rs1_veri_r_next;
+           end
+           
+           veri_2 : begin
+              veri_matris_r[veri_matris_idx] <= rs1_veri_r_next;
               veri_matris_r[veri_matris_idx + 1'b1] <= rs2_veri_r_next;
-	        end
-	        
-	        default : begin
-	            // do nothing
-	        end
-		 endcase
-	end
- end
+           end
+           
+           default : begin
+               // do nothing
+           end
+         endcase
+      end 
+   end
     
 endmodule

@@ -32,10 +32,10 @@ module transmitter(
    
    reg [7:0]uart_wdata ;
    reg [7:0]wdata_next ;
-	
-	
-	always @* begin
-	
+   
+   
+   always @* begin
+   
       t_done_next = t_done_o;
       next_state = state;
       next_bit_index = bit_index;
@@ -105,15 +105,15 @@ module transmitter(
       
       end
         
-	end
-	
-	always @(posedge clk_i) begin
+   end
+   
+   always @(posedge clk_i) begin
       uart_wdata <= wdata_next;
       t_done_o_r <= t_done_next;
       state <= next_state;
       bit_index <= next_bit_index;
-      tx_o_r <= next_tx;	
-	end
+      tx_o_r <= next_tx;   
+   end
 
 
 endmodule 

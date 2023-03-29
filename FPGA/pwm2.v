@@ -24,53 +24,53 @@ module pwm2(
    assign pwm2_step_w = pwm2_step_i;
     
     
-	reg [31:0] counter                 ;
-	reg [31:0] counter_next            ;
-	reg [31:0] mode2_threshold         ;
-	reg [31:0] mode2_threshold_next    ;
-	
-	reg pwm2_o_r                       ;
-	reg pwm2_o_r_next                  ;
-	assign pwm2_o = pwm2_o_r;
+   reg [31:0] counter                 ;
+   reg [31:0] counter_next            ;
+   reg [31:0] mode2_threshold         ;
+   reg [31:0] mode2_threshold_next    ;
+   
+   reg pwm2_o_r                       ;
+   reg pwm2_o_r_next                  ;
+   assign pwm2_o = pwm2_o_r;
    reg mode2_threshold_control        ;
    reg mode2_threshold_control_next   ;
     
    wire kontrol;
    assign kontrol = (counter==(pwm2_period_w-1'b1));
     
-	always @* begin
-	  counter_next = counter;
-	  pwm2_o_r_next = 1'b0;
-	  mode2_threshold_next = mode2_threshold;
+   always @* begin
+     counter_next = counter;
+     pwm2_o_r_next = 1'b0;
+     mode2_threshold_next = mode2_threshold;
      mode2_threshold_control_next = mode2_threshold_control;
-	  
-	  if(pwm2_mode_w==2'd0) begin // cikis 0 verilir
-	     mode2_threshold_control_next = 1'b1;
-	     pwm2_o_r_next = 1'b0;
-	  end
-	  
-	  else if(pwm2_mode_w==2'd1) begin // standart mod
-	     mode2_threshold_control_next = 1'b1;
-	     if(kontrol) begin
-	  	     counter_next = 32'd0;
-	     end
-	  	else begin
-	  	  counter_next = counter + 1'b1;
-	  	  if(counter<pwm2_threshold1_w) begin
-	  	     pwm2_o_r_next = 1'b1;
-	  	  end
-	  	  else begin
-	  	     pwm2_o_r_next = 1'b0;
-	  	  end
-	  	end
-	  end
-	  
-	  else if(pwm2_mode_w==2'd2) begin // kalp atisi modu
-	     if(mode2_threshold_control) begin
-	        mode2_threshold_next = pwm2_threshold1_w;
-	        mode2_threshold_control_next = 1'b0;
-	     end
-	     else begin
+     
+     if(pwm2_mode_w==2'd0) begin // cikis 0 verilir
+        mode2_threshold_control_next = 1'b1;
+        pwm2_o_r_next = 1'b0;
+     end
+     
+     else if(pwm2_mode_w==2'd1) begin // standart mod
+        mode2_threshold_control_next = 1'b1;
+        if(kontrol) begin
+             counter_next = 32'd0;
+        end
+        else begin
+          counter_next = counter + 1'b1;
+          if(counter<pwm2_threshold1_w) begin
+             pwm2_o_r_next = 1'b1;
+          end
+          else begin
+             pwm2_o_r_next = 1'b0;
+          end
+        end
+     end
+     
+     else if(pwm2_mode_w==2'd2) begin // kalp atisi modu
+        if(mode2_threshold_control) begin
+           mode2_threshold_next = pwm2_threshold1_w;
+           mode2_threshold_control_next = 1'b0;
+        end
+        else begin
            if(mode2_threshold>pwm2_threshold2_w) begin
               // bitti, bastan basla
               counter_next = 32'd0;
@@ -92,11 +92,11 @@ module pwm2(
                  end
               end
            end
-	  	end
-	  end
-	end
-	
-	always @(posedge clk_i) begin
+        end
+     end
+   end
+   
+   always @(posedge clk_i) begin
       if(!rst_i) begin // rst_i == 0 ise resetlenecek
          pwm2_o_r <= 1'b0;
          counter <= 32'd0;
@@ -109,6 +109,6 @@ module pwm2(
          mode2_threshold <= mode2_threshold_next;
          mode2_threshold_control <= mode2_threshold_control_next;
       end  
-	end
+   end
     
 endmodule

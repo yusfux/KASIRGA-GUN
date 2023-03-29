@@ -5,8 +5,8 @@ module axi4_lite_slave_spi(
      input              s_axi_aresetn_i,
      
      //         READ SIGNALS 
-	 // ar -> address read (address in)
-	 // r  -> read (data out)
+    // ar -> address read (address in)
+    // r  -> read (data out)
      input   [31:0]     s_axi_araddr_i,  
      output             s_axi_arready_o,  
      input              s_axi_arvalid_i, 
@@ -14,14 +14,14 @@ module axi4_lite_slave_spi(
      input              s_axi_rready_i,
      output             s_axi_rvalid_o,
      
-	  output  [31:0]     s_axi_rdata_o,
-	 //output             s_axi_rresp_o, 
+     output  [31:0]     s_axi_rdata_o,
+    //output             s_axi_rresp_o, 
      
      //         WRITE SIGNALS
-	 // aw -> address write (address in)
- 	 // w  -> write (data in)
-	 // b  -> response 
-	 
+    // aw -> address write (address in)
+     // w  -> write (data in)
+    // b  -> response 
+    
      input   [31:0]     s_axi_awaddr_i,
      output             s_axi_awready_o,
      input              s_axi_awvalid_i,
@@ -52,13 +52,13 @@ module axi4_lite_slave_spi(
     
     axi_interface_spi spi_connection(
       .s_axi_aclk_i(s_axi_aclk_i),
-	   .s_axi_aresetn_i(s_axi_aresetn_i),
+      .s_axi_aresetn_i(s_axi_aresetn_i),
       .s_axi_araddr_i(s_axi_araddr_i),  
       .s_axi_arready_o(s_axi_arready_o),  
       .s_axi_arvalid_i(s_axi_arvalid_i), 
       .s_axi_rready_i(s_axi_rready_i),
       .s_axi_rvalid_o(s_axi_rvalid_o),
-	   .s_axi_awaddr_i(s_axi_awaddr_i),
+      .s_axi_awaddr_i(s_axi_awaddr_i),
       .s_axi_awready_o(s_axi_awready_o),
       .s_axi_awvalid_i(s_axi_awvalid_i),
       .s_axi_wready_o(s_axi_wready_o),
@@ -66,13 +66,13 @@ module axi4_lite_slave_spi(
       .s_axi_wvalid_i(s_axi_wvalid_i),
       .s_axi_bready_i(s_axi_bready_i),
       .s_axi_bvalid_o(s_axi_bvalid_o),
-	   .read_size_i(read_size_i),  
-	 	.adres_bit_o(adres_bit_w), 
-	   .islem_o(islem_w), 
-	 	.islem_gecerli_o(islem_gecerli_w), 
-	   .read_type_o(read_type_w), 
-	   .write_type_o(write_type_w),
-	   .islem_bitti_i(islem_bitti_w)
+      .read_size_i(read_size_i),  
+       .adres_bit_o(adres_bit_w), 
+      .islem_o(islem_w), 
+       .islem_gecerli_o(islem_gecerli_w), 
+      .read_type_o(read_type_w), 
+      .write_type_o(write_type_w),
+      .islem_bitti_i(islem_bitti_w)
     );  
     
     

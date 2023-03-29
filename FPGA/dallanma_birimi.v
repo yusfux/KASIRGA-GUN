@@ -11,7 +11,7 @@
     3-) ps_i
     4-) esit_mi_i
     5-) buyuk_mu_i
-	6-) br_i // BRANCH IMM
+   6-) br_i // BRANCH IMM
 
     dallanma buyrugu gelirse -> blok_aktif_i = 1 (Coz asamasindan gelmeli)
     
@@ -58,7 +58,7 @@ module dallanma_birimi(
     
     
    reg [31:0] guncelle_hedef_adresi_o_r;
-	
+   
    reg guncelle_gecerli_o_r;
    reg guncelle_atladi_o_r;
    
@@ -72,7 +72,7 @@ module dallanma_birimi(
       guncelle_atladi_o_r = 1'b0;
       guncelle_gecerli_o_r = 1'b0; 
       guncelle_hedef_adresi_o_r = 32'd0;
-	
+   
       if(!rst_i) begin // rst_i 0 ise reset
          guncelle_gecerli_o_r = 1'b0;
          guncelle_atladi_o_r = 1'b0;
@@ -85,108 +85,108 @@ module dallanma_birimi(
                `BRA_BEQ : begin
                   if(esit_mi_i) begin
                      guncelle_atladi_o_r = 1'b1;
-		   		      guncelle_hedef_adresi_o_r = ps_i + br_i;
-		   	      end
+                     guncelle_hedef_adresi_o_r = ps_i + br_i;
+                  end
                   else begin
                      guncelle_atladi_o_r = 1'b0;
                      if(sikistirilmis_mi_i) begin
-		   		        guncelle_hedef_adresi_o_r = ps_i + 2'd2;
-		   		      end
-		   		      else begin
-		   		        guncelle_hedef_adresi_o_r = ps_i + 3'd4;
-		   		      end
-		   	      end
+                       guncelle_hedef_adresi_o_r = ps_i + 2'd2;
+                     end
+                     else begin
+                       guncelle_hedef_adresi_o_r = ps_i + 3'd4;
+                     end
+                  end
                end
                  
                `BRA_BNE : begin
                   if(!esit_mi_i) begin
                      guncelle_atladi_o_r = 1'b1;
-		   		      guncelle_hedef_adresi_o_r = ps_i + br_i;
-		   	      end
+                     guncelle_hedef_adresi_o_r = ps_i + br_i;
+                  end
                   else begin
                      guncelle_atladi_o_r = 1'b0;
-		   		      if(sikistirilmis_mi_i) begin
-		   		        guncelle_hedef_adresi_o_r = ps_i + 2'd2;
-		   		      end
-		   		      else begin
-		   		        guncelle_hedef_adresi_o_r = ps_i + 3'd4;
-		   		      end  	   		     
-		   	      end
+                     if(sikistirilmis_mi_i) begin
+                       guncelle_hedef_adresi_o_r = ps_i + 2'd2;
+                     end
+                     else begin
+                       guncelle_hedef_adresi_o_r = ps_i + 3'd4;
+                     end                   
+                  end
                end
                   
                `BRA_BLT : begin
                   if(!buyuk_mu_i && !esit_mi_i) begin
                      guncelle_atladi_o_r = 1'b1;
-		   		      guncelle_hedef_adresi_o_r = ps_i + br_i;
-		   	      end
+                     guncelle_hedef_adresi_o_r = ps_i + br_i;
+                  end
                   else begin
                      guncelle_atladi_o_r = 1'b0;
-		   		      if(sikistirilmis_mi_i) begin
-		   		        guncelle_hedef_adresi_o_r = ps_i + 2'd2;
-		   		      end
-		   		      else begin
-		   		        guncelle_hedef_adresi_o_r = ps_i + 3'd4;
-		   		      end
-		   	      end
+                     if(sikistirilmis_mi_i) begin
+                       guncelle_hedef_adresi_o_r = ps_i + 2'd2;
+                     end
+                     else begin
+                       guncelle_hedef_adresi_o_r = ps_i + 3'd4;
+                     end
+                  end
                end
                  
                `BRA_BGE : begin
                   if(buyuk_mu_i || esit_mi_i) begin
                      guncelle_atladi_o_r = 1'b1;
-		   		      guncelle_hedef_adresi_o_r = ps_i + br_i;
-		   	      end
+                     guncelle_hedef_adresi_o_r = ps_i + br_i;
+                  end
                   else begin
                      guncelle_atladi_o_r = 1'b0;
-		   		      if(sikistirilmis_mi_i) begin
-		   		        guncelle_hedef_adresi_o_r = ps_i + 2'd2;
-		   		      end
-		   		      else begin
-		   		        guncelle_hedef_adresi_o_r = ps_i + 3'd4;
-		   		      end
-		   	      end
+                     if(sikistirilmis_mi_i) begin
+                       guncelle_hedef_adresi_o_r = ps_i + 2'd2;
+                     end
+                     else begin
+                       guncelle_hedef_adresi_o_r = ps_i + 3'd4;
+                     end
+                  end
                end
                  
                `BRA_BLTU : begin
                   if(!buyuk_mu_i_unsigned && !esit_mi_i) begin
                      guncelle_atladi_o_r = 1'b1;
-		   		      guncelle_hedef_adresi_o_r = ps_i + br_i;
-		   	      end
+                     guncelle_hedef_adresi_o_r = ps_i + br_i;
+                  end
                   else begin
                      guncelle_atladi_o_r = 1'b0;
-		   		      if(sikistirilmis_mi_i) begin
-		   		        guncelle_hedef_adresi_o_r = ps_i + 2'd2;
-		   		      end
-		   		      else begin
-		   		        guncelle_hedef_adresi_o_r = ps_i + 3'd4;
-		   		      end
-		   	      end
+                     if(sikistirilmis_mi_i) begin
+                       guncelle_hedef_adresi_o_r = ps_i + 2'd2;
+                     end
+                     else begin
+                       guncelle_hedef_adresi_o_r = ps_i + 3'd4;
+                     end
+                  end
                end
                  
                `BRA_BGEU : begin
                   if(buyuk_mu_i_unsigned || esit_mi_i) begin
                      guncelle_atladi_o_r = 1'b1;
-		   		      guncelle_hedef_adresi_o_r = ps_i + br_i;
-		   	      end
+                     guncelle_hedef_adresi_o_r = ps_i + br_i;
+                  end
                   else begin
                      guncelle_atladi_o_r = 1'b0;
-		   		      if(sikistirilmis_mi_i)begin
-		   		        guncelle_hedef_adresi_o_r = ps_i + 2'd2;
-		   		      end
-		   		      else begin
-		   		        guncelle_hedef_adresi_o_r = ps_i + 3'd4;
-		   		      end
-		   	      end
+                     if(sikistirilmis_mi_i)begin
+                       guncelle_hedef_adresi_o_r = ps_i + 2'd2;
+                     end
+                     else begin
+                       guncelle_hedef_adresi_o_r = ps_i + 3'd4;
+                     end
+                  end
                end
                  
                default : begin // bir hata olusursa
                   guncelle_atladi_o_r = 1'b0;
                   guncelle_gecerli_o_r = 1'b0;
-		   	      guncelle_hedef_adresi_o_r = 32'd0;
+                  guncelle_hedef_adresi_o_r = 32'd0;
                end
                  
-             endcase
-       end
-    end
-    end
+            endcase
+         end
+      end
+   end
     
 endmodule

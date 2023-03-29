@@ -9,8 +9,8 @@ module axi_interface_uart(
      input              s_axi_aresetn_i,
      
      //         READ SIGNALS 
-	 // ar -> address read (address in)
-	 // r  -> read (data out)
+    // ar -> address read (address in)
+    // r  -> read (data out)
      input   [31:0]     s_axi_araddr_i,  
      output             s_axi_arready_o,  
      input              s_axi_arvalid_i,     
@@ -19,10 +19,10 @@ module axi_interface_uart(
      output [31:0]      s_axi_rdata_o, 
      
      //         WRITE SIGNALS
-	 // aw -> address write (address in)
- 	 // w  -> write (data in)
-	 // b  -> response 
-	 
+    // aw -> address write (address in)
+     // w  -> write (data in)
+    // b  -> response 
+    
      input   [31:0]     s_axi_awaddr_i,
      output             s_axi_awready_o,
      input              s_axi_awvalid_i,  
@@ -36,7 +36,7 @@ module axi_interface_uart(
      // UART
      input              r_done_i,
      input              t_done_i,
-     input 	[7:0]       rx_i,
+     input    [7:0]       rx_i,
      output             rx_en_o,
      output             tx_en_o,
      output [7:0]       tx_o,
@@ -44,62 +44,62 @@ module axi_interface_uart(
      input  [3:0]       read_size_i
     );
     
-	// OUTPUTS
+   // OUTPUTS
    reg s_axi_arready_o_r      ;
    reg s_axi_rvalid_o_r       ;
    reg [31:0] s_axi_rdata_o_r ;
    reg s_axi_awready_o_r      ;
    reg s_axi_wready_o_r       ;
    reg s_axi_bvalid_o_r       ;
-	
+   
    assign s_axi_arready_o = s_axi_arready_o_r;
    assign s_axi_rvalid_o  = s_axi_rvalid_o_r;
    assign s_axi_rdata_o   = s_axi_rdata_o_r;
    assign s_axi_awready_o = s_axi_awready_o_r;
    assign s_axi_wready_o  = s_axi_wready_o_r;
    assign s_axi_bvalid_o  = s_axi_bvalid_o_r;
-	
-	
-	// ADDRESS
+   
+   
+   // ADDRESS
    parameter [31:0] UART_BASE_ADDR = 32'h2000_0000;
    parameter [31:0] UART_MASK_ADDR = 32'h0000_000f;
-	
-	// REGISTERS
+   
+   // REGISTERS
    reg [31:0] uart_ctrl  ; 
    reg [3:0] uart_status ;
     //reg [7:0] uart_rdata  = 8'd0; ihtiyac duyulmadi
    reg [7:0] uart_wdata  ;
-	
-	// BUFFERS
+   
+   // BUFFERS
    reg [7:0] rx_buffer [31:0];
    reg [7:0] tx_buffer [31:0];
-	
-	// STATES
+   
+   // STATES
    localparam state_uart_ctrl   = 4'b0000;
    localparam state_uart_status = 4'b0100;
    localparam state_uart_rdata  = 4'b1000;
    localparam state_uart_wdata  = 4'b1100;
-	
-	// WRITE/READ ENABLE FOR REGISTERS
-	
+   
+   // WRITE/READ ENABLE FOR REGISTERS
+   
    wire read_en; 
    assign read_en = !(s_axi_araddr_i[3] && s_axi_araddr_i[2]);
-	
+   
    wire write_en;
    assign write_en = (s_axi_awaddr_i[3] ^ ~s_axi_awaddr_i[2]);
-	
-	// AXI HANDHSHAKE
+   
+   // AXI HANDHSHAKE
    wire r_adress_check;
    wire w_adress_check;
    assign r_adress_check = s_axi_arvalid_i & ((s_axi_araddr_i & ~UART_MASK_ADDR) == UART_BASE_ADDR) & read_en; 
    assign w_adress_check = s_axi_awvalid_i &   s_axi_wvalid_i &  ((s_axi_awaddr_i & ~UART_MASK_ADDR) == UART_BASE_ADDR) & write_en;
 
-	// UART STATUS, ilk degerler 4'b1010
+   // UART STATUS, ilk degerler 4'b1010
    reg us3 ;
    reg us2 ;
    reg us1 ;
    reg us0 ;
-	
+   
    assign tx_o = uart_wdata;
    assign tx_en_o = uart_ctrl[0] && !us1;  // tx_en ve tx_not_empty
    assign rx_en_o = uart_ctrl[1] && !us2; //  rx_en ve rx_not_full
@@ -119,7 +119,7 @@ module axi_interface_uart(
    reg [7:0] uart_wdata_next ;
    reg tx_first ;
    reg tx_first_next ;
-	
+   
    // UART RECEIVE DATA
    reg [7:0] uart_rdata_next ;
    
@@ -145,11 +145,11 @@ module axi_interface_uart(
    reg s_axi_rvalid_o_next  ;
    reg s_axi_bresp_o_r_next ;
    reg s_axi_rresp_o_r_next ;
-	
-   wire [3:0]	reg_addres_r;
+   
+   wire [3:0]   reg_addres_r;
    assign reg_addres_r = s_axi_araddr_i;
    
-   wire [3:0]	reg_addres_w;
+   wire [3:0]   reg_addres_w;
    assign reg_addres_w = s_axi_awaddr_i;
    
    reg [1:0] yazma_sayaci ;
@@ -158,16 +158,16 @@ module axi_interface_uart(
    
    wire tx_buffer_write_condition;
    assign  tx_buffer_write_condition = (reg_addres_w==state_uart_wdata) && s_axi_bready_i;
-	
+   
    wire write_word;
-   assign write_word = &s_axi_wstrb_i;	
+   assign write_word = &s_axi_wstrb_i;   
    wire write_half;
    assign write_half = (s_axi_wstrb_i[0] && s_axi_wstrb_i[1]);
    wire write_byte;
    assign write_byte = s_axi_wstrb_i[0];
-	
+   
    wire read_word;
-   assign read_word = &read_size_i;	
+   assign read_word = &read_size_i;   
    wire read_half;
    assign read_half = (read_size_i[0] && read_size_i[1]);
    wire read_byte;
@@ -175,9 +175,9 @@ module axi_interface_uart(
      
    integer j=0;
    integer k=0;
-	
-	always @* begin
-	
+   
+   always @* begin
+   
       s_axi_arready_o_next = 1'b1;
       s_axi_rdata_o_next = s_axi_rdata_o_r;
       s_axi_awready_o_next = 1'b1;
@@ -254,13 +254,13 @@ module axi_interface_uart(
                s_axi_bvalid_o_next = 1'b1;
                s_axi_bresp_o_r_next = 1'b1;
                if(s_axi_wstrb_i[0])
-                  uart_ctrl_next[7:0] 		   = 		s_axi_wdata_i[7:0];
+                  uart_ctrl_next[7:0]          =       s_axi_wdata_i[7:0];
                if(s_axi_wstrb_i[1])
-                  uart_ctrl_next[15:8] 		= 		s_axi_wdata_i[15:8];
+                  uart_ctrl_next[15:8]       =       s_axi_wdata_i[15:8];
                if(s_axi_wstrb_i[2])
-                  uart_ctrl_next[23:16] 		= 		s_axi_wdata_i[23:16];
+                  uart_ctrl_next[23:16]       =       s_axi_wdata_i[23:16];
                if(s_axi_wstrb_i[3])
-                  uart_ctrl_next[31:24] 		= 		s_axi_wdata_i[31:24];
+                  uart_ctrl_next[31:24]       =       s_axi_wdata_i[31:24];
             end
             
             state_uart_wdata  : begin // only write
@@ -305,9 +305,9 @@ module axi_interface_uart(
                else begin
                   tx_buffer_write_idx_next = tx_buffer_write_idx + 1'b1;
                   us1 = 1'b0; // tx_is_not_empty
-	               us0 = 1'b0; // tx_full_not
+                  us0 = 1'b0; // tx_full_not
                end
-            end	
+            end   
          end
       end
       else begin
@@ -325,31 +325,31 @@ module axi_interface_uart(
                us2 = 1'b0; // rx_is_not_full
                rx_buffer_write_idx_next = rx_buffer_write_idx + 1'b1;
             end  
-            rx_buf_data		 = rx_i;               
-         end		   
+            rx_buf_data       = rx_i;               
+         end         
       end
         
    end
-	
-	always @(posedge s_axi_aclk_i) begin
-	  if(!s_axi_aresetn_i)begin // s_axi_aresetn_i == 0 ise resetlenecek
-	     s_axi_arready_o_r <= 1'b0;        
-	     s_axi_rdata_o_r   <= 32'd0;          
-	     s_axi_awready_o_r <= 32'd0;        
-	     s_axi_wready_o_r  <= 1'b0;         
-	     s_axi_bvalid_o_r  <= 1'b0;         
-	     s_axi_rvalid_o_r  <= 1'b0;                                                                                                                                
-	     uart_status[3]    <= 1'b1;                            
-	     uart_status[2]    <= 1'b0;                            
-	     uart_status[1]    <= 1'b1;                            
-	     uart_status[0]    <= 1'b0;                                                                                   
-	     uart_ctrl         <= 32'd0;                                                                          
-	     uart_wdata        <= 8'd0;                                    
-	                                                       
-	     for(j=0 ; j<32 ; j=j+1) begin                     
-	        tx_buffer[j] <= 8'd0; 
-	     end
-	                                                       
+   
+   always @(posedge s_axi_aclk_i) begin
+     if(!s_axi_aresetn_i)begin // s_axi_aresetn_i == 0 ise resetlenecek
+        s_axi_arready_o_r <= 1'b0;        
+        s_axi_rdata_o_r   <= 32'd0;          
+        s_axi_awready_o_r <= 32'd0;        
+        s_axi_wready_o_r  <= 1'b0;         
+        s_axi_bvalid_o_r  <= 1'b0;         
+        s_axi_rvalid_o_r  <= 1'b0;                                                                                                                                
+        uart_status[3]    <= 1'b1;                            
+        uart_status[2]    <= 1'b0;                            
+        uart_status[1]    <= 1'b1;                            
+        uart_status[0]    <= 1'b0;                                                                                   
+        uart_ctrl         <= 32'd0;                                                                          
+        uart_wdata        <= 8'd0;                                    
+                                                          
+        for(j=0 ; j<32 ; j=j+1) begin                     
+           tx_buffer[j] <= 8'd0; 
+        end
+                                                          
         tx_buffer_write_idx <= 5'd0;  
         tx_buffer_read_idx <= 5'd0;    
                                                           
@@ -361,9 +361,9 @@ module axi_interface_uart(
         rx_buffer_read_idx  <= 5'd0;    
                                                           
         tx_first <= 1'b0;                                                                        
-	  end    
-	  
-	  else begin
+     end    
+     
+     else begin
         s_axi_arready_o_r <= s_axi_arready_o_next;
         s_axi_rdata_o_r   <= s_axi_rdata_o_next;
         s_axi_awready_o_r <= s_axi_awready_o_next;
@@ -379,8 +379,8 @@ module axi_interface_uart(
         if(tx_buffer_write_condition && !uart_status[0]/*tx_is_not_full*/) begin   
            tx_buffer[tx_buffer_read_idx]    <= tx_buf_data[7:0];   
         end
-        	
-	     s_axi_bvalid_o_r  <= s_axi_bvalid_o_next;         
+           
+        s_axi_bvalid_o_r  <= s_axi_bvalid_o_next;         
         tx_buffer_write_idx <= tx_buffer_write_idx_next;
         tx_buffer_read_idx <= tx_buffer_read_idx_next;
         
@@ -392,6 +392,6 @@ module axi_interface_uart(
         tx_first <= tx_first_next;
      end
    end
-	
+   
 
 endmodule
