@@ -21,6 +21,9 @@ module AMB(
     input       [5:0]       islem_kodu_i,
     input                   sikistirilmis_mi_i,
     
+    input       [2:0]       dallanma_buy_turu_i,
+    input                   dallanma_aktif_i,
+    
     output                  AMB_hazir_o,
     output      [31:0]      sonuc_o,
     output      [31:0]      jal_r_adres_o,            //jal ve jalr buyru?u i?in  
@@ -39,13 +42,21 @@ reg             AMB_hazir_r           ;
 reg             AMB_hazir_r_next      ;  
 reg             jal_r_adres_gecerli_r ;  
 
-// hasana dallanma birimindeki yanlisiliklari da soylemeyi unutma
-assign esit_mi_o   =  AMB_aktif_i ? (yazmac_degeri1_i == yazmac_degeri2_i) : 0;
-assign buyuk_mu_o  =  AMB_aktif_i ? ($signed(yazmac_degeri1_i) > $signed(yazmac_degeri2_i)) : 0;
-assign buyuk_mu_o_unsigned  =  AMB_aktif_i ? ($unsigned(yazmac_degeri1_i) > $unsigned(yazmac_degeri2_i)) : 0;
-     
+
+
+reg         esit_mi_o_r;
+reg         buyuk_mu_o_r;
+reg         buyuk_mu_o_unsigned_r;
+
+assign esit_mi_o   = esit_mi_o_r; //AMB_aktif_i ? (yazmac_degeri1_i == yazmac_degeri2_i) : 0;
+assign buyuk_mu_o  = buyuk_mu_o_r; //AMB_aktif_i ? ($signed(yazmac_degeri1_i) > $signed(yazmac_degeri2_i)) : 0;
+assign buyuk_mu_o_unsigned  = buyuk_mu_o_unsigned_r; // AMB_aktif_i ? ($unsigned(yazmac_degeri1_i) > $unsigned(yazmac_degeri2_i)) : 0;
+
 reg  [31:0] aritmetik_sayi1_r;
 reg  [31:0] aritmetik_sayi2_r;
+
+reg         cikarma_aktif_r;
+wire [31:0] cikarma_sonuc_w;
 
 reg         carpma_aktif_r;
 reg         carpim_unsigned_r;
@@ -97,6 +108,12 @@ bolme bolme_algoritmasi(
     .result_ready_o(bolme_sonuc_hazir_w)
 );
 
+cikarma cikarma_islemi(
+    .blok_aktif_i(cikarma_aktif_r),
+    .sayi1_i(aritmetik_sayi1_r),
+    .sayi2_i(aritmetik_sayi2_r),
+    .sonuc_o(cikarma_sonuc_w)
+);
 
 always @(*) begin
    /* durdur_i gelirse icerideki degerler korunmali,
@@ -114,6 +131,12 @@ always @(*) begin
    bolme_signed_r    = 1'b0;
    stall_r           = 1'b0;
    carpim_mulhsu_r   = 1'b0;
+   
+   esit_mi_o_r            = 1'b0;
+   buyuk_mu_o_r           = 1'b0;         
+   buyuk_mu_o_unsigned_r  = 1'b0;
+   
+   cikarma_aktif_r        = 1'b0;
    
    if(!durdur_i) begin
        if(AMB_aktif_i) begin
@@ -310,9 +333,11 @@ always @(*) begin
                    AMB_hazir_r_next = 1'b1;
                 end
                `ALU_SUB     : begin
-                   sonuc_r_next     =   yazmac_degeri1_i - yazmac_degeri2_i;
-                   AMB_hazir_r_next = 1'b1;
-               
+                   cikarma_aktif_r   = 1'b1;
+                   aritmetik_sayi1_r = yazmac_degeri1_i;
+                   aritmetik_sayi2_r = yazmac_degeri2_i;
+                   sonuc_r_next      =   cikarma_sonuc_w;
+                   AMB_hazir_r_next  = 1'b1;            
                end
                // mantik islemleri
                `ALU_AND     : begin
@@ -381,6 +406,33 @@ always @(*) begin
                 end
                          
            endcase 
+        end
+        
+        if(dallanma_aktif_i) begin
+           cikarma_aktif_r   = 1'b1;
+           aritmetik_sayi1_r = yazmac_degeri1_i;
+           aritmetik_sayi2_r = yazmac_degeri2_i;
+       
+           if(cikarma_sonuc_w == 32'd0) begin
+              esit_mi_o_r = 1'b1;
+           end
+           
+           if($signed(cikarma_sonuc_w) > 0) begin
+              buyuk_mu_o_r = 1'b1;
+           end
+           
+           if(aritmetik_sayi1_r[31] && !aritmetik_sayi2_r[31]) begin
+              buyuk_mu_o_unsigned_r = 1'b1;
+           end
+           
+           if(!aritmetik_sayi1_r[31] && !aritmetik_sayi2_r [31] && !cikarma_sonuc_w[31]) begin
+              buyuk_mu_o_unsigned_r = 1'b1;
+           end
+           
+           if(aritmetik_sayi1_r[31] && aritmetik_sayi2_r[31] && !cikarma_sonuc_w[31]) begin
+              buyuk_mu_o_unsigned_r = 1'b1;
+           end
+           
         end
     end
 end

@@ -8,7 +8,7 @@ module wrapper_yurut (
         input                    amb_aktif_i,
         input       [31:0]       yazmac_degeri1_i,
         input       [31:0]       yazmac_degeri2_i,
-        input		[31:0]		 ps_i,
+        input       [31:0]	      ps_i,
         input       [31:0]       anlik_i, 
         input       [5:0]        amb_islem_kodu_i,       
         input       [4:0]        hedef_yazmaci_i,
@@ -18,7 +18,7 @@ module wrapper_yurut (
         input                    bellege_yaz_i, 
         input                    bellekten_oku_i, 
         input       [2:0]        dallanma_buy_turu_i, 
-        input 					 sikistirilmis_mi_i,
+        input                    sikistirilmis_mi_i,
         // GETIR->COZ->YURUT
         input                    dallanma_ongorusu_i,
         // \--------------------- COZ-YURUT -> YAPAY ZEKA -----------------------------/		
@@ -35,7 +35,7 @@ module wrapper_yurut (
         output                   guncelle_atladi_o, 
         // Dallanma ongorucusu + ps ureticisine
         output      [31:0]       guncelle_ps_o,
-        output 	    [31:0]		 guncelle_hedef_adresi_o, 
+        output      [31:0]       guncelle_hedef_adresi_o, 
         output                   bosalt_o, // ayni zamanda boru hattinin bosaltilmasini soyleyen sinyal, kombinasyonel
         // PS ureticisine (jump buyru?undan sonra gidilecek adres)
         output      [31:0]       jal_r_adres_o,  
@@ -94,6 +94,8 @@ module wrapper_yurut (
 		.adres_i(ps_i),
 		.islem_kodu_i(amb_islem_kodu_i),
 		.sikistirilmis_mi_i(sikistirilmis_mi_i),
+		.dallanma_buy_turu_i(dallanma_buy_turu_i),
+		.dallanma_aktif_i(dallanma_aktif_i),
 		// 		OUTPUTS
 		.AMB_hazir_o(AMB_hazir),
 		.sonuc_o(AMB_sonuc),
