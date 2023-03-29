@@ -186,7 +186,8 @@ module wrapper_islemci (
     wrapper_axi axi                   (
         .axi_aclk_i(clk),
         .axi_aresetn_i(resetn),
-
+        
+        .spi_miso_i(spi_miso_i),
         .rx_i(uart_rx_i),
         .giris_cikis_aktif_i(giris_cikis_aktif_w),
         .address_i(vbellek_adres_w),
@@ -198,7 +199,10 @@ module wrapper_islemci (
         .pwm2_o(pwm1_w),
         .okunan_veri_o(gc_okunan_veri_w),
         .okunan_gecerli_o(gc_veri_gecerli_w),
-        .stall_o(gc_stall_w)
+        .stall_o(gc_stall_w),
+        .spi_cs_o(spi_cs_w),  
+        .spi_sck_o(spi_sck_w), 
+        .spi_mosi_o(spi_mosi_w)
     );
 
     /*

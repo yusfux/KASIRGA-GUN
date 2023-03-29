@@ -43,7 +43,9 @@ module axi_master(
 	 output              okunan_veri_gecerli_o,
 	 input    [31:0]     data_i,
 	 output   [3:0]      read_size_o,
-	 input               giris_cikis_aktif_i
+	 input               giris_cikis_aktif_i,
+	 
+	 output              stall_o
      
 
     );
@@ -108,6 +110,10 @@ module axi_master(
 	reg [31:0] okunan_veri_o_r;
 	reg [2:0]  buyruk_turu_i_r;
 	
+	reg wait_response_r;
+	reg wait_response_r_next;
+	reg stall_o_r;
+	
 	assign okunan_veri_o = okunan_veri_o_r;
 	
 	always @* begin
@@ -122,6 +128,8 @@ module axi_master(
 	axi_wdata_r = 32'd0;
 	read_size_o_r = 4'd0;
 	axi_wstrb_r = 4'd0;
+	wait_response_r_next = 1'b0;
+	stall_o_r = 1'b0;
 	
 	if(read_handshake) begin
 		axi_arvalid_r_next = 1'b0;
@@ -132,15 +140,8 @@ module axi_master(
 		axi_wvalid_r_next = 1'b0;
 	end
 	
-	if(axi_bready_r && axi_bvalid_i) begin
-		// veri yazildi
-
-		if(axi_bresp_i) begin // gecerli
-		  
-		end
-		else begin // gecersiz
-		  
-		end
+	if(wait_response_r && !(axi_bvalid_i)) begin
+	   stall_o_r = 1'b1;
 	end
 	
 	if(axi_rvalid_i) begin
@@ -178,6 +179,7 @@ module axi_master(
 	end
 	
 	if(giris_cikis_aktif_i) begin
+	
         case (buyruk_turu_i)
             `MEM_LB : begin
                 axi_araddr_r = address_i;
@@ -215,6 +217,7 @@ module axi_master(
                 axi_wdata_r = data_i;
                 axi_wvalid_r_next = 1'b1;
                 axi_wstrb_r = 4'b0001;
+                wait_response_r_next = 1'b1;
 
             end
             
@@ -224,6 +227,7 @@ module axi_master(
                 axi_wdata_r = data_i;
                 axi_wvalid_r_next = 1'b1;
                 axi_wstrb_r = 4'b0011;
+                wait_response_r_next = 1'b1;
                 
             end
             
@@ -233,6 +237,8 @@ module axi_master(
                 axi_wdata_r = data_i;
                 axi_wvalid_r_next = 1'b1;
                 axi_wstrb_r = 4'b1111;
+                wait_response_r_next = 1'b1;
+                
             end
             
             default : begin
@@ -252,6 +258,7 @@ module axi_master(
             axi_wvalid_r <= 1'b0;
             axi_arvalid_r <= 1'b0;
             buyruk_turu_i_r <= 3'd0;
+            wait_response_r <= 1'b0;
         end
         else begin
             axi_awvalid_r <= axi_awvalid_r_next;
@@ -259,6 +266,7 @@ module axi_master(
             axi_wvalid_r <= axi_wvalid_r_next;
             axi_arvalid_r <= axi_arvalid_r_next;
             buyruk_turu_i_r <= buyruk_turu_i;
+            wait_response_r <= wait_response_r_next;
         end
 	end
 	

@@ -33,8 +33,7 @@ module axi4_lite_slave_uart(
      input   [3:0]      read_size_i,
      
      output tx_o,
-     input rx_i,
-     output stall_o
+     input rx_i
      
     );
 
@@ -72,8 +71,7 @@ wire [7:0] rx_w;
 	.tx_en_o(tx_en_w),
 	.rx_en_o(rx_en_w),
 	.tx_o(tx_w),
-	.rx_i(rx_w),
-	.stall_o(stall_o)		
+	.rx_i(rx_w)	
     );
     
 

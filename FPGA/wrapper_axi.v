@@ -1,18 +1,23 @@
 `timescale 1ns / 1ps 
 
 module wrapper_axi (
-        input        axi_aclk_i,
-        input        axi_aresetn_i,
+        input         axi_aclk_i,
+        input         axi_aresetn_i,
 
-        input        rx_i,
-        input        giris_cikis_aktif_i,
-        input [31:0] address_i,     // vbellek_adres_o
-        input [2:0]  buyruk_turu_i, //vbellek_buyruk_turu_o
-        input [31:0] data_i,        //vbellek_veri_o
-
+        input         giris_cikis_aktif_i,
+        input [31:0]  address_i,     // vbellek_adres_o
+        input [2:0]   buyruk_turu_i, //vbellek_buyruk_turu_o
+        input [31:0]  data_i,        //vbellek_veri_o
+        
+        input         rx_i,
+        input         spi_miso_i,
+        
         output        tx_o,
         output        pwm1_o,
         output        pwm2_o,
+        output        spi_cs_o,
+        output        spi_sck_o,
+        output        spi_mosi_o,
         output [31:0] okunan_veri_o,    //gc_okunan_veri_i
         output        okunan_gecerli_o,
         output        stall_o
@@ -52,13 +57,22 @@ module wrapper_axi (
     wire        s_axi_wready_o_pwm;
     wire        s_axi_bvalid_o_pwm;
     wire        s_axi_bresp_o_pwm;
+    
+    wire        s_axi_arready_o_spi;
+    wire        s_axi_rvalid_o_spi;
+    wire [31:0] s_axi_rdata_o_spi;
+    wire        s_axi_rresp_o_spi;
+    wire        s_axi_awready_o_spi;
+    wire        s_axi_wready_o_spi;
+    wire        s_axi_bvalid_o_spi;
+    wire        s_axi_bresp_o_spi;
      
-     assign axi_arready_w    = s_axi_arready_o_uart ||  s_axi_arready_o_pwm;
-     assign axi_rvalid_w     = s_axi_rvalid_o_uart  ^   s_axi_rvalid_o_pwm;
-     assign axi_rdata_w      = s_axi_rvalid_o_uart  ?   s_axi_rdata_o_uart : s_axi_rvalid_o_pwm ? s_axi_rdata_o_pwm : 32'd0;
-     assign axi_awready_w    = s_axi_awready_o_uart ||  s_axi_awready_o_pwm;
-     assign axi_wready_w     = s_axi_wready_o_uart  ||  s_axi_wready_o_pwm;
-     assign axi_bvalid_w     = s_axi_bvalid_o_uart  ^   s_axi_bvalid_o_pwm;
+     assign axi_arready_w    = s_axi_arready_o_uart ||  s_axi_arready_o_pwm || s_axi_arready_o_spi;
+     assign axi_rvalid_w     = s_axi_rvalid_o_uart  ^   s_axi_rvalid_o_pwm  ^  s_axi_rvalid_o_spi;
+     assign axi_rdata_w      = s_axi_rvalid_o_spi   ?   s_axi_rdata_o_spi   :  s_axi_rvalid_o_uart  ?  s_axi_rdata_o_uart : s_axi_rvalid_o_pwm ? s_axi_rdata_o_pwm : 32'd0;
+     assign axi_awready_w    = s_axi_awready_o_uart ||  s_axi_awready_o_pwm || s_axi_awready_o_spi;
+     assign axi_wready_w     = s_axi_wready_o_uart  ||  s_axi_wready_o_pwm  || s_axi_wready_o_spi;
+     assign axi_bvalid_w     = s_axi_bvalid_o_uart  ^   s_axi_bvalid_o_pwm  || s_axi_bvalid_o_spi;
      
     
      axi_master axi_m(
@@ -87,7 +101,8 @@ module wrapper_axi (
 	    .read_size_o(read_size_w),
 	    .okunan_veri_gecerli_o(okunan_gecerli_o),
 	     
-	    .giris_cikis_aktif_i(giris_cikis_aktif_i)
+	    .giris_cikis_aktif_i(giris_cikis_aktif_i),
+	    .stall_o(stall_o)
     );
     
     
@@ -112,8 +127,37 @@ module wrapper_axi (
         .read_size_i(read_size_w),
          
         .tx_o(tx_o),
-        .rx_i(rx_i),
-        .stall_o(stall_o)
+        .rx_i(rx_i)
+        
+    );    
+    
+    
+    
+     axi4_lite_slave_spi axi_s_spi(
+        .s_axi_aclk_i(axi_aclk_i), 
+        .s_axi_aresetn_i(axi_aresetn_i),
+        .s_axi_araddr_i(axi_araddr_w),  
+        .s_axi_arready_o(s_axi_arready_o_spi),  
+        .s_axi_arvalid_i(axi_arvalid_w), 
+        .s_axi_rready_i(axi_rready_w),
+        .s_axi_rvalid_o(s_axi_rvalid_o_spi),
+        .s_axi_rdata_o(s_axi_rdata_o_spi), 
+        .s_axi_awaddr_i(axi_awaddr_w),
+        .s_axi_awready_o(s_axi_awready_o_spi),
+        .s_axi_awvalid_i(axi_awvalid_w),
+        .s_axi_wdata_i(axi_wdata_w),
+        .s_axi_wready_o(s_axi_wready_o_spi),
+        .s_axi_wstrb_i(axi_wstrb_w),
+        .s_axi_wvalid_i(axi_wvalid_w),
+        .s_axi_bready_i(axi_bready_w),
+        .s_axi_bvalid_o(s_axi_bvalid_o_spi),
+        .read_size_i(read_size_w),
+        
+        .cs_o(spi_cs_o),
+        .sck_o(spi_sck_o),
+        .spi_mosi_o(spi_mosi_o),
+        .spi_miso_i(spi_miso_i)
+         
     );    
     
     
