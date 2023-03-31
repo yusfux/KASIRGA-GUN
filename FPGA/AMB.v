@@ -1,3 +1,4 @@
+
 `timescale 1ns / 1ps
 
 
@@ -48,9 +49,9 @@ reg         esit_mi_o_r;
 reg         buyuk_mu_o_r;
 reg         buyuk_mu_o_unsigned_r;
 
-assign esit_mi_o   = esit_mi_o_r; //AMB_aktif_i ? (yazmac_degeri1_i == yazmac_degeri2_i) : 0;
-assign buyuk_mu_o  = buyuk_mu_o_r; //AMB_aktif_i ? ($signed(yazmac_degeri1_i) > $signed(yazmac_degeri2_i)) : 0;
-assign buyuk_mu_o_unsigned  = buyuk_mu_o_unsigned_r; // AMB_aktif_i ? ($unsigned(yazmac_degeri1_i) > $unsigned(yazmac_degeri2_i)) : 0;
+assign esit_mi_o   = (yazmac_degeri1_i == yazmac_degeri2_i);
+assign buyuk_mu_o  = ($signed(yazmac_degeri1_i) > $signed(yazmac_degeri2_i));
+assign buyuk_mu_o_unsigned  = ($unsigned(yazmac_degeri1_i) > $unsigned(yazmac_degeri2_i));
 
 reg  [31:0] aritmetik_sayi1_r;
 reg  [31:0] aritmetik_sayi2_r;
@@ -159,86 +160,86 @@ always @(*) begin
                end
                
                `ALU_MUL     :   begin 
-//                    sonuc_r_next     =   $signed(yazmac_degeri1_i) * $signed(yazmac_degeri2_i);
+                    sonuc_r_next     =   $signed(yazmac_degeri1_i) * $signed(yazmac_degeri2_i);
 //                    sonuc_r_next = 1;
-//                    AMB_hazir_r_next = 1'b1;
+                    AMB_hazir_r_next = 1'b1;
                    
-                   carpma_aktif_r    = 1'b1;
-                   carpim_unsigned_r = 1'b0;
-                   aritmetik_sayi1_r = yazmac_degeri1_i;
-                   aritmetik_sayi2_r = yazmac_degeri2_i;
+//                   carpma_aktif_r    = 1'b1;
+//                   carpim_unsigned_r = 1'b0;
+//                   aritmetik_sayi1_r = yazmac_degeri1_i;
+//                   aritmetik_sayi2_r = yazmac_degeri2_i;
                     
-                   if(!carpim_sonuc_hazir_w) begin
-                        stall_r     = 1'b1;   
-                   end
-                   else begin
-                        stall_r           = 1'b0;
-                        sonuc_r_next      = carpma_sonuc_w[31:0];
-                        AMB_hazir_r_next = 1'b1;
-                    end
+//                   if(!carpim_sonuc_hazir_w) begin
+//                        stall_r     = 1'b1;   
+//                   end
+//                   else begin
+//                        stall_r           = 1'b0;
+//                        sonuc_r_next      = carpma_sonuc_w[31:0];
+//                        AMB_hazir_r_next = 1'b1;
+//                    end
 
                end 
           
                `ALU_MULH    :   begin 
-//                    sonuc_r_next     =   ($signed(yazmac_degeri1_i) * $signed(yazmac_degeri2_i)) >> 32;
+                    sonuc_r_next     =   ($signed(yazmac_degeri1_i) * $signed(yazmac_degeri2_i)) >> 32;
 //                   sonuc_r_next = 2;
-//                   AMB_hazir_r_next = 1'b1;
+                   AMB_hazir_r_next = 1'b1;
                    
-                   carpma_aktif_r    = 1'b1;
-                   carpim_unsigned_r = 1'b0;
-                   aritmetik_sayi1_r = yazmac_degeri1_i;
-                   aritmetik_sayi2_r = yazmac_degeri2_i;
+//                   carpma_aktif_r    = 1'b1;
+//                   carpim_unsigned_r = 1'b0;
+//                   aritmetik_sayi1_r = yazmac_degeri1_i;
+//                   aritmetik_sayi2_r = yazmac_degeri2_i;
                     
-                   if(!carpim_sonuc_hazir_w) begin
-                        stall_r     = 1'b1;   
-                    end
-                    else begin
-                        stall_r           = 1'b0;
-                        sonuc_r_next      = carpma_sonuc_w[63:32];
-                        AMB_hazir_r_next = 1'b1;
-                    end
+//                   if(!carpim_sonuc_hazir_w) begin
+//                        stall_r     = 1'b1;   
+//                    end
+//                    else begin
+//                        stall_r           = 1'b0;
+//                        sonuc_r_next      = carpma_sonuc_w[63:32];
+//                        AMB_hazir_r_next = 1'b1;
+//                    end
                     
                end
                           
                `ALU_MULHSU  :   begin 
-//                    sonuc_r_next     =   ({{6'd32{yazmac_degeri1_i[31]}},yazmac_degeri1_i} *  {{6'd32{1'b0}},yazmac_degeri2_i}) >> 32;	
+                    sonuc_r_next     =   ({{6'd32{yazmac_degeri1_i[31]}},yazmac_degeri1_i} *  {{6'd32{1'b0}},yazmac_degeri2_i}) >> 32;	
 //                    sonuc_r_next = 3;
-//                    AMB_hazir_r_next = 1'b1;
+                    AMB_hazir_r_next = 1'b1;
                         
-                    carpma_aktif_r    = 1'b1;
-                    carpim_unsigned_r = 1'b0; 
-                    carpim_mulhsu_r   = 1'b1;
-                    aritmetik_sayi1_r = yazmac_degeri1_i;
-                    aritmetik_sayi2_r = yazmac_degeri2_i;	  
+//                    carpma_aktif_r    = 1'b1;
+//                    carpim_unsigned_r = 1'b0; 
+//                    carpim_mulhsu_r   = 1'b1;
+//                    aritmetik_sayi1_r = yazmac_degeri1_i;
+//                    aritmetik_sayi2_r = yazmac_degeri2_i;	  
                     
-                    if(!carpim_sonuc_hazir_w) begin
-                        stall_r     = 1'b1;   
-                    end
-                    else begin
-                        stall_r           = 1'b0;
-                        sonuc_r_next      = carpma_sonuc_w[63:32];
-                        AMB_hazir_r_next = 1'b1;
-                    end
+//                    if(!carpim_sonuc_hazir_w) begin
+//                        stall_r     = 1'b1;   
+//                    end
+//                    else begin
+//                        stall_r           = 1'b0;
+//                        sonuc_r_next      = carpma_sonuc_w[63:32];
+//                        AMB_hazir_r_next = 1'b1;
+//                    end
                end
                
 			   `ALU_MULHU   :   begin 
-//			        sonuc_r_next     =   ($unsigned(yazmac_degeri1_i) * $unsigned(yazmac_degeri2_i)) >> 32;
+			        sonuc_r_next     =   ($unsigned(yazmac_degeri1_i) * $unsigned(yazmac_degeri2_i)) >> 32;
 //			        sonuc_r_next = 4;
-//                    AMB_hazir_r_next = 1'b1;
+                    AMB_hazir_r_next = 1'b1;
 			        
-			           carpma_aktif_r    = 1'b1;
-			           carpim_unsigned_r = 1'b1;
-                    aritmetik_sayi1_r = yazmac_degeri1_i;
-                    aritmetik_sayi2_r = yazmac_degeri2_i;
+//			           carpma_aktif_r    = 1'b1;
+//			           carpim_unsigned_r = 1'b1;
+//                    aritmetik_sayi1_r = yazmac_degeri1_i;
+//                    aritmetik_sayi2_r = yazmac_degeri2_i;
                     
-                    if(!carpim_sonuc_hazir_w) begin
-                        stall_r     = 1'b1;   
-                    end
-                    else begin
-                        stall_r           = 1'b0;
-                        sonuc_r_next      = carpma_sonuc_w[63:32];
-                        AMB_hazir_r_next = 1'b1;
-                    end
+//                    if(!carpim_sonuc_hazir_w) begin
+//                        stall_r     = 1'b1;   
+//                    end
+//                    else begin
+//                        stall_r           = 1'b0;
+//                        sonuc_r_next      = carpma_sonuc_w[63:32];
+//                        AMB_hazir_r_next = 1'b1;
+//                    end
 
                end
 			   `ALU_DIV     :   begin        //sonuc_r_next     =   $signed(yazmac_degeri1_i) / $signed(yazmac_degeri2_i);
@@ -316,16 +317,16 @@ always @(*) begin
                 end          
                 
                `ALU_JAL     : begin  
-                         sonuc_r_next          = sikistirilmis_mi_i ? adres_i + 2 : adres_i + 4;
-                         adres_r               =   adres_i + anlik_i; 
-                         jal_r_adres_gecerli_r = 1'b1;
-                         AMB_hazir_r_next = 1'b1;
+                   sonuc_r_next          = sikistirilmis_mi_i ? adres_i + 2 : adres_i + 4;
+                   adres_r               =   adres_i + anlik_i; 
+                   jal_r_adres_gecerli_r = 1'b1;
+                   AMB_hazir_r_next = 1'b1;
                 end        
                `ALU_JALR    : begin  
-                         sonuc_r_next          = sikistirilmis_mi_i ? adres_i + 2 : adres_i + 4;      
-                         adres_r               =   yazmac_degeri1_i + anlik_i;     
-                         jal_r_adres_gecerli_r = 1'b1;   
-                         AMB_hazir_r_next = 1'b1;                         
+                   sonuc_r_next          = sikistirilmis_mi_i ? adres_i + 2 : adres_i + 4;      
+                   adres_r               =   yazmac_degeri1_i + anlik_i;     
+                   jal_r_adres_gecerli_r = 1'b1;   
+                   AMB_hazir_r_next = 1'b1;                         
                 end
                 
                `ALU_MEM     : begin

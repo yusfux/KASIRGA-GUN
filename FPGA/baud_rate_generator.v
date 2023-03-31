@@ -17,13 +17,13 @@ module baud_rate_generator
    assign rx_tick_o = rx_tick_o_r;
    assign tx_tick_o = tx_tick_o_r;
        
-   wire [31:0] max_r_clock;
-   wire [31:0] max_t_clock;
-   assign max_r_clock = baud_div_i[15:4];
+   wire [15:0] max_r_clock;
+   wire [15:0] max_t_clock;
+   assign max_r_clock = baud_div_i>>4;
    assign max_t_clock = baud_div_i;
    
-   reg [31:0] rx_counter ;
-   reg [31:0] tx_counter ;
+   reg [15:0] rx_counter ;
+   reg [15:0] tx_counter ;
     
 
    always @(posedge clk_i) begin

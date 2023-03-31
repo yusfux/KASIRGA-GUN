@@ -55,8 +55,7 @@ module dallanma_birimi(
    input               sikistirilmis_mi_i
  );
    assign guncelle_ps_o = ps_i;
-    
-    
+   
    reg [31:0] guncelle_hedef_adresi_o_r;
    
    reg guncelle_gecerli_o_r;

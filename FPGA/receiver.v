@@ -57,7 +57,7 @@ module receiver(
             idle : begin
                r_done_next = 1'b0;
                if(rx_tick_i)begin
-                  if(rx_i==0 && sayac==7) begin
+                  if(rx_i==0 && sayac==8) begin
                      next_state = data;
                      next_sayac = 5'd0;   
                   end
@@ -70,7 +70,7 @@ module receiver(
             
             data : begin
                if(rx_tick_i)begin        
-                  if(sayac == 15) begin 
+                  if(sayac == 16) begin 
                      next_sayac = sayac + 1'b1;
                      next_state = data;
                      tut_next = {rx_i,tut[7:1]}; 
@@ -89,7 +89,7 @@ module receiver(
             
             stop : begin
                if(rx_tick_i)begin
-                  if(sayac == 15) begin
+                  if(sayac == 16) begin
                      r_done_next =1;
                      next_r_out = tut;
                      next_state = idle;

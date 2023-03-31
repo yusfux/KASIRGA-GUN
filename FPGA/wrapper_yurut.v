@@ -94,8 +94,6 @@ module wrapper_yurut (
 		.adres_i(ps_i),
 		.islem_kodu_i(amb_islem_kodu_i),
 		.sikistirilmis_mi_i(sikistirilmis_mi_i),
-		.dallanma_buy_turu_i(dallanma_buy_turu_i),
-		.dallanma_aktif_i(dallanma_aktif_i),
 		// 		OUTPUTS
 		.AMB_hazir_o(AMB_hazir),
 		.sonuc_o(AMB_sonuc),

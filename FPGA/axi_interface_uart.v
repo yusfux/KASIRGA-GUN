@@ -16,7 +16,7 @@ module axi_interface_uart(
      input              s_axi_arvalid_i,     
      input              s_axi_rready_i,
      output             s_axi_rvalid_o, 
-     output [31:0]      s_axi_rdata_o, 
+     output  [31:0]     s_axi_rdata_o, 
      
      //         WRITE SIGNALS
     // aw -> address write (address in)
@@ -36,12 +36,12 @@ module axi_interface_uart(
      // UART
      input              r_done_i,
      input              t_done_i,
-     input    [7:0]       rx_i,
+     input   [7:0]      rx_i,
      output             rx_en_o,
      output             tx_en_o,
-     output [7:0]       tx_o,
-     output [15:0]      baud_div_o,
-     input  [3:0]       read_size_i
+     output  [7:0]      tx_o,
+     output  [15:0]     baud_div_o,
+     input   [3:0]      read_size_i
     );
     
    // OUTPUTS
@@ -192,7 +192,7 @@ module axi_interface_uart(
       uart_wdata_next = uart_wdata;
       uart_rdata_next = rx_buffer[rx_buffer_read_idx];//
       tx_buf_data = s_axi_wdata_i; //0
-      rx_buf_data = 0; //rx_i
+      rx_buf_data = rx_i; //0 *********
       tx_buffer_write_idx_next = tx_buffer_write_idx;
       tx_buffer_read_idx_next = tx_buffer_read_idx;
       rx_buffer_write_idx_next = rx_buffer_write_idx;
@@ -317,7 +317,7 @@ module axi_interface_uart(
       if(rx_en && (!uart_status[2])) begin // rx_en && !rx_full
          if(r_done_i) begin   
             us3 = 1'b0; // rx_is_not_empty
-            if(rx_buffer_write_idx == 31) begin // ==31
+            if(rx_buffer_write_idx == (rx_buffer_read_idx-1'b1)) begin // ==31 eski hali *****
                us2 = 1'b1; // rx_full
                rx_buffer_write_idx_next = rx_buffer_write_idx;
             end 
@@ -384,7 +384,7 @@ module axi_interface_uart(
         tx_buffer_write_idx <= tx_buffer_write_idx_next;
         tx_buffer_read_idx <= tx_buffer_read_idx_next;
         
-        if(rx_en) begin
+        if(rx_en && r_done_i) begin
            rx_buffer[rx_buffer_write_idx] <= rx_buf_data;   
         end         
         rx_buffer_write_idx <= rx_buffer_write_idx_next;
