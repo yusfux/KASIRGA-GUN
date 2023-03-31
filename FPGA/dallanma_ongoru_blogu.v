@@ -2,7 +2,7 @@
 
 // BIMODAL BRANCH PREDICTOR
 
-module dallanma_ongoru_blogu #(parameter hafiza_boyutu = 64)(
+module dallanma_ongoru_blogu #(parameter hafiza_boyutu = 128)(
    // Saat ve reset
     input               clk_i,
     input               rst_i,
