@@ -15,7 +15,6 @@ module axi_master(
      output              axi_rready_o,
      input               axi_rvalid_i,   
      input [31:0]        axi_rdata_i, 
-     input               axi_rresp_i,
      
      //         WRITE SIGNALS
     // aw -> address write (address in)
@@ -35,12 +34,11 @@ module axi_master(
      input               axi_bvalid_i, 
      input               axi_bresp_i,  
 
-     input      [31:0]     address_i,
+     input    [31:0]     address_i,
      input    [2:0]      buyruk_turu_i,
      output   [31:0]     okunan_veri_o,
      output              okunan_veri_gecerli_o,
      input    [31:0]     data_i,
-     output   [3:0]      read_size_o,
      input               giris_cikis_aktif_i,
      
      output              stall_o
@@ -69,9 +67,6 @@ module axi_master(
    reg  [31:0]  axi_wdata_r;
    assign axi_wdata_o = axi_wdata_r;
    
-   reg  [3:0]   axi_wstrb_r;
-   assign axi_wstrb_o = axi_wstrb_r;
-   
    reg          axi_wvalid_r; // hafiza
    reg          axi_wvalid_r_next;
    assign axi_wvalid_o = axi_wvalid_r_next;
@@ -79,9 +74,10 @@ module axi_master(
    reg        axi_bready_r; // hafiza
    reg        axi_bready_r_next;
    assign axi_bready_o = axi_bready_r_next;
-
+   
+   reg  [3:0]   axi_wstrb_r;
    reg  [3:0]   read_size_o_r;
-   assign read_size_o = read_size_o_r;
+   assign axi_wstrb_o = read_size_o_r | axi_wstrb_r;
    
    reg          okunan_veri_gecerli_o_r;
    assign       okunan_veri_gecerli_o = okunan_veri_gecerli_o_r;

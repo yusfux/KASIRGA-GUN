@@ -38,12 +38,10 @@ module wrapper_axi (
     wire        axi_wvalid_w;
     wire        axi_bready_w;
     wire        axi_bvalid_w; 
-    wire [3:0]  read_size_w;
     
     wire        s_axi_arready_o_uart;
     wire        s_axi_rvalid_o_uart;
     wire [31:0] s_axi_rdata_o_uart;
-    wire        s_axi_rresp_o_uart;
     wire        s_axi_awready_o_uart;
     wire        s_axi_wready_o_uart;
     wire        s_axi_bvalid_o_uart;
@@ -52,7 +50,6 @@ module wrapper_axi (
     wire        s_axi_arready_o_pwm;
     wire        s_axi_rvalid_o_pwm;
     wire [31:0] s_axi_rdata_o_pwm;
-    wire        s_axi_rresp_o_pwm;
     wire        s_axi_awready_o_pwm;
     wire        s_axi_wready_o_pwm;
     wire        s_axi_bvalid_o_pwm;
@@ -61,7 +58,6 @@ module wrapper_axi (
     wire        s_axi_arready_o_spi;
     wire        s_axi_rvalid_o_spi;
     wire [31:0] s_axi_rdata_o_spi;
-    wire        s_axi_rresp_o_spi;
     wire        s_axi_awready_o_spi;
     wire        s_axi_wready_o_spi;
     wire        s_axi_bvalid_o_spi;
@@ -97,7 +93,6 @@ module wrapper_axi (
       .buyruk_turu_i(buyruk_turu_i),
       .okunan_veri_o(okunan_veri_o),
       .data_i(data_i),
-      .read_size_o(read_size_w),
       .okunan_veri_gecerli_o(okunan_gecerli_o),
       .giris_cikis_aktif_i(giris_cikis_aktif_i),
       .stall_o(stall_o)
@@ -122,7 +117,7 @@ module wrapper_axi (
       .s_axi_wvalid_i(axi_wvalid_w),
       .s_axi_bready_i(axi_bready_w),
       .s_axi_bvalid_o(s_axi_bvalid_o_uart),
-      .read_size_i(read_size_w),  
+      .read_size_i(axi_wstrb_w),  
         
       .tx_o(tx_o),
       .rx_i(rx_i)
@@ -148,7 +143,7 @@ module wrapper_axi (
        .s_axi_wvalid_i(axi_wvalid_w),
        .s_axi_bready_i(axi_bready_w),
        .s_axi_bvalid_o(s_axi_bvalid_o_spi),
-       .read_size_i(read_size_w),
+       .read_size_i(axi_wstrb_w),
        
        .cs_o(spi_cs_o),
        .sck_o(spi_sck_o),
@@ -175,7 +170,7 @@ module wrapper_axi (
        .s_axi_wvalid_i(axi_wvalid_w),
        .s_axi_bready_i(axi_bready_w),
        .s_axi_bvalid_o(s_axi_bvalid_o_pwm),
-       .read_size_i(read_size_w),
+       .read_size_i(axi_wstrb_w),
               
        .pwm1_o(pwm1_o),
        .pwm2_o(pwm2_o)
