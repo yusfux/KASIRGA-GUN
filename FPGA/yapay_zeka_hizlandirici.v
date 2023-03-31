@@ -143,7 +143,7 @@ module yapay_zeka_hizlandirici(
                   bir_cevrim_stall_r_next = 1'b0;
                   conv_hazir_r_next = 1'b1;
                end
-               else if(conva_hazir[conv_idx + 1'b1] == 1'b0) begin
+               else if(conva_hazir[conv_idx] == 1'b0) begin
                   bir_cevrim_stall_r_next = 1'b0;
                   cikis_ver_next = 1'b1;
                end
