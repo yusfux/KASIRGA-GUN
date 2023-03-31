@@ -2,13 +2,13 @@
 
 // 16 x oversample
 
-module baud_rate_generator 
+module baud_rate_generator #(parameter oversample=0)
 (
    input         clk_i,
    input         rst_i,
    output        rx_tick_o,
    output        tx_tick_o,
-   input  [15:0] baud_div_i  
+   input  [15:0] baud_div_i 
 );
     
    reg rx_tick_o_r ;
@@ -19,12 +19,11 @@ module baud_rate_generator
        
    wire [15:0] max_r_clock;
    wire [15:0] max_t_clock;
-   assign max_r_clock = baud_div_i>>4;
+   assign max_r_clock = baud_div_i >> (oversample == 5'd16 ? 3'd4 : oversample == 4'd8 ? 2'd3 : 0);
    assign max_t_clock = baud_div_i;
    
    reg [15:0] rx_counter ;
    reg [15:0] tx_counter ;
-    
 
    always @(posedge clk_i) begin
  

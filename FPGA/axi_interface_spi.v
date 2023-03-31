@@ -28,14 +28,14 @@ module axi_interface_spi(
      input   [3:0]      read_size_i, 
      
      // SPI ICIN CIKISLAR
-     output  [4:0]        adres_bit_o, // adresin en anlamsiz 5 biti
+     output  [4:0]      adres_bit_o, // adresin en anlamsiz 5 biti
      output             islem_o, // 0 ise oku, 1 ise yaz
-     output               islem_gecerli_o, // 1 ise islem_o'dan gelen deger gecerli
-     output  [1:0]        read_type_o, // 00 ise 1 byte, 01 ise 2 byte, 10 ise 4 byte oku
-     output  [1:0]        write_type_o,// 00 ise 1 byte, 01 ise 2 byte, 10 ise 4 byte yaz
+     output             islem_gecerli_o, // 1 ise islem_o'dan gelen deger gecerli
+     output  [1:0]      read_type_o, // 00 ise 1 byte, 01 ise 2 byte, 10 ise 4 byte oku
+     output  [1:0]      write_type_o,// 00 ise 1 byte, 01 ise 2 byte, 10 ise 4 byte yaz
       
      // SPI'DAN GELEN GIRISLER
-     input               islem_bitti_i
+     input              islem_bitti_i
     );
     
    // SPI cikislarinin atamalari 116. satirda

@@ -17,7 +17,7 @@ module Uart(
     wire tx_tick_w;
     wire rx_tick_w;
        
-    baud_rate_generator brg(
+    baud_rate_generator #(.oversample(16)) brg (
         .clk_i(clk_i),
         .rst_i(rst_i),
         .tx_tick_o(tx_tick_w),
@@ -26,7 +26,7 @@ module Uart(
     );
     
     
-    receiver uart_receiver(
+    receiver #(.oversample(16)) uart_receiver (
         .clk_i(clk_i),
         .rst_i(rst_i),
         .rx_i(rx_i),

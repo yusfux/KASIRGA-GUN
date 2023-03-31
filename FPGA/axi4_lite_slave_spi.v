@@ -67,9 +67,9 @@ module axi4_lite_slave_spi(
       .s_axi_bready_i(s_axi_bready_i),
       .s_axi_bvalid_o(s_axi_bvalid_o),
       .read_size_i(read_size_i),  
-       .adres_bit_o(adres_bit_w), 
+      .adres_bit_o(adres_bit_w), 
       .islem_o(islem_w), 
-       .islem_gecerli_o(islem_gecerli_w), 
+      .islem_gecerli_o(islem_gecerli_w), 
       .read_type_o(read_type_w), 
       .write_type_o(write_type_w),
       .islem_bitti_i(islem_bitti_w)
@@ -77,8 +77,8 @@ module axi4_lite_slave_spi(
     
     
     spi spi(
-      .clk_i(axi_aclk_i),
-      .rst_i(axi_aresetn_i),
+      .clk_i(s_axi_aclk_i),
+      .rst_i(s_axi_aresetn_i),
       .adres_bit_i(adres_bit_w),
       .islem_i(islem_w),
       .islem_gecerli_i(islem_gecerli_w),

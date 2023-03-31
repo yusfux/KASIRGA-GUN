@@ -2,7 +2,7 @@
 
 // BIMODAL BRANCH PREDICTOR
 
-module dallanma_ongoru_blogu(
+module dallanma_ongoru_blogu #(parameter hafiza_boyutu = 64)(
    // Saat ve reset
     input               clk_i,
     input               rst_i,
@@ -28,27 +28,29 @@ module dallanma_ongoru_blogu(
     );
     
        // Satir numaralari
-   wire [6:0]an_str_idx;
-   assign an_str_idx =  ongoru_aktif_i ? ps_i[7:1] : 0;
-   wire [6:0]gun_str_idx;
-   assign gun_str_idx = guncelle_gecerli_i ? guncelle_ps_i[7:1] : 0;
+   localparam idx_width = $clog2(hafiza_boyutu);
    
-   reg [127:0] etiket_gecerli_r;
-   reg [1:0] durum_r [127:0];
-   reg [23:0] etiket_r [127:0];
-   reg [31:0] hedef_adres_r [127:0];
+   wire [idx_width-1:0]an_str_idx;
+   assign an_str_idx =  ongoru_aktif_i ? ps_i[idx_width:1] : 0;
+   wire [idx_width-1:0]gun_str_idx;
+   assign gun_str_idx = guncelle_gecerli_i ? guncelle_ps_i[idx_width:1] : 0;
+   
+   reg [hafiza_boyutu-1'b1:0] etiket_gecerli_r;
+   reg [1:0] durum_r [hafiza_boyutu-1'b1:0];
+   reg [30-hafiza_boyutu:0] etiket_r [hafiza_boyutu-1'b1:0];
+   reg [31:0] hedef_adres_r [hafiza_boyutu-1'b1:0];
    reg [31:0] hedef_adres_buf;
    reg [1:0] durum_buf;
   
    // Etiket
-   wire [23:0] etiket_gun;
-   assign etiket_gun =  guncelle_ps_i[31:8]; 
+   wire [5'd30-idx_width:0] etiket_gun;
+   assign etiket_gun =  guncelle_ps_i[31:idx_width+1'b1]; 
    
-   wire [23:0] etiket_anl;
-   assign etiket_anl = ps_i[31:8]; 
+   wire [5'd30-idx_width:0] etiket_anl;
+   assign etiket_anl = ps_i[31:idx_width+1'b1]; 
    
    reg  etiket_gecerli;
-   reg  [6:0] gun_str_idx_buf;
+   reg  [idx_width-1:0] gun_str_idx_buf;
    
    // Durumlar
    localparam GT = 2'b00;
@@ -63,15 +65,15 @@ module dallanma_ongoru_blogu(
    assign ongoru_gecerli_o = ongoru_gecerli_o_r; 
 
    // TEST ICIN
-   reg [31:0]atlamaz_tahmin;
-   reg [31:0]atlar_tahmin;
-   reg [31:0]atladi;
-   reg [31:0]atlamadi;
+   reg [123:0]atlamaz_tahmin;
+   reg [123:0]atlar_tahmin;
+   reg [123:0]atladi;
+   reg [123:0]atlamadi;
    
-   reg [31:0]atlamaz_tahmin_ns;
-   reg [31:0]atlar_tahmin_ns;
-   reg [31:0]atladi_ns;
-   reg [31:0]atlamadi_ns;
+   reg [123:0]atlamaz_tahmin_ns;
+   reg [123:0]atlar_tahmin_ns;
+   reg [123:0]atladi_ns;
+   reg [123:0]atlamadi_ns;
    
    integer i;
    
@@ -103,9 +105,9 @@ module dallanma_ongoru_blogu(
               
            GT : begin
               if(guncelle_atladi_i)
-                   durum_buf = ZT;
+                 durum_buf = ZT;
               else    
-                   durum_buf = GT;
+                 durum_buf = GT;
            end
               
            ZT : begin
@@ -142,12 +144,12 @@ module dallanma_ongoru_blogu(
            end
            else begin // ATLAMAZ
               atlamaz_tahmin_ns = atlamaz_tahmin + 1'b1;
-              atlanan_ps_o_r = ps_i + 3'd4;
+              //atlanan_ps_o_r = ps_i + 3'd4;
            end
            end
         else begin // ATLAMAZ
            atlamaz_tahmin_ns = atlamaz_tahmin + 1'b1;
-           atlanan_ps_o_r = ps_i + 3'd4;
+           //atlanan_ps_o_r = ps_i + 3'd4;
         end
      end
    end
@@ -180,16 +182,30 @@ module dallanma_ongoru_blogu(
    end
      
    else begin // RESET
-      atlamaz_tahmin   <= 32'd0;
-      atlar_tahmin     <= 32'd0; 
-      atlamadi         <= 32'd0;
-      atladi           <= 32'd0;
+      atlamaz_tahmin   <= 124'd0;
+      atlar_tahmin     <= 124'd0; 
+      atlamadi         <= 124'd0;
+      atladi           <= 124'd0;
       etiket_gecerli_r <= 128'd0;  
       
-      for(i=0;i<128;i=i+1) begin
+      for(i=0;i<hafiza_boyutu;i=i+1) begin
          durum_r[i] <= 2'd0;
       end
    end
    end
+  
+  wire [124:0] toplam_tahmin;
+  assign toplam_tahmin = atlar_tahmin + atlamaz_tahmin;
+  reg [123:0] hatali_tahmin = 124'd0;
+  wire [15:0] dogru_tahmin_yuzde;
+  assign dogru_tahmin_yuzde = (100*(toplam_tahmin - hatali_tahmin))/toplam_tahmin;
+  
+  always @(posedge clk_i) begin
+   if(dallanma_hata_i) begin
+      hatali_tahmin <= hatali_tahmin + 1'b1;
+   end
+  
+  end
+  
   
 endmodule

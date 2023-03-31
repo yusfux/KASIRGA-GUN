@@ -102,6 +102,7 @@ module axi_master(
    reg wait_response_r_next;
    reg stall_o_r;
    
+   assign stall_o       = stall_o_r;
    assign okunan_veri_o = okunan_veri_o_r;
    
    always @* begin

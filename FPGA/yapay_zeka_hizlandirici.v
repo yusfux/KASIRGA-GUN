@@ -132,12 +132,6 @@ module yapay_zeka_hizlandirici(
          carpim_sonuc_next   = carpim_sonuc;
          
          if(!durdur_i) begin
-         
-//            if(conv_idx == 15) begin 
-//               conv_hazir_r_next = 1'b1;
-//               bir_cevrim_stall_r_next = 1'b0;
-//            end
-
             if(conv_yap_en_i) begin // 
                if(conv_hazir_r) begin
                   bir_cevrim_stall_r_next = 1'b0;
@@ -156,7 +150,7 @@ module yapay_zeka_hizlandirici(
             
             // sonra topla
             if(toplama_islemi) begin
-               convolution_sonuc_r_next = convolution_sonuc_r + carpim_sonuc;
+               convolution_sonuc_r_next = (convolution_sonuc_r + carpim_sonuc) ;
                conv_idx_next = conv_idx + 1'b1;  // 15->0
                toplama_islemi_next = 1'b0;
                
@@ -167,7 +161,7 @@ module yapay_zeka_hizlandirici(
             end
             // once carp
             else if(conva_hazir[conv_idx] && (!conv_hazir_r)) begin
-               carpim_sonuc_next   = veri_matris_r[conv_idx] * filtre_matris_r[conv_idx];
+               carpim_sonuc_next   = (veri_matris_r[conv_idx] * filtre_matris_r[conv_idx]);
                toplama_islemi_next = 1'b1;
             end
             
