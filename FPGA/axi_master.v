@@ -203,7 +203,6 @@ module axi_master(
                 axi_wvalid_r_next = 1'b1;
                 axi_wstrb_r = 4'b0001;
                 wait_response_r_next = 1'b1;
-
             end
             
             `MEM_SH : begin
@@ -212,8 +211,7 @@ module axi_master(
                 axi_wdata_r = data_i;
                 axi_wvalid_r_next = 1'b1;
                 axi_wstrb_r = 4'b0011;
-                wait_response_r_next = 1'b1;
-                
+                wait_response_r_next = 1'b1;             
             end
             
             `MEM_SW : begin
@@ -223,7 +221,6 @@ module axi_master(
                 axi_wvalid_r_next = 1'b1;
                 axi_wstrb_r = 4'b1111;
                 wait_response_r_next = 1'b1;
-                
             end
             
             default : begin

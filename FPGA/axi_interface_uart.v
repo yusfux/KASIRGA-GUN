@@ -152,10 +152,6 @@ module axi_interface_uart(
    wire [3:0]   reg_addres_w;
    assign reg_addres_w = s_axi_awaddr_i;
    
-   reg [1:0] yazma_sayaci ;
-   reg [1:0] yazma_sayaci_next ;
-   reg  ys_half_word ;
-   
    wire tx_buffer_write_condition;
    assign  tx_buffer_write_condition = (reg_addres_w==state_uart_wdata) && s_axi_bready_i;
    
@@ -198,7 +194,6 @@ module axi_interface_uart(
       rx_buffer_write_idx_next = rx_buffer_write_idx;
       rx_buffer_read_idx_next = rx_buffer_read_idx;
       tx_first_next = tx_first;
-      yazma_sayaci_next = yazma_sayaci;
       s_axi_bresp_o_r_next = 1'b0;
       s_axi_rresp_o_r_next = 1'b0;
       
@@ -263,9 +258,9 @@ module axi_interface_uart(
                   uart_ctrl_next[31:24]       =       s_axi_wdata_i[31:24];
             end
             
-            state_uart_wdata  : begin // only write
-                
+            state_uart_wdata  : begin // only write           
                if(!uart_status[0] && !t_done_i) begin // tx_is_not_full
+                  s_axi_bvalid_o_next = 1'b1;
                   us1 = 1'b0; // tx_is_not_empty
                   tx_buf_data = s_axi_wdata_i[7:0]; 
                   if(write_byte) begin
