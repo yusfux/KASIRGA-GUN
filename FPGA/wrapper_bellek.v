@@ -79,9 +79,9 @@ module wrapper_bellek (
 
     always @(posedge clk_i) begin
         if(!rst_i) begin
-            yazmaca_yaz_r         = 1'b0;
-            hedef_yazmaci_r       = 5'd0;
-            hedef_yazmac_verisi_r = 32'd0;
+            yazmaca_yaz_r         <= 1'b0;
+            hedef_yazmaci_r       <= 5'd0;
+            hedef_yazmac_verisi_r <= 32'd0;
         end
         else begin
 		    if((!vbellek_denetim_hazir_i && (bellekten_oku_i || bellege_yaz_i) && !giris_cikis_aktif_w) || gc_stall_i)begin
