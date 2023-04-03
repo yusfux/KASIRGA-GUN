@@ -34,16 +34,20 @@ module pwm1(
    assign pwm1_o = pwm1_o_r           ;
    reg mode2_threshold_control        ;
    reg mode2_threshold_control_next   ;
-    
+  
    wire kontrol;
    assign kontrol = (counter==(pwm1_period_w-1'b1));
+   
+   reg geri_gel_r;
+   reg geri_gel_r_next;
     
    always @* begin
      counter_next = counter;
      pwm1_o_r_next = 1'b0;
      mode2_threshold_next = mode2_threshold;
      mode2_threshold_control_next = mode2_threshold_control;
-   
+     geri_gel_r_next = geri_gel_r;
+     
      if(pwm1_mode_w==2'd0) begin // cikis 0 verilir
         mode2_threshold_control_next = 1'b1;
         pwm1_o_r_next = 1'b0;
@@ -71,15 +75,25 @@ module pwm1(
            mode2_threshold_control_next = 1'b0;
         end
         else begin
-           if(mode2_threshold>pwm1_threshold2_w) begin
+           if(!geri_gel_r && mode2_threshold>pwm1_threshold2_w) begin
+              // bitti, bastan basla
+              counter_next = 32'd0;
+              mode2_threshold_next = pwm1_threshold2_w;
+              geri_gel_r_next = 1'b1;
+           end 
+           if(geri_gel_r && mode2_threshold<pwm1_threshold1_w) begin
               // bitti, bastan basla
               counter_next = 32'd0;
               mode2_threshold_next = pwm1_threshold1_w;
+              geri_gel_r_next = 1'b0;
            end
            else begin
               if(kontrol) begin
                  counter_next = 32'd0;
-                 mode2_threshold_next = mode2_threshold + pwm1_step_w; 
+                 if(!geri_gel_r)
+                    mode2_threshold_next = mode2_threshold + pwm1_step_w; 
+                 else 
+                    mode2_threshold_next = mode2_threshold - pwm1_step_w;
               end
               else begin
                  mode2_threshold_next = mode2_threshold;
@@ -102,12 +116,14 @@ module pwm1(
          counter <= 32'd0;
          mode2_threshold <= 32'd0;
          mode2_threshold_control <= 1'b0;
+         geri_gel_r <= 1'b0;
       end
       else begin
          pwm1_o_r <= pwm1_o_r_next;
          counter <= counter_next;
          mode2_threshold <= mode2_threshold_next;
          mode2_threshold_control <= mode2_threshold_control_next;
+         geri_gel_r <= geri_gel_r_next;
       end  
    end
       

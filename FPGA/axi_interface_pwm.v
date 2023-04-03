@@ -73,49 +73,49 @@ module axi_interface_pwm(
    parameter [31:0] PWM_MASK_ADDR = 32'h0000_00ff;
    
    // REGISTERS
-   reg [1:0]    pwm_control_1        ; 
+   reg [1:0]     pwm_control_1        ; 
    reg [31:0]    pwm_period_1         ;
    reg [31:0]    pwm_threshold_1_1    ;
    reg [31:0]    pwm_threshold_1_2    ;
    reg [11:0]    pwm_step_1           ;
-   reg         pwm_output_1         ;
+   reg           pwm_output_1         ;
    
-   reg [1:0]    pwm_control_2        ; 
+   reg [1:0]     pwm_control_2        ; 
    reg [31:0]    pwm_period_2         ;
    reg [31:0]    pwm_threshold_2_1    ;
    reg [31:0]    pwm_threshold_2_2    ;
    reg [11:0]    pwm_step_2           ;
-   reg         pwm_output_2         ;
+   reg           pwm_output_2         ;
    
    // STATES
-   localparam state_pwm_control_1 = 8'b0000_0000;
-   localparam state_pwm_control_2 = 8'b0000_0100;
-   localparam state_pwm_period_1  = 8'b0000_1000;
-   localparam state_pwm_period_2  = 8'b0000_1100;   
+   localparam state_pwm_control_1      = 8'b0000_0000;
+   localparam state_pwm_control_2      = 8'b0000_0100;
+   localparam state_pwm_period_1       = 8'b0000_1000;
+   localparam state_pwm_period_2       = 8'b0000_1100;   
    localparam state_pwm_threshold_1_1  = 8'b0001_0000;
    localparam state_pwm_threshold_1_2  = 8'b0001_0100;
    
    localparam state_pwm_threshold_2_1  = 8'b0001_1000;
    localparam state_pwm_threshold_2_2  = 8'b0001_1100;   
-   localparam state_pwm_step_1   = 8'b0010_0000;
-   localparam state_pwm_step_2   = 8'b0010_0100;
-   localparam state_pwm_output_1  = 8'b0010_1000;
-   localparam state_pwm_output_2  = 8'b0010_1100;
+   localparam state_pwm_step_1         = 8'b0010_0000;
+   localparam state_pwm_step_2         = 8'b0010_0100;
+   localparam state_pwm_output_1       = 8'b0010_1000;
+   localparam state_pwm_output_2       = 8'b0010_1100;
 
    // Next signals
    reg [1:0]  pwm_control_1_next      ;
    reg [31:0] pwm_period_1_next       ;
    reg [31:0] pwm_threshold_1_1_next  ;
    reg [31:0] pwm_threshold_1_2_next  ;
-   reg [11:0] pwm_step_1_next           ;
-   reg       pwm_output_1_next           ;
+   reg [11:0] pwm_step_1_next         ;
+   reg        pwm_output_1_next       ;
       
    reg [1:0]  pwm_control_2_next      ;
    reg [31:0] pwm_period_2_next       ;
    reg [31:0] pwm_threshold_2_1_next  ;
    reg [31:0] pwm_threshold_2_2_next  ;
-   reg [11:0] pwm_step_2_next           ;
-   reg       pwm_output_2_next           ;
+   reg [11:0] pwm_step_2_next         ;
+   reg        pwm_output_2_next       ;
    
    
    // Outputs
@@ -176,27 +176,27 @@ module axi_interface_pwm(
 
    always @* begin
    
-      s_axi_arready_o_next    = 1'b1;
+      s_axi_arready_o_next     = 1'b1;
       s_axi_rdata_o_next       = s_axi_rdata_o_r;
-      s_axi_awready_o_next    = 1'b1;
-      s_axi_wready_o_next       = 1'b1;
-      s_axi_bvalid_o_next       = 1'b0;
-      s_axi_rvalid_o_next       = 1'b0;
+      s_axi_awready_o_next     = 1'b1;
+      s_axi_wready_o_next      = 1'b1;
+      s_axi_bvalid_o_next      = 1'b0;
+      s_axi_rvalid_o_next      = 1'b0;
       read_state_next          = 1'b0;
-      write_state_next          = 1'b0;
+      write_state_next         = 1'b0;
       pwm_control_1_next       = pwm_control_1;
-      pwm_period_1_next       = pwm_period_1;
-      pwm_threshold_1_1_next    = pwm_threshold_1_1;
-      pwm_threshold_1_2_next    = pwm_threshold_1_2;
+      pwm_period_1_next        = pwm_period_1;
+      pwm_threshold_1_1_next   = pwm_threshold_1_1;
+      pwm_threshold_1_2_next   = pwm_threshold_1_2;
       pwm_step_1_next          = pwm_step_1;
-      pwm_output_1_next       = pwm1_i;
+      pwm_output_1_next        = pwm1_i;
       
       pwm_control_2_next       = pwm_control_2;
-      pwm_period_2_next       = pwm_period_2;
-      pwm_threshold_2_1_next    = pwm_threshold_2_1;
-      pwm_threshold_2_2_next    = pwm_threshold_2_2;
+      pwm_period_2_next        = pwm_period_2;
+      pwm_threshold_2_1_next   = pwm_threshold_2_1;
+      pwm_threshold_2_2_next   = pwm_threshold_2_2;
       pwm_step_2_next          = pwm_step_2;
-      pwm_output_2_next       = pwm2_i;
+      pwm_output_2_next        = pwm2_i;
       
       if(r_adress_check && s_axi_rready_i) begin
          read_state_next = 1'b0;  
@@ -433,40 +433,40 @@ module axi_interface_pwm(
    
    always @(posedge s_axi_aclk_i) begin
       if(!s_axi_aresetn_i)begin // s_axi_aresetn_i == 0 ise resetlenecek
-         s_axi_arready_o_r <= 1'b0;        
-         s_axi_rdata_o_r   <= 32'd0;          
-         s_axi_awready_o_r <= 32'd0;        
-         s_axi_wready_o_r  <= 1'b0;         
-         s_axi_bvalid_o_r  <= 1'b0;         
-         s_axi_rvalid_o_r  <= 1'b0;         
-         s_axi_bresp_o_r   <= 1'b0; 
-         s_axi_rresp_o_r   <= 1'b0;
+         s_axi_arready_o_r   <= 1'b0;        
+         s_axi_rdata_o_r     <= 32'd0;          
+         s_axi_awready_o_r   <= 32'd0;        
+         s_axi_wready_o_r    <= 1'b0;         
+         s_axi_bvalid_o_r    <= 1'b0;         
+         s_axi_rvalid_o_r    <= 1'b0;         
+         s_axi_bresp_o_r     <= 1'b0; 
+         s_axi_rresp_o_r     <= 1'b0;
           
-         read_state        <= 1'b0;                    
-         write_state       <= 1'b0;                  
+         read_state          <= 1'b0;                    
+         write_state         <= 1'b0;                  
          pwm_control_1       <= 2'd0;
-         pwm_period_1       <= 32'd0;
-         pwm_threshold_1_1 <= 32'd0;
-         pwm_threshold_1_2 <= 32'd0;
+         pwm_period_1        <= 32'd0;
+         pwm_threshold_1_1   <= 32'd0;
+         pwm_threshold_1_2   <= 32'd0;
          pwm_step_1          <= 12'd0;                
-         pwm_output_1      <= 1'b0;                                                                                                                  
+         pwm_output_1        <= 1'b0;                                                                                                                  
       end    
        
       else begin
-         s_axi_arready_o_r  <= s_axi_arready_o_next;
-         s_axi_rdata_o_r    <= s_axi_rdata_o_next;
-         s_axi_awready_o_r  <= s_axi_awready_o_next;
-         s_axi_wready_o_r   <= s_axi_wready_o_next;           
-         s_axi_rvalid_o_r   <= s_axi_rvalid_o_next;            
+         s_axi_arready_o_r    <= s_axi_arready_o_next;
+         s_axi_rdata_o_r      <= s_axi_rdata_o_next;
+         s_axi_awready_o_r    <= s_axi_awready_o_next;
+         s_axi_wready_o_r     <= s_axi_wready_o_next;           
+         s_axi_rvalid_o_r     <= s_axi_rvalid_o_next;            
          read_state           <= read_state_next;
-         write_state        <= write_state_next;      
+         write_state          <= write_state_next;      
          s_axi_bvalid_o_r     <= s_axi_bvalid_o_next;
          pwm_control_1        <= pwm_control_1_next;
-         pwm_period_1        <= pwm_period_1_next;
-         pwm_threshold_1_1  <= pwm_threshold_1_1_next;
-         pwm_threshold_1_2  <= pwm_threshold_1_2_next;
+         pwm_period_1         <= pwm_period_1_next;
+         pwm_threshold_1_1    <= pwm_threshold_1_1_next;
+         pwm_threshold_1_2    <= pwm_threshold_1_2_next;
          pwm_step_1           <= pwm_step_1_next;
-         pwm_output_1       <= pwm_output_1_next;         
+         pwm_output_1         <= pwm_output_1_next;         
                
       end
    end
@@ -475,19 +475,19 @@ module axi_interface_pwm(
    always @(posedge s_axi_aclk_i) begin // s_axi_aresetn_i == 0 ise resetlenecek
       if(!s_axi_aresetn_i)begin              
          pwm_control_2        <= 2'd0;
-         pwm_period_2        <= 32'd0;
-         pwm_threshold_2_1  <= 32'd0;
-         pwm_threshold_2_2  <= 32'd0;
+         pwm_period_2         <= 32'd0;
+         pwm_threshold_2_1    <= 32'd0;
+         pwm_threshold_2_2    <= 32'd0;
          pwm_step_2           <= 12'd0;                
-         pwm_output_2       <= 1'b0;                                                                                                               
+         pwm_output_2         <= 1'b0;                                                                                                               
       end    
       else begin
          pwm_control_2        <= pwm_control_2_next;
-         pwm_period_2        <= pwm_period_2_next;
-         pwm_threshold_2_1  <= pwm_threshold_2_1_next;
-         pwm_threshold_2_2  <= pwm_threshold_2_2_next;
+         pwm_period_2         <= pwm_period_2_next;
+         pwm_threshold_2_1    <= pwm_threshold_2_1_next;
+         pwm_threshold_2_2    <= pwm_threshold_2_2_next;
          pwm_step_2           <= pwm_step_2_next;
-         pwm_output_2       <= pwm_output_2_next;      
+         pwm_output_2         <= pwm_output_2_next;      
       end
    end
    
