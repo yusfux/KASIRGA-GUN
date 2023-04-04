@@ -177,7 +177,7 @@ module axi_interface_pwm(
    always @* begin
    
       s_axi_arready_o_next     = 1'b1;
-      s_axi_rdata_o_next       = s_axi_rdata_o_r;
+      s_axi_rdata_o_next       = 32'd0;
       s_axi_awready_o_next     = 1'b1;
       s_axi_wready_o_next      = 1'b1;
       s_axi_bvalid_o_next      = 1'b0;
