@@ -43,7 +43,6 @@ module axi_interface_spi(
    // OUTPUTS
    reg s_axi_arready_o_r      ;
    reg s_axi_rvalid_o_r       ;
-   reg [31:0] s_axi_rdata_o_r ;
    reg s_axi_awready_o_r      ;
    reg s_axi_wready_o_r       ;
    reg s_axi_bvalid_o_r       ;
@@ -52,7 +51,6 @@ module axi_interface_spi(
    
    assign s_axi_arready_o = s_axi_arready_o_r;
    assign s_axi_rvalid_o  = s_axi_rvalid_o_r;
-   assign s_axi_rdata_o   = s_axi_rdata_o_r;
    assign s_axi_awready_o = s_axi_awready_o_r;
    assign s_axi_wready_o  = s_axi_wready_o_r;
    assign s_axi_bvalid_o  = s_axi_bvalid_o_r;
@@ -63,7 +61,6 @@ module axi_interface_spi(
    parameter [31:0] SPI_MASK_ADDR = 32'h0000_00ff;
              
    reg s_axi_arready_o_next       ;
-   reg [31:0] s_axi_rdata_o_next  ;
    reg s_axi_awready_o_next       ;
    reg s_axi_wready_o_next        ;
    reg s_axi_bvalid_o_next        ;
@@ -134,8 +131,7 @@ module axi_interface_spi(
    
    always @(posedge s_axi_aclk_i) begin
      if(!s_axi_aresetn_i)begin // s_axi_aresetn_i == 0 ise resetlenecek
-        s_axi_arready_o_r <= 1'b0;        
-        s_axi_rdata_o_r   <= 32'd0;          
+        s_axi_arready_o_r <= 1'b0;                 
         s_axi_awready_o_r <= 32'd0;        
         s_axi_wready_o_r  <= 1'b0;         
         s_axi_bvalid_o_r  <= 1'b0;         
@@ -146,7 +142,6 @@ module axi_interface_spi(
       
      else begin
         s_axi_arready_o_r  <= s_axi_arready_o_next;
-        s_axi_rdata_o_r    <= s_axi_rdata_o_next;
         s_axi_awready_o_r  <= s_axi_awready_o_next;
         s_axi_wready_o_r   <= s_axi_wready_o_next;
         s_axi_bvalid_o_r    <= s_axi_bvalid_o_next;         

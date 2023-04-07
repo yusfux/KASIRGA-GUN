@@ -32,7 +32,7 @@ module axi_master(
      
      output              axi_bready_o,
      input               axi_bvalid_i, 
-     input               axi_bresp_i,  
+//     input               axi_bresp_i,  
 
      input    [31:0]     address_i,
      input    [2:0]      buyruk_turu_i,

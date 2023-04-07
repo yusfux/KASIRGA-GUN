@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
 
-// SIGNED 33 CEVRIM / UNSIGNED 33 CEVRIM
+//5 CEVRIM/
 module bolme(
         input            clk_i,
         input            rst_i,
@@ -19,7 +19,21 @@ module bolme(
     reg [5:0] Ncounter_r;
     
     reg [31:0] a_ns;
+    reg [31:0] a_2_ns;
+    reg [31:0] a_3_ns;
+    reg [31:0] a_4_ns;
+    reg [31:0] a_5_ns;
+    reg [31:0] a_6_ns;
+    reg [31:0] a_7_ns;
+    reg [31:0] a_8_ns;    
     reg [31:0] q_ns;
+    reg [31:0] q_2_ns;
+    reg [31:0] q_3_ns;
+    reg [31:0] q_4_ns;
+    reg [31:0] q_5_ns;
+    reg [31:0] q_6_ns;
+    reg [31:0] q_7_ns;
+    reg [31:0] q_8_ns;
     reg [31:0] m_ns;
     
     reg [31:0] a_r;
@@ -114,20 +128,140 @@ module bolme(
                 if(a_r[31])begin
                     a    = a_r << 1;
                     a[0] = q_r[31];
-                    q_ns    = q_r << 1;
-                    a_ns = a + m_r;    //*    
+                    q_2_ns    = q_r << 1;
+                    a_2_ns = a + m_r;    //*    
                 end
                 else begin
                     a    = a_r << 1;
                     a[0] = q_r[31];
-                    q_ns    = q_r << 1;
+                    q_2_ns    = q_r << 1;
+                    a_2_ns = a - m_r;  // *     
+                end
+                q_2_ns[0] = 1'b1;
+                if(a_r[31])begin
+                    q_2_ns[0] = 1'b0;
+                end
+ /**********************1.opt*********************************/               
+                if(a_2_ns[31])begin
+                    a    = a_2_ns << 1;
+                    a[0] = q_2_ns[31];
+                    q_3_ns    = q_2_ns << 1;
+                    a_3_ns = a + m_r;    //*    
+                end
+                else begin
+                    a    = a_2_ns << 1;
+                    a[0] = q_2_ns[31];
+                    q_3_ns    = q_2_ns << 1;
+                    a_3_ns = a - m_r;  // *     
+                end
+                q_3_ns[0] = 1'b1;
+                if(a_2_ns[31])begin
+                    q_3_ns[0] = 1'b0;
+                end  
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                /**********2.opt*************/
+                if(a_3_ns[31])begin
+                    a    = a_3_ns << 1;
+                    a[0] = q_3_ns[31];
+                    q_4_ns    = q_3_ns << 1;
+                    a_4_ns = a + m_r;    //*    
+                end
+                else begin
+                    a    = a_3_ns << 1;
+                    a[0] = q_3_ns[31];
+                    q_4_ns    = q_3_ns << 1;
+                    a_4_ns = a - m_r;  // *     
+                end
+                q_4_ns[0] = 1'b1;
+                if(a_3_ns[31])begin
+                    q_4_ns[0] = 1'b0;
+                end           
+                if(a_4_ns[31])begin
+                    a    = a_4_ns << 1;
+                    a[0] = q_4_ns[31];
+                    q_5_ns    = q_4_ns << 1;
+                    a_5_ns = a + m_r;    //*    
+                end
+                else begin
+                    a    = a_4_ns << 1;
+                    a[0] = q_4_ns[31];
+                    q_5_ns    = q_4_ns << 1;
+                    a_5_ns = a - m_r;  // *     
+                end
+                q_5_ns[0] = 1'b1;
+                if(a_4_ns[31])begin
+                    q_5_ns[0] = 1'b0;
+                end   
+
+ //////////////////3.opt/////////////////////////////////////////////////////////////////////////////////////////////////
+                 if(a_5_ns[31])begin
+                    a    = a_5_ns << 1;
+                    a[0] = q_5_ns[31];
+                    q_6_ns    = q_5_ns << 1;
+                    a_6_ns = a + m_r;    //*    
+                end
+                else begin
+                    a    = a_5_ns << 1;
+                    a[0] = q_5_ns[31];
+                    q_6_ns    = q_5_ns << 1;
+                    a_6_ns = a - m_r;  // *     
+                end
+                q_6_ns[0] = 1'b1;
+                if(a_5_ns[31])begin
+                    q_6_ns[0] = 1'b0;
+                end
+ /**********************1.opt*********************************/               
+                if(a_6_ns[31])begin
+                    a    = a_6_ns << 1;
+                    a[0] = q_6_ns[31];
+                    q_7_ns    = q_6_ns << 1;
+                    a_7_ns = a + m_r;    //*    
+                end
+                else begin
+                    a    = a_6_ns << 1;
+                    a[0] = q_6_ns[31];
+                    q_7_ns    = q_6_ns << 1;
+                    a_7_ns = a - m_r;  // *     
+                end
+                q_7_ns[0] = 1'b1;
+                if(a_6_ns[31])begin
+                    q_7_ns[0] = 1'b0;
+                end  
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                /**********2.opt*************/
+                if(a_7_ns[31])begin
+                    a    = a_7_ns << 1;
+                    a[0] = q_7_ns[31];
+                    q_8_ns    = q_7_ns << 1;
+                    a_8_ns = a + m_r;    //*    
+                end
+                else begin
+                    a    = a_7_ns << 1;
+                    a[0] = q_7_ns[31];
+                    q_8_ns    = q_7_ns << 1;
+                    a_8_ns = a - m_r;  // *     
+                end
+                q_8_ns[0] = 1'b1;
+                if(a_7_ns[31])begin
+                    q_8_ns[0] = 1'b0;
+                end           
+                if(a_8_ns[31])begin
+                    a    = a_8_ns << 1;
+                    a[0] = q_8_ns[31];
+                    q_ns    = q_8_ns << 1;
+                    a_ns = a + m_r;    //*    
+                end
+                else begin
+                    a    = a_8_ns << 1;
+                    a[0] = q_8_ns[31];
+                    q_ns    = q_8_ns << 1;
                     a_ns = a - m_r;  // *     
                 end
                 q_ns[0] = 1'b1;
-                if(a_r[31])begin
+                if(a_8_ns[31])begin
                     q_ns[0] = 1'b0;
-                end
-                Ncounter_ns = Ncounter_r - 1'b1;
+                end                     
+                Ncounter_ns = Ncounter_r - 8;
                 
                 if(Ncounter_ns == 6'd0)begin
                     durum_ns = TAMAMLANDI;
