@@ -335,22 +335,11 @@ module spi(
                 end
                 `SPI_WDATA: begin
                     // sadece yazma
+                    islem_bitti_ns = 1;
                 end
                 `SPI_CMD: begin
-                    case (read_type_i)
-                    2'b00: begin
-                        veri_ns[31:0] = {24'b0, cmd_buffer_r[7:0]};
-                        islem_bitti_ns = 1;
-                    end
-                    2'b01: begin
-                        veri_ns[31:0] = {16'b0, cmd_buffer_r[15:0]};
-                        islem_bitti_ns = 1;
-                    end
-                    2'b10: begin
-                        veri_ns[31:0] = cmd_buffer_r[31:0];
-                        islem_bitti_ns = 1;
-                    end
-                    endcase
+                    // sadece yazma
+                    islem_bitti_ns = 1;
                 end
                 endcase
             end
