@@ -31,8 +31,8 @@ module axi_interface_spi(
      output  [4:0]      adres_bit_o, // adresin en anlamsiz 5 biti
      output             islem_o, // 0 ise oku, 1 ise yaz
      output             islem_gecerli_o, // 1 ise islem_o'dan gelen deger gecerli
-     output  [1:0]      read_type_o, // 00 ise 1 byte, 01 ise 2 byte, 10 ise 4 byte oku
-     output  [1:0]      write_type_o,// 00 ise 1 byte, 01 ise 2 byte, 10 ise 4 byte yaz
+     output  [1:0]      read_type_o, // 00 ise 1 byte, 01 ise 2 byte, 11 ise 4 byte oku
+     output  [1:0]      write_type_o,// 00 ise 1 byte, 01 ise 2 byte, 11 ise 4 byte yaz
       
      // SPI'DAN GELEN GIRISLER
      input              islem_bitti_i
@@ -87,7 +87,7 @@ module axi_interface_spi(
     
    // SPI OUTPUTS ///////////////////////////////////////////////
    assign     adres_bit_o         = r_adress_check ? reg_addres_r : w_adress_check ? reg_addres_w : 5'd0;
-   assign   islem_o             = r_adress_check;
+   assign   islem_o             = w_adress_check;
    assign   islem_gecerli_o     = r_adress_check | w_adress_check;
    
    assign   read_type_o[1]      = read_size_i[3]; 

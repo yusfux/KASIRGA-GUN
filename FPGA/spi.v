@@ -111,7 +111,7 @@ module spi(
         case (durum_r)
         DURUM_IDLE: begin
             sck_ns = cpol_w;
-            if(spi_en_w && (|cmd_count_r)) begin
+            if(spi_en_w && cmd_count_r == 0) begin
                 stall_cmb = 1;
                 cmd_current_ns = cmd_buffer_r[13:0];
                 cmd_buffer_ns = cmd_buffer_r >> 14;
@@ -285,7 +285,7 @@ module spi(
                         spi_ctrl_ns[(adres_bit_i[1:1]*16) +: 16] = veri_i[15:0];
                         islem_bitti_ns = 1;
                     end
-                    2'b10: begin
+                    2'b11: begin
                         spi_ctrl_ns[31:0] = veri_i[31:0];
                         islem_bitti_ns = 1;
                     end
@@ -321,7 +321,7 @@ module spi(
                             mosi_buffer_ns[mosi_pointer_w +: 32] = {16'b0, veri_i[15:0]};
                             islem_bitti_ns = 1;
                         end
-                        2'b10: begin
+                        2'b11: begin
                             mosi_buffer_ns[mosi_pointer_w +: 32] = veri_i[31:0];
                             islem_bitti_ns = 1;
                         end
@@ -347,7 +347,7 @@ module spi(
                             cmd_buffer_ns[(cmd_count_r*14) +: 14] = veri_i[13:0];
                             islem_bitti_ns = 1;
                         end
-                        2'b10: begin
+                        2'b11: begin
                             cmd_buffer_ns[(cmd_count_r*14) +: 14] = veri_i[13:0];
                             islem_bitti_ns = 1;
                         end
@@ -357,7 +357,7 @@ module spi(
                 endcase
             end
             else begin // oku
-                case (adres_bit_i)
+                case ({adres_bit_i[4:2], 2'b00})
                 `SPI_CTRL: begin
                     case (read_type_i)
                     2'b00: begin
@@ -368,7 +368,7 @@ module spi(
                         veri_ns[31:0] = {16'b0, spi_ctrl_r[15:0]};
                         islem_bitti_ns = 1;
                     end
-                    2'b10: begin
+                    2'b11: begin
                         veri_ns[31:0] = spi_ctrl_r[31:0];
                         islem_bitti_ns = 1;
                     end
@@ -387,7 +387,7 @@ module spi(
                     else begin
                         miso_buffer_ns = miso_buffer_r >> 32;
                         if(miso_count_r <= 32) begin
-                            spi_status_r[3:3] = 1'b1;
+                            spi_status_ns[3:3] = 1'b1;
                             miso_count_ns = 0;
                         end
                         else begin
@@ -402,7 +402,7 @@ module spi(
                             veri_ns[31:0] = {16'b0, miso_buffer_r[15:0]};
                             islem_bitti_ns = 1;
                         end
-                        2'b10: begin
+                        2'b11: begin
                             veri_ns[31:0] = miso_buffer_r[31:0];
                             islem_bitti_ns = 1;
                         end
