@@ -30,8 +30,14 @@ module AMB(
     output                  buyuk_mu_o,         
     output                  buyuk_mu_o_unsigned,
     
-    output                  stall_o
+    output                  stall_o,
+
+    output        amb_hazir_cmb_o,
+    output [31:0] amb_sonuc_cmb_o
 );
+
+    assign amb_hazir_cmb_o = AMB_hazir_r_next;
+    assign amb_sonuc_cmb_o = sonuc_r_next;
 
 reg     [31:0]  sonuc_r               ;
 reg     [31:0]  sonuc_r_next          ;
@@ -352,13 +358,5 @@ assign sonuc_o               =   sonuc_r [31:0];
 assign jal_r_adres_o         =   adres_r;    
 assign AMB_hazir_o           =   AMB_hazir_r;
 assign jal_r_adres_gecerli_o = jal_r_adres_gecerli_r;
-
-
-
-
-
-
-
-
 
 endmodule

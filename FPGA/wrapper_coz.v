@@ -1,6 +1,11 @@
 `timescale 1ns / 1ps
 
 module wrapper_coz (
+        input bellekten_oku_i,
+        input [31:0] hedef_yazmac_verisi_i,
+        input        yazmaca_yaz_i,
+        input [4:0]  hedef_yazmaci_i,
+
         input clk_i, rst_i,
 
         //FROM FETCH STAGE - POSEDGE
@@ -120,6 +125,11 @@ module wrapper_coz (
     );
 
     register_file register_file(
+        .bellekten_oku_i(bellekten_oku_i),
+        .hedef_yazmac_verisi_i(hedef_yazmac_verisi_i),
+        .yazmaca_yaz_i(yazmaca_yaz_i),
+        .hedef_yazmaci_i(hedef_yazmaci_i),
+
         .clk_i(clk_i),
         .rst_i(rst_i),
         .stall_register_file_i(stall_decode_stage_i || flush_decode_stage_i),

@@ -19,7 +19,12 @@
 // 
 //////////////////////////////////////////////////////////////////////////////////
 
-module register_file(
+module register_file (
+        input        bellekten_oku_i,
+        input [31:0] hedef_yazmac_verisi_i,
+        input        yazmaca_yaz_i,
+        input [4:0]  hedef_yazmaci_i,
+
         input clk_i, rst_i,
         input stall_register_file_i,
         
@@ -63,20 +68,31 @@ module register_file(
         reg_is_ready_rs1_r = 1'b0;
         reg_is_ready_rs2_r = 1'b0;
 
+        //yurutten veri yonlendirmesi oldugunu umuyorum
+        //TODO: bellekten de veri yonlendirmesi cektigimizde yurutten gelen ile ayni veri ise yurutten
+        //gelen verininin yonlendirilmesi gerkiyor en son o yazilmis olacagi icin
         if(reg_read_rs1_i && reg_valid_counter[reg_rs1_i] == 2'b00) begin
             reg_rs1_data_r     = register[reg_rs1_i];
+            reg_is_ready_rs1_r = 1'b1;
+        end else if(reg_read_rs1_i && reg_rs1_i == hedef_yazmaci_i && yazmaca_yaz_i && !bellekten_oku_i) begin
+            reg_rs1_data_r = hedef_yazmac_verisi_i;
             reg_is_ready_rs1_r = 1'b1;
         end
 
         if(reg_read_rs2_i && reg_valid_counter[reg_rs2_i] == 2'b00) begin
             reg_rs2_data_r = register[reg_rs2_i];
             reg_is_ready_rs2_r = 1'b1;
+        end else if(reg_read_rs2_i && reg_rs2_i == hedef_yazmaci_i && yazmaca_yaz_i && !bellekten_oku_i) begin
+            reg_rs2_data_r = hedef_yazmac_verisi_i;
+            reg_is_ready_rs2_r = 1'b1;
+        
         end
+
+       
     end
 
     integer i;
     always @(posedge clk_i) begin
-
         if(!rst_i) begin
             for(i = 0; i < 32; i = i + 1) begin
                 register[i]          <= 5'b00000;
@@ -86,7 +102,6 @@ module register_file(
 
         else begin
             //TODO: STILL NEED TO FIND MORE PROPER WAY
-            // buradan ( && reg_valid_counter[reg_rd_wb_i] != 2'd1) sartini kaldirdik, bagimlilik hatasi olursa incelememiz lazım
             if (reg_write_wb_i && reg_write_i && reg_rd_wb_i == reg_rd_i) begin
                 register[reg_rd_wb_i]          <= reg_rd_data_wb_i;
                 if(stall_register_file_o && reg_rd_wb_i != 5'b00000)

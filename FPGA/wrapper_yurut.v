@@ -51,8 +51,18 @@ module wrapper_yurut (
         output      [31:0]       hedef_yazmac_verisi_o,
         // COZ->YURUT->GERI YAZ
         output                   yazmaca_yaz_o,
-        output      [4:0]        hedef_yazmaci_o
+        output      [4:0]        hedef_yazmaci_o,
+
+        output bellekten_oku_vy,
+        output [31:0] hedef_yazmac_verisi_vy,
+        output yazmaca_yaz_vy,
+        output [4:0] hedef_yazmaci_vy
     );
+
+	assign bellekten_oku_vy = bellekten_oku_i;
+	assign hedef_yazmac_verisi_vy = amb_hazir_vy ? amb_sonuc_vy : 32'd0;
+	assign yazmaca_yaz_vy = yazmaca_yaz_i;
+	assign hedef_yazmaci_vy = hedef_yazmaci_i;
 
     reg     [4:0]       hedef_yazmaci_r     ;
     reg                 yazmaca_yaz_r       ;
@@ -83,6 +93,8 @@ module wrapper_yurut (
 	wire                AMB_hazir;
 	wire                amb_stall_o_w;
     
+	wire amb_hazir_vy;
+	wire [31:0] amb_sonuc_vy;
 	AMB aritmetik_mantik(
 		//		INPUTS
 		.rst_i(rst_i),
@@ -103,7 +115,10 @@ module wrapper_yurut (
 		.buyuk_mu_o(buyuk_mu),
 		.buyuk_mu_o_unsigned(buyuk_mu_unsigned),
 		.durdur_i(durdur_i),
-		.stall_o(amb_stall_o_w)
+		.stall_o(amb_stall_o_w),
+
+		.amb_hazir_cmb_o(amb_hazir_vy),
+		.amb_sonuc_cmb_o(amb_sonuc_vy)
 	);
 
 	dallanma_birimi dallanma(
