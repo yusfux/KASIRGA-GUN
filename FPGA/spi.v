@@ -59,12 +59,12 @@ module spi(
     reg  [5:0]   spi_status_r;
     reg  [5:0]   spi_status_ns;
 
-    reg  [255:0] cmd_buffer_r;
-    reg  [255:0] cmd_buffer_ns;
+    reg  [111:0] cmd_buffer_r;
+    reg  [111:0] cmd_buffer_ns;
     reg  [3:0]   cmd_count_r;
     reg  [3:0]   cmd_count_ns;
-    reg  [31:0]  cmd_current_r;
-    reg  [31:0]  cmd_current_ns;
+    reg  [13:0]  cmd_current_r;
+    reg  [13:0]  cmd_current_ns;
 
     reg  [31:0]  veri_r;
     reg  [31:0]  veri_ns;
@@ -113,8 +113,8 @@ module spi(
             sck_ns = cpol_w;
             if(spi_en_w && (|cmd_count_r)) begin
                 stall_cmb = 1;
-                cmd_current_ns = cmd_buffer_r[31:0];
-                cmd_buffer_ns = cmd_buffer_r >> 32;
+                cmd_current_ns = cmd_buffer_r[13:0];
+                cmd_buffer_ns = cmd_buffer_r >> 14;
                 cmd_count_ns = cmd_buffer_r - 1;
                 spi_status_ns[4:4] = 0;
                 if(cmd_count_r == 1) begin
@@ -145,23 +145,47 @@ module spi(
 
                 sck_ns = !sck_r;
                 if(sck_r && cpha_w) begin // negedge
-                    miso_buffer_ns[miso_pointer_w +: 1] = spi_miso_i;
-                    miso_count_ns = miso_count_r + 1;
+                    if(!(miso_count_r >= 256)) begin
+                        miso_buffer_ns[miso_pointer_w +: 1] = spi_miso_i;
+                        miso_count_ns = miso_count_r + 1;
+                    end
                     bit_count_ns = bit_count_r + 1;
+
+                    if(miso_count_r >= 31) begin
+                        spi_status_ns[3:3] = 1'b0;
+                    end
+
+                    if(miso_count_r >= 255) begin
+                        spi_status_ns[2:2] = 1'b1;
+                        miso_count_ns = 0;
+                    end
                 end
                 else if(!cpha_w) begin // posedge
-                    miso_buffer_ns[miso_pointer_w +: 1] = spi_miso_i;
-                    miso_count_ns = miso_count_r + 1;
+                    if(!(miso_count_r >= 256)) begin
+                        miso_buffer_ns[miso_pointer_w +: 1] = spi_miso_i;
+                        miso_count_ns = miso_count_r + 1;
+                    end
                     bit_count_ns = bit_count_r + 1;
+
+                    if(miso_count_r >= 31) begin
+                        spi_status_ns[3:3] = 1'b0;
+                    end
+
+                    if(miso_count_r >= 255) begin
+                        spi_status_ns[2:2] = 1'b1;
+                        miso_count_ns = 0;
+                    end
                 end
                 
                 if(bit_count_r == 3'b111) begin
                     transferred_length_ns = transferred_length_r + 1;
                     if(transferred_length_r == length_w) begin
-                        if(!cs_active_w) begin
+                        if(cs_active_w) begin
+                            cs_ns = 0;
+                        end
+                        else begin
                             cs_ns = 1;
                         end
-                        durum_ns = DURUM_IDLE;
                     end
                 end
             end
@@ -174,23 +198,51 @@ module spi(
 
                 sck_ns = !sck_r;
                 if(sck_r && !cpha_w) begin // negedge
-                    spi_mosi_ns = mosi_buffer_r[0:0];
-                    mosi_count_ns = mosi_count_r - 1;
+                    if(mosi_count_r == 0) begin
+                        spi_mosi_ns = 1'b0;
+                    end
+                    else begin
+                        spi_mosi_ns = mosi_buffer_r[0:0];
+                        mosi_count_ns = mosi_count_r - 1;
+                    end
                     bit_count_ns = bit_count_r + 1;
+
+                    if(mosi_count_r == 1) begin
+                        spi_status_ns[1:1] = 1'b1;
+                    end
+
+                    if(mosi_count_r <= 225) begin
+                        spi_status_ns[0:0] = 1'b0;
+                    end
                 end
                 else if(cpha_w) begin // posedge
-                    spi_mosi_ns = mosi_buffer_r[0:0];
-                    mosi_count_ns = mosi_count_r - 1;
+                    if(mosi_count_r == 0) begin
+                        spi_mosi_ns = 1'b0;
+                    end
+                    else begin
+                        spi_mosi_ns = mosi_buffer_r[0:0];
+                        mosi_count_ns = mosi_count_r - 1;
+                    end
                     bit_count_ns = bit_count_r + 1;
+
+                    if(mosi_count_r == 1) begin
+                        spi_status_ns[1:1] = 1'b1;
+                    end
+
+                    if(mosi_count_r <= 225) begin
+                        spi_status_ns[0:0] = 1'b0;
+                    end
                 end
 
                 if(bit_count_r == 3'b111) begin
                     transferred_length_ns = transferred_length_r + 1;
                     if(transferred_length_r == length_w) begin
-                        if(!cs_active_w) begin
+                        if(cs_active_w) begin
+                            cs_ns = 0;
+                        end
+                        else begin
                             cs_ns = 1;
                         end
-                        durum_ns = DURUM_IDLE;
                     end
                 end
             end
@@ -207,7 +259,10 @@ module spi(
                 if(bit_count_r == 3'b111) begin
                     transferred_length_ns = transferred_length_r + 1;
                     if(transferred_length_r == length_w) begin
-                        if(!cs_active_w) begin
+                        if(cs_active_w) begin
+                            cs_ns = 0;
+                        end
+                        else begin
                             cs_ns = 1;
                         end
                         durum_ns = DURUM_IDLE;
@@ -246,45 +301,58 @@ module spi(
                 end
                 `SPI_WDATA: begin
                     spi_status_ns[1:1] = 0;
-                    if(mosi_count_r >= 224) begin
-                        spi_status_ns[0:0] = 1;
-                    end
-                    mosi_count_ns = mosi_count_r + 32;
-                    case (write_type_i)
-                    2'b00: begin
-                        mosi_buffer_ns[(mosi_pointer_w + (adres_bit_i[1:0] * 8)) +: 8] = veri_i[7:0];
+                    if(mosi_count_r == 256) begin
                         islem_bitti_ns = 1;
                     end
-                    2'b01: begin
-                        mosi_buffer_ns[(mosi_pointer_w + (adres_bit_i[1:1] * 16)) +: 16] = veri_i[15:0];
-                        islem_bitti_ns = 1;
+                    else begin
+                        if(mosi_count_r >= 224) begin
+                            spi_status_ns[0:0] = 1;
+                            mosi_count_ns = 256;
+                        end
+                        else begin
+                            mosi_count_ns = mosi_count_r + 32;
+                        end
+                        case (write_type_i)
+                        2'b00: begin
+                            mosi_buffer_ns[mosi_pointer_w +: 32] = {24'b0, veri_i[7:0]};
+                            islem_bitti_ns = 1;
+                        end
+                        2'b01: begin
+                            mosi_buffer_ns[mosi_pointer_w +: 32] = {16'b0, veri_i[15:0]};
+                            islem_bitti_ns = 1;
+                        end
+                        2'b10: begin
+                            mosi_buffer_ns[mosi_pointer_w +: 32] = veri_i[31:0];
+                            islem_bitti_ns = 1;
+                        end
+                        endcase
                     end
-                    2'b10: begin
-                        mosi_buffer_ns[mosi_pointer_w +: 32] = veri_i[31:0];
-                        islem_bitti_ns = 1;
-                    end
-                    endcase
                 end
                 `SPI_CMD: begin
                     spi_status_ns[5:5] = 0;
-                    if(cmd_count_r >= 7) begin
-                        spi_status_ns[4:4] = 1;
-                    end
-                    cmd_count_ns = cmd_count_r + 1;
-                    case (write_type_i)
-                    2'b00: begin
-                        cmd_buffer_ns[((cmd_count_r*32) + (adres_bit_i[1:0] * 8)) +: 8] = veri_i[7:0];
+                    if(cmd_count_r == 8) begin
                         islem_bitti_ns = 1;
                     end
-                    2'b01: begin
-                        cmd_buffer_ns[((cmd_count_r*32) + (adres_bit_i[1:1] * 16)) +: 16] = veri_i[15:0];
-                        islem_bitti_ns = 1;
+                    else begin
+                        if(cmd_count_r >= 7) begin
+                            spi_status_ns[4:4] = 1;
+                        end
+                        cmd_count_ns = cmd_count_r + 1;
+                        case (write_type_i)
+                        2'b00: begin
+                            cmd_buffer_ns[(cmd_count_r*14) +: 14] = {6'b0, veri_i[7:0]};
+                            islem_bitti_ns = 1;
+                        end
+                        2'b01: begin
+                            cmd_buffer_ns[(cmd_count_r*14) +: 14] = veri_i[13:0];
+                            islem_bitti_ns = 1;
+                        end
+                        2'b10: begin
+                            cmd_buffer_ns[(cmd_count_r*14) +: 14] = veri_i[13:0];
+                            islem_bitti_ns = 1;
+                        end
+                        endcase
                     end
-                    2'b10: begin
-                        cmd_buffer_ns[(cmd_count_r*32) +: 32] = veri_i[31:0];
-                        islem_bitti_ns = 1;
-                    end
-                    endcase
                 end
                 endcase
             end
@@ -311,27 +379,35 @@ module spi(
                     islem_bitti_ns = 1;
                 end
                 `SPI_RDATA: begin
-                    spi_status_ns[2:2] = 0;
-                    case (read_type_i)
-                    2'b00: begin
-                        veri_ns[31:0] = {24'b0, miso_buffer_r[7:0]};
-                        miso_count_ns = miso_buffer_r - 8;
-                        miso_buffer_ns = miso_buffer_r >> 8;
+                    spi_status_ns[2:2] = 1'b0;
+                    if(miso_count_r == 0) begin
+                        veri_ns = 32'b0;
                         islem_bitti_ns = 1;
                     end
-                    2'b01: begin
-                        veri_ns[31:0] = {16'b0, miso_buffer_r[15:0]};
-                        miso_count_ns = miso_buffer_r - 16;
-                        miso_buffer_ns = miso_buffer_r >> 16;
-                        islem_bitti_ns = 1;
-                    end
-                    2'b10: begin
-                        veri_ns[31:0] = miso_buffer_r[31:0];
-                        miso_count_ns = miso_buffer_r - 32;
+                    else begin
                         miso_buffer_ns = miso_buffer_r >> 32;
-                        islem_bitti_ns = 1;
+                        if(miso_count_r <= 32) begin
+                            spi_status_r[3:3] = 1'b1;
+                            miso_count_ns = 0;
+                        end
+                        else begin
+                            miso_count_ns = miso_count_r - 32;
+                        end
+                        case (read_type_i)
+                        2'b00: begin
+                            veri_ns[31:0] = {24'b0, miso_buffer_r[7:0]};
+                            islem_bitti_ns = 1;
+                        end
+                        2'b01: begin
+                            veri_ns[31:0] = {16'b0, miso_buffer_r[15:0]};
+                            islem_bitti_ns = 1;
+                        end
+                        2'b10: begin
+                            veri_ns[31:0] = miso_buffer_r[31:0];
+                            islem_bitti_ns = 1;
+                        end
+                        endcase
                     end
-                    endcase
                 end
                 `SPI_WDATA: begin
                     // sadece yazma
@@ -358,7 +434,7 @@ module spi(
             miso_count_r  <= 9'b0;
             mosi_buffer_r <= 256'b0;
             mosi_count_r  <= 9'b0;
-            cmd_buffer_r  <= 256'b0;
+            cmd_buffer_r  <= 112'b0;
             cmd_count_r   <= 9'b0;
             durum_r       <= 2'b0;
             sayac_r       <= 16'b0;
