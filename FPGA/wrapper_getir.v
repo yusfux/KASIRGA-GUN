@@ -94,7 +94,7 @@ module wrapper_getir (
         .buyruk_hazir_o(kuyruk_buyruk_hazir_w),
 
         .ps_durdur_o(ps_durdur_w),
-        .ps_iki_artir_o(ps_iki_artir_w),
+        .ps_iki_artir_o(ps_iki_artir_w)
     );
 
     oncozucu oncozucu(
