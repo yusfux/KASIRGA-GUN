@@ -1,6 +1,10 @@
 `timescale 1ns / 1ps
 
 module wrapper_coz (
+        input [31:0] bellek_hedef_yazmac_verisi_i,
+        input        bellek_yazmaca_yaz_i,
+        input [4:0]  bellek_hedef_yazmaci_i,
+
         input bellekten_oku_i,
         input [31:0] hedef_yazmac_verisi_i,
         input        yazmaca_yaz_i,
@@ -125,6 +129,10 @@ module wrapper_coz (
     );
 
     register_file register_file(
+        .bellek_hedef_yazmac_verisi_i(bellek_hedef_yazmac_verisi_i),
+        .bellek_yazmaca_yaz_i(bellek_yazmaca_yaz_i),
+        .bellek_hedef_yazmaci_i(bellek_hedef_yazmaci_i),
+
         .bellekten_oku_i(bellekten_oku_i),
         .hedef_yazmac_verisi_i(hedef_yazmac_verisi_i),
         .yazmaca_yaz_i(yazmaca_yaz_i),

@@ -166,7 +166,16 @@ module wrapper_cekirdek (
     wire [31:0] hedef_yazmac_verisi_o_vy;
     wire yazmaca_yaz_o_vy;
     wire [4:0] hedef_yazmaci_o_vy;
+
+    wire [31:0] bellek_hedef_yazmac_verisi_o_vy;
+    wire        bellek_yazmaca_yaz_o_vy;
+    wire [4:0]  bellek_hedef_yazmaci_o_vy;
+
     wrapper_coz         asama_coz         (
+        .bellek_hedef_yazmac_verisi_i(bellek_hedef_yazmac_verisi_o_vy),
+        .bellek_yazmaca_yaz_i(bellek_yazmaca_yaz_o_vy),
+        .bellek_hedef_yazmaci_i(bellek_hedef_yazmaci_o_vy),
+
         .bellekten_oku_i(bellekten_oku_o_vy),
         .hedef_yazmac_verisi_i(hedef_yazmac_verisi_o_vy),
         .yazmaca_yaz_i(yazmaca_yaz_o_vy),
@@ -310,7 +319,11 @@ module wrapper_cekirdek (
         
         .timer_o(timer_w),
 
-        .durdur_o(vbellek_durdur_w)
+        .durdur_o(vbellek_durdur_w),
+
+        .hedef_yazmaci_vy(bellek_hedef_yazmaci_o_vy),
+        .hedef_yazmac_verisi_vy(bellek_hedef_yazmac_verisi_o_vy),
+        .yazmaca_yaz_vy(bellek_yazmaca_yaz_o_vy)
     );
 
     wrapper_geri_yaz    asama_geri_yaz    (

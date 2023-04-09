@@ -48,7 +48,12 @@ module wrapper_bellek (
 
         // boru hatti denetleyiciye verilecek sinyaller
         output timer_o,
-        output durdur_o
+        output durdur_o,
+
+        output [4:0]  hedef_yazmaci_vy,
+        output [31:0] hedef_yazmac_verisi_vy,
+        output        yazmaca_yaz_vy
+
     );
     
     wire            bellege_yaz_w;
@@ -121,5 +126,12 @@ module wrapper_bellek (
     assign gc_veri_gecerli_o      = gc_veri_gecerli_i;
     
 	assign durdur_o = (~vbellek_denetim_hazir_i && (bellekten_oku_w || bellege_yaz_w)) || gc_stall_i;
+
+    //------------------------------------------------------
+    //------------------------------------------------------
+    //------------------------------------------------------
+    assign hedef_yazmaci_vy       = hedef_yazmaci_i;
+    assign hedef_yazmac_verisi_vy = (vbellek_veri_hazir_i && bellekten_oku_w) ? vbellek_veri_i :  hedef_yazmac_verisi_i;
+    assign yazmaca_yaz_vy         = !giris_cikis_aktif_w && yazmaca_yaz_i;
 
 endmodule

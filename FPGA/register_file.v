@@ -20,6 +20,10 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 module register_file (
+        input [31:0] bellek_hedef_yazmac_verisi_i,
+        input        bellek_yazmaca_yaz_i,
+        input [4:0]  bellek_hedef_yazmaci_i,
+
         input        bellekten_oku_i,
         input [31:0] hedef_yazmac_verisi_i,
         input        yazmaca_yaz_i,
@@ -77,6 +81,9 @@ module register_file (
         end else if(reg_read_rs1_i && reg_rs1_i == hedef_yazmaci_i && yazmaca_yaz_i && !bellekten_oku_i) begin
             reg_rs1_data_r = hedef_yazmac_verisi_i;
             reg_is_ready_rs1_r = 1'b1;
+        end else if(reg_read_rs1_i && reg_rs1_i == bellek_hedef_yazmaci_i && bellek_yazmaca_yaz_i) begin
+            reg_rs1_data_r = bellek_hedef_yazmac_verisi_i;
+            reg_is_ready_rs1_r = 1'b1;
         end
 
         if(reg_read_rs2_i && reg_valid_counter[reg_rs2_i] == 2'b00) begin
@@ -85,10 +92,10 @@ module register_file (
         end else if(reg_read_rs2_i && reg_rs2_i == hedef_yazmaci_i && yazmaca_yaz_i && !bellekten_oku_i) begin
             reg_rs2_data_r = hedef_yazmac_verisi_i;
             reg_is_ready_rs2_r = 1'b1;
-        
+        end else if(reg_read_rs2_i && reg_rs2_i == bellek_hedef_yazmaci_i && bellek_yazmaca_yaz_i) begin
+            reg_rs2_data_r = bellek_hedef_yazmac_verisi_i;
+            reg_is_ready_rs2_r = 1'b1;
         end
-
-       
     end
 
     integer i;
@@ -104,7 +111,7 @@ module register_file (
             //TODO: STILL NEED TO FIND MORE PROPER WAY
             if (reg_write_wb_i && reg_write_i && reg_rd_wb_i == reg_rd_i) begin
                 register[reg_rd_wb_i]          <= reg_rd_data_wb_i;
-                if(stall_register_file_o && reg_rd_wb_i != 5'b00000)
+                if((stall_register_file_o || stall_register_file_i) && reg_rd_wb_i != 5'b00000)
                     reg_valid_counter[reg_rd_wb_i] <= reg_valid_counter[reg_rd_wb_i] - 2'b01;
             end
             else begin
