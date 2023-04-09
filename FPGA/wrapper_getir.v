@@ -49,7 +49,6 @@ module wrapper_getir (
 
     wire         ps_uretici_durdur_w;
 
-    wire         durum_sikistirilmis_w; 
     reg          kuyruk_aktif_cmb;
     reg          buffer_aktif_r;
     reg          buffer_aktif_ns;
@@ -96,7 +95,6 @@ module wrapper_getir (
 
         .ps_durdur_o(ps_durdur_w),
         .ps_iki_artir_o(ps_iki_artir_w),
-        .durum_sikistirilmis_o(durum_sikistirilmis_w)
     );
 
     oncozucu oncozucu(
