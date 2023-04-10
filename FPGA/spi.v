@@ -205,6 +205,7 @@ module spi(
                     end
                     else begin
                         spi_mosi_ns = mosi_buffer_r[0:0];
+                        mosi_buffer_ns = mosi_buffer_r >> 1;
                         mosi_count_ns = mosi_count_r - 1;
                     end
                     bit_count_ns = bit_count_r + 1;
@@ -223,6 +224,7 @@ module spi(
                     end
                     else begin
                         spi_mosi_ns = mosi_buffer_r[0:0];
+                        mosi_buffer_ns = mosi_buffer_r >> 1;
                         mosi_count_ns = mosi_count_r - 1;
                     end
                     bit_count_ns = bit_count_r + 1;
