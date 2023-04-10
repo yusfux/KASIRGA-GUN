@@ -107,6 +107,8 @@ module spi(
         durum_ns = durum_r;
         sayac_ns = sayac_r;
         cmd_current_ns = cmd_current_r;
+        transferred_length_ns = transferred_length_r;
+        bit_count_ns = bit_count_r;
 
         case (durum_r)
         DURUM_IDLE: begin
