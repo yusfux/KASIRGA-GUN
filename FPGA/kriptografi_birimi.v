@@ -91,9 +91,7 @@ always @* begin
          end
         
         `CRY_RVRS : begin
-            for(i=0;i<32;i=i+1) begin
-                sonuc_r_next[31-i] = yazmac_rs1_i[i];
-            end
+            sonuc_r_next = {yazmac_rs1_i[7:0],yazmac_rs1_i[15:8],yazmac_rs1_i[23:16],yazmac_rs1_i[31:24]};
             kriptografi_hazir_r_next = 1'b1;
             durdur_r = 1'b0;
          end
@@ -104,7 +102,7 @@ always @* begin
             durdur_r = 1'b0;
          end
         
-        `CRY_CNTZ : begin // ilk 1 i bulmak için binary search yap?l?yor
+        `CRY_CNTZ : begin // ilk 1 i bulmak iÃ§in binary search yap?l?yor
             
             durdur_r = 1'b0;
             if(yazmac_rs1_i[15:0] == 16'd0) begin
