@@ -24,7 +24,7 @@ module buyruk_kuyrugu(
 localparam  DURUM_BOS           = 0;     // Kuyrukta bos
 localparam  DURUM_YARIM         = 1;     // Kuyrukta yarim buyruk var
 localparam  DURUM_SIKISTIRILMIS = 2;     // Kuyrukta sikistirilmis buyruk var
-localparam  DURUM_HIZASIZ       = 3;
+localparam  DURUM_ATLADI        = 3;
 
 localparam  BUYRUK_TAM          = 2'b11; // En anlamsiz iki biti 1 ise buyruk tamdir
 
@@ -58,16 +58,7 @@ always @(*) begin
     ps_durdur_o_cmb = 0;
     ps_iki_artir_o_cmb = 0;
 
-    if(ps_atladi_i) begin
-        if(ps_i[1:1]) begin
-            durum_ns = DURUM_HIZASIZ;
-            ps_ns = ps_i;
-        end
-        else begin
-            durum_ns = DURUM_BOS;
-        end
-    end
-    else if(kuyruk_aktif_i || (durum_r == DURUM_SIKISTIRILMIS && !durdur_i)) begin
+    if(kuyruk_aktif_i || (durum_r == DURUM_SIKISTIRILMIS && !durdur_i)) begin
         case (durum_r)
         DURUM_BOS: begin
             if(buyruk_i_birinci_kisim == BUYRUK_TAM) begin
@@ -78,7 +69,7 @@ always @(*) begin
                 buyruk_o_cmb[15:0] = buyruk_i[15:0];
                 kuyruk_ns = buyruk_i[31:16];
                 if(buyruk_i_ikinci_kisim == BUYRUK_TAM) begin
-                    ps_ns = ps_i - 2;
+                    ps_ns = ps_i + 2;
                     durum_ns = DURUM_YARIM;
                     buyruk_hazir_cmb = 1;
                 end
@@ -98,7 +89,7 @@ always @(*) begin
             kuyruk_ns = buyruk_i[31:16];
             ps_gecerli_cmb = 1;
             if(buyruk_i_ikinci_kisim == BUYRUK_TAM) begin
-                ps_ns = ps_i - 2;
+                ps_ns = ps_i + 2;
                 durum_ns = DURUM_YARIM;
                 buyruk_hazir_cmb = 1;
             end
@@ -118,22 +109,55 @@ always @(*) begin
             durum_ns = DURUM_BOS;
             buyruk_hazir_cmb = 1;
         end
-        DURUM_HIZASIZ: begin
-            if(buyruk_i_ikinci_kisim == BUYRUK_TAM) begin
-                buyruk_o_cmb = 32'h0000_0013;
-                buyruk_hazir_cmb = 1;
-                kuyruk_ns = buyruk_i[31:16];
+        DURUM_ATLADI: begin
+            if(ps_i[1:1]) begin
                 ps_iki_artir_o_cmb = 1;
-                durum_ns = DURUM_YARIM;
+                if(buyruk_i_ikinci_kisim == BUYRUK_TAM) begin
+                    ps_ns = ps_i;
+                    buyruk_o_cmb = 32'h0000_0013;
+                    buyruk_hazir_cmb = 1;
+                    kuyruk_ns = buyruk_i[31:16];
+                    durum_ns = DURUM_YARIM;
+                end
+                else begin
+                    buyruk_o_cmb = buyruk_i[31:16];
+                    buyruk_hazir_cmb = 1;
+                    durum_ns = DURUM_BOS;
+                end
             end
             else begin
-                buyruk_o_cmb = buyruk_i[31:16];
-                buyruk_hazir_cmb = 1;
-                ps_iki_artir_o_cmb = 1;
-                durum_ns = DURUM_BOS;
+                if(buyruk_i_birinci_kisim == BUYRUK_TAM) begin
+                    buyruk_o_cmb = buyruk_i;
+                    durum_ns = DURUM_BOS;
+                    buyruk_hazir_cmb = 1;
+                end
+                else begin
+                    buyruk_o_cmb[15:0] = buyruk_i[15:0];
+                    kuyruk_ns = buyruk_i[31:16];
+                    if(buyruk_i_ikinci_kisim == BUYRUK_TAM) begin
+                        ps_ns = ps_i + 2;
+                        durum_ns = DURUM_YARIM;
+                        buyruk_hazir_cmb = 1;
+                    end
+                    else begin
+                        ps_ns = ps_i + 2;
+                        if(kuyruk_aktif_i) begin
+                            ps_durdur_o_cmb = 1;
+                            buyruk_hazir_cmb = 1;
+                        end
+                        durum_ns = DURUM_SIKISTIRILMIS;
+                        buyruk_hazir_cmb = 1;
+                    end
+                end
             end
         end
         endcase
+    end
+
+    if(ps_atladi_i) begin
+        durum_ns = DURUM_ATLADI;
+        kuyruk_ns = kuyruk_r;
+        ps_ns = ps_r;
     end
 end
 
