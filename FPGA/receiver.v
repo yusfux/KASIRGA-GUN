@@ -1,13 +1,14 @@
 `timescale 1ns / 1 ps
 
-module receiver #(parameter oversample=0)(
-   input         rx_tick_i,
-   input         rst_i,
-   input         rx_i,
-   output  [7:0] r_out_o,
-   output        r_done_o,
-   input         clk_i,
-   input         rx_en_i
+module receiver(
+   input          rst_i,
+   input          rx_i,
+   input   [15:0] baud_div_i,
+   output  [7:0]  r_out_o,
+   output         r_done_o,
+   input          clk_i,
+   input          rx_en_i
+   
 );
 
    reg r_done_o_r  ;
@@ -23,8 +24,8 @@ module receiver #(parameter oversample=0)(
    reg [7:0]tut ;
    reg [7:0]tut_next ;
    reg [7:0]next_r_out ;
-   reg [4:0]sayac ;
-   reg [4:0]next_sayac ;
+   reg [15:0]sayac ;
+   reg [15:0]next_sayac ;
    reg [2:0]bit_sayac ;
    reg [2:0]next_bit_sayac ;
     
@@ -56,8 +57,7 @@ module receiver #(parameter oversample=0)(
            
             idle : begin
                r_done_next = 1'b0;
-               if(rx_tick_i)begin
-                  if(rx_i==0 && (sayac==oversample>>1)) begin
+                  if(rx_i==0 && (sayac == baud_div_i>>1)) begin
                      next_state = data;
                      next_sayac = 5'd0;   
                   end
@@ -65,12 +65,10 @@ module receiver #(parameter oversample=0)(
                   else if(rx_i==0)begin
                      next_sayac = sayac+1'b1;
                   end
-               end
             end
             
-            data : begin
-               if(rx_tick_i)begin        
-                  if((sayac==oversample)) begin 
+            data : begin      
+                  if((sayac==baud_div_i)) begin 
                      next_sayac = 0;
                      next_state = data;
                      tut_next = {rx_i,tut[7:1]}; 
@@ -84,12 +82,10 @@ module receiver #(parameter oversample=0)(
                   else begin
                      next_sayac = sayac + 1'b1;
                   end      
-               end
             end
             
             stop : begin
-               if(rx_tick_i)begin
-                  if((sayac==oversample)) begin
+                  if((sayac==baud_div_i)) begin
                      r_done_next =1;
                      next_r_out = tut;
                      next_state = idle;
@@ -98,7 +94,6 @@ module receiver #(parameter oversample=0)(
                   else begin
                      next_sayac = sayac + 1'b1;
                   end
-               end
             end
          endcase
       end
