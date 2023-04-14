@@ -83,9 +83,9 @@ module wrapper_getir (
 
         .kuyruk_aktif_i(kuyruk_aktif_cmb),
         .durdur_i(durdur_i),
-        .ps_atladi_i(ongoru_gecerli_o | dallanma_hata_i | jal_gecerli_i),
+        .ps_atladi_i(ongoru_gecerli_o_w | dallanma_hata_i | jal_gecerli_i),
 
-        .ps_i(ps_ns_w),
+        .ps_i(ps_r_w),
         .buyruk_i(buffer_aktif_r ? buyruk_buffer_r : buyruk_i),
 
         .buyruk_o(kuyruk_gelen_buyruk_w),
@@ -109,7 +109,7 @@ module wrapper_getir (
         .clk_i(clk_i),
         .rst_i(rst_i),
 
-        .ongoru_aktif_i(ongoru_aktif_w & kuyruk_buyruk_hazir_w),
+        .ongoru_aktif_i(ongoru_aktif_w),
 
         .guncelle_gecerli_i(guncelle_gecerli_i),
         .guncelle_atladi_i(guncelle_atladi_i),
