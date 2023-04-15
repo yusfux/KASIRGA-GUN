@@ -25,10 +25,11 @@ module spi(
     output        spi_mosi_o,
     input         spi_miso_i
 );
-    localparam   DURUM_IDLE     = 2'b00;
-    localparam   DURUM_RECEIVE  = 2'b01;
-    localparam   DURUM_TRANSMIT = 2'b10;
-    localparam   DURUM_BOS      = 2'b11;
+    localparam   DURUM_IDLE     = 3'b000;
+    localparam   DURUM_RECEIVE  = 3'b001;
+    localparam   DURUM_TRANSMIT = 3'b010;
+    localparam   DURUM_BOS      = 3'b011;
+    localparam   DURUM_BITIR    = 3'b100;
 
     reg          islem_bitti_r;
     reg          islem_bitti_ns;
@@ -69,8 +70,8 @@ module spi(
     reg  [31:0]  veri_r;
     reg  [31:0]  veri_ns;
 
-    reg  [1:0]   durum_r;
-    reg  [1:0]   durum_ns;
+    reg  [2:0]   durum_r;
+    reg  [2:0]   durum_ns;
 
     reg  [15:0]  sayac_r;
     reg  [15:0]  sayac_ns;
@@ -112,12 +113,12 @@ module spi(
 
         case (durum_r)
         DURUM_IDLE: begin
-            sck_ns = cpol_w;
-            if(spi_en_w && cmd_count_r == 0) begin
+            sck_ns = 0;
+            if(spi_en_w && cmd_count_r > 0) begin
                 stall_cmb = 1;
                 cmd_current_ns = cmd_buffer_r[13:0];
                 cmd_buffer_ns = cmd_buffer_r >> 14;
-                cmd_count_ns = cmd_buffer_r - 1;
+                cmd_count_ns = cmd_count_r - 1;
                 spi_status_ns[4:4] = 0;
                 if(cmd_count_r == 1) begin
                     spi_status_ns[5:5] = 1;
@@ -134,6 +135,14 @@ module spi(
                     durum_ns = DURUM_RECEIVE;
                 end
                 2'b10: begin // mosi
+                    if(!cpha_w) begin
+                        spi_mosi_ns = mosi_buffer_r[0:0];
+                        mosi_buffer_ns = mosi_buffer_r >> 1;
+                        mosi_count_ns = mosi_count_r - 1;
+                        if(mosi_count_r == 0) begin
+                            mosi_count_ns = 0;
+                        end
+                    end
                     durum_ns = DURUM_TRANSMIT;
                 end
                 endcase
@@ -146,7 +155,7 @@ module spi(
                 stall_cmb = 1;
 
                 sck_ns = !sck_r;
-                if(sck_r && cpha_w) begin // negedge
+                if((sck_r && cpha_w) || (!sck_r && !cpha_w)) begin
                     if(!(miso_count_r >= 256)) begin
                         miso_buffer_ns[miso_pointer_w +: 1] = spi_miso_i;
                         miso_count_ns = miso_count_r + 1;
@@ -161,32 +170,11 @@ module spi(
                         spi_status_ns[2:2] = 1'b1;
                         miso_count_ns = 0;
                     end
-                end
-                else if(!cpha_w) begin // posedge
-                    if(!(miso_count_r >= 256)) begin
-                        miso_buffer_ns[miso_pointer_w +: 1] = spi_miso_i;
-                        miso_count_ns = miso_count_r + 1;
-                    end
-                    bit_count_ns = bit_count_r + 1;
 
-                    if(miso_count_r >= 31) begin
-                        spi_status_ns[3:3] = 1'b0;
-                    end
-
-                    if(miso_count_r >= 255) begin
-                        spi_status_ns[2:2] = 1'b1;
-                        miso_count_ns = 0;
-                    end
-                end
-                
-                if(bit_count_r == 3'b111) begin
-                    transferred_length_ns = transferred_length_r + 1;
-                    if(transferred_length_r == length_w) begin
-                        if(cs_active_w) begin
-                            cs_ns = 0;
-                        end
-                        else begin
-                            cs_ns = 1;
+                    if(bit_count_r == 3'b111) begin
+                        transferred_length_ns = transferred_length_r + 1;
+                        if(transferred_length_r == length_w) begin
+                            durum_ns = DURUM_BITIR;
                         end
                     end
                 end
@@ -199,7 +187,7 @@ module spi(
                 stall_cmb = 1;
 
                 sck_ns = !sck_r;
-                if(sck_r && !cpha_w) begin // negedge
+                if((sck_r && !cpha_w) || (!sck_r && cpha_w)) begin
                     if(mosi_count_r == 0) begin
                         spi_mosi_ns = 1'b0;
                     end
@@ -217,35 +205,11 @@ module spi(
                     if(mosi_count_r <= 225) begin
                         spi_status_ns[0:0] = 1'b0;
                     end
-                end
-                else if(cpha_w) begin // posedge
-                    if(mosi_count_r == 0) begin
-                        spi_mosi_ns = 1'b0;
-                    end
-                    else begin
-                        spi_mosi_ns = mosi_buffer_r[0:0];
-                        mosi_buffer_ns = mosi_buffer_r >> 1;
-                        mosi_count_ns = mosi_count_r - 1;
-                    end
-                    bit_count_ns = bit_count_r + 1;
 
-                    if(mosi_count_r == 1) begin
-                        spi_status_ns[1:1] = 1'b1;
-                    end
-
-                    if(mosi_count_r <= 225) begin
-                        spi_status_ns[0:0] = 1'b0;
-                    end
-                end
-
-                if(bit_count_r == 3'b111) begin
-                    transferred_length_ns = transferred_length_r + 1;
-                    if(transferred_length_r == length_w) begin
-                        if(cs_active_w) begin
-                            cs_ns = 0;
-                        end
-                        else begin
-                            cs_ns = 1;
+                    if(bit_count_r == 3'b111) begin
+                        transferred_length_ns = transferred_length_r + 1;
+                        if(transferred_length_r == length_w) begin
+                            durum_ns = DURUM_BITIR;
                         end
                     end
                 end
@@ -263,14 +227,22 @@ module spi(
                 if(bit_count_r == 3'b111) begin
                     transferred_length_ns = transferred_length_r + 1;
                     if(transferred_length_r == length_w) begin
-                        if(cs_active_w) begin
-                            cs_ns = 0;
-                        end
-                        else begin
-                            cs_ns = 1;
-                        end
-                        durum_ns = DURUM_IDLE;
+                        durum_ns = DURUM_BITIR;
                     end
+                end
+            end
+        end
+        DURUM_BITIR: begin
+            sayac_ns = sayac_r + 1;
+            if(sayac_r == sck_div_w) begin
+                sayac_ns = 16'b0;
+                stall_cmb = 1;
+
+                sck_ns = 0;
+
+                if(!sck_r) begin
+                    cs_ns = !cs_active_w;
+                    durum_ns = DURUM_IDLE;
                 end
             end
         end
@@ -446,7 +418,7 @@ module spi(
         else begin
             cs_r                 <= cs_ns;
             sck_r                <= sck_ns;
-            spi_mosi_r           <= spi_mosi_r;
+            spi_mosi_r           <= spi_mosi_ns;
             islem_bitti_r        <= islem_bitti_ns;
             veri_r               <= veri_ns;
             spi_ctrl_r           <= spi_ctrl_ns;
@@ -468,7 +440,7 @@ module spi(
     assign islem_bitti_o  = islem_bitti_r;
     assign veri_o         = veri_r;
     assign cs_o           = cs_r;
-    assign sck_o          = sck_r;
+    assign sck_o          = cpol_w ? !sck_r : sck_r;
     assign spi_mosi_o     = spi_mosi_r;
     assign miso_pointer_w = miso_count_r[7:0];
     assign mosi_pointer_w = mosi_count_r[7:0];
