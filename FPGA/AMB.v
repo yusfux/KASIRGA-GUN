@@ -36,8 +36,7 @@ module AMB(
     output [31:0] amb_sonuc_cmb_o
 );
 
-    assign amb_hazir_cmb_o = AMB_hazir_r_next;
-    assign amb_sonuc_cmb_o = sonuc_r_next;
+    
 
 reg     [31:0]  sonuc_r               ;
 reg     [31:0]  sonuc_r_next          ;
@@ -45,6 +44,9 @@ reg     [31:0]  adres_r               ;
 reg             AMB_hazir_r           ;
 reg             AMB_hazir_r_next      ;  
 reg             jal_r_adres_gecerli_r ;  
+
+assign amb_hazir_cmb_o = AMB_hazir_r_next;
+assign amb_sonuc_cmb_o = sonuc_r_next;
 
 
 assign esit_mi_o   = (yazmac_degeri1_i == yazmac_degeri2_i);

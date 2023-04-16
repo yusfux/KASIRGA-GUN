@@ -58,7 +58,10 @@ module wrapper_yurut (
         output yazmaca_yaz_vy,
         output [4:0] hedef_yazmaci_vy
     );
-
+   
+   wire amb_hazir_vy;
+	wire [31:0] amb_sonuc_vy;
+	
 	assign bellekten_oku_vy = bellekten_oku_i;
 	assign hedef_yazmac_verisi_vy = amb_hazir_vy ? amb_sonuc_vy : 32'd0;
 	assign yazmaca_yaz_vy = yazmaca_yaz_i;
@@ -93,8 +96,7 @@ module wrapper_yurut (
 	wire                AMB_hazir;
 	wire                amb_stall_o_w;
     
-	wire amb_hazir_vy;
-	wire [31:0] amb_sonuc_vy;
+	
 	AMB aritmetik_mantik(
 		//		INPUTS
 		.rst_i(rst_i),
