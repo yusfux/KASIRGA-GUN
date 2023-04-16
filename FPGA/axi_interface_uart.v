@@ -283,10 +283,19 @@ module axi_interface_uart(
          uart_wdata_next = tx_buffer[tx_buffer_write_idx];
          if(tx_first) begin
             us1 = 1'b0; // tx_empty (not)
+            
             if(t_done_i)begin
-               tx_first_next = 1'b0;
-               tx_buffer_write_idx_next = tx_buffer_write_idx + 1'b1;
-               us0 = 1'b0; // tx_full_not
+               if(tx_buffer_write_idx == (tx_buffer_read_idx-1'b1)) begin 
+                  tx_buffer_write_idx_next = 5'd0;
+                  tx_buffer_read_idx_next = 5'd0; // okunanlar ile islem yapildi
+                  us1 = 1'b1; // tx_empty
+                  //uart_ctrl_next[0] = 1'b0; // tx_en (not)
+               end
+               else begin
+                  tx_first_next = 1'b0;
+                  tx_buffer_write_idx_next = tx_buffer_write_idx + 1'b1;
+                  us0 = 1'b0; // tx_full_not
+               end
             end
          end 
          else begin
