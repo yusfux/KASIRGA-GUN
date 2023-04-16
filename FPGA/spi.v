@@ -236,8 +236,7 @@ module spi(
             sayac_ns = sayac_r + 1;
             if(sayac_r == sck_div_w) begin
                 sayac_ns = 16'b0;
-                stall_cmb = 1;
-
+                
                 sck_ns = 0;
 
                 if(!sck_r) begin
