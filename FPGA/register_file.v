@@ -72,18 +72,20 @@ module register_file (
         reg_is_ready_rs1_r = 1'b0;
         reg_is_ready_rs2_r = 1'b0;
 
-        //yurutten veri yonlendirmesi oldugunu umuyorum
-        //TODO: bellekten de veri yonlendirmesi cektigimizde yurutten gelen ile ayni veri ise yurutten
-        //gelen verininin yonlendirilmesi gerkiyor en son o yazilmis olacagi icin
         if(reg_read_rs1_i && reg_valid_counter[reg_rs1_i] == 2'b00) begin
             reg_rs1_data_r     = register[reg_rs1_i];
             reg_is_ready_rs1_r = 1'b1;
         end else if(reg_read_rs1_i && reg_rs1_i == hedef_yazmaci_i && yazmaca_yaz_i && !bellekten_oku_i) begin
             reg_rs1_data_r = hedef_yazmac_verisi_i;
             reg_is_ready_rs1_r = 1'b1;
-        end else if(reg_read_rs1_i && reg_rs1_i == bellek_hedef_yazmaci_i && bellek_yazmaca_yaz_i) begin
-            reg_rs1_data_r = bellek_hedef_yazmac_verisi_i;
-            reg_is_ready_rs1_r = 1'b1;
+        end else if(!bellekten_oku_i || (hedef_yazmaci_i != reg_rs1_i && bellekten_oku_i)) begin
+            if(reg_read_rs1_i && reg_rs1_i == bellek_hedef_yazmaci_i && bellek_yazmaca_yaz_i) begin
+                reg_rs1_data_r = bellek_hedef_yazmac_verisi_i;
+                reg_is_ready_rs1_r = 1'b1;
+            end else if (reg_read_rs1_i && reg_rs1_i == reg_rd_wb_i && reg_write_wb_i) begin
+                reg_rs1_data_r = reg_rd_data_wb_i;
+                reg_is_ready_rs1_r = 1'b1;
+            end
         end
 
         if(reg_read_rs2_i && reg_valid_counter[reg_rs2_i] == 2'b00) begin
@@ -92,9 +94,14 @@ module register_file (
         end else if(reg_read_rs2_i && reg_rs2_i == hedef_yazmaci_i && yazmaca_yaz_i && !bellekten_oku_i) begin
             reg_rs2_data_r = hedef_yazmac_verisi_i;
             reg_is_ready_rs2_r = 1'b1;
-        end else if(reg_read_rs2_i && reg_rs2_i == bellek_hedef_yazmaci_i && bellek_yazmaca_yaz_i) begin
-            reg_rs2_data_r = bellek_hedef_yazmac_verisi_i;
-            reg_is_ready_rs2_r = 1'b1;
+        end else if(!bellekten_oku_i || (hedef_yazmaci_i != reg_rs2_i && bellekten_oku_i)) begin
+            if(reg_read_rs2_i && reg_rs2_i == bellek_hedef_yazmaci_i && bellek_yazmaca_yaz_i) begin
+                reg_rs2_data_r = bellek_hedef_yazmac_verisi_i;
+                reg_is_ready_rs2_r = 1'b1;
+            end else if (reg_read_rs2_i && reg_rs2_i == reg_rd_wb_i && reg_write_wb_i) begin
+                reg_rs2_data_r = reg_rd_data_wb_i;
+                reg_is_ready_rs2_r = 1'b1;
+            end
         end
     end
 
